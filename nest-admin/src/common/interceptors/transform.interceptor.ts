@@ -11,13 +11,13 @@ import Result from 'src/common/utils/result';
 export class TransformInterceptor<T> implements NestInterceptor<T, Result<T>> {
   intercept(context: ExecutionContext, next: CallHandler): Observable<Result<T>> {
     return next.handle().pipe(
-      map(data => {
+      map((data) => {
         // 如果返回的已经是Result类型，直接返回
         if (data instanceof Result) {
           return data;
         }
         // 否则使用Result.ok包装返回数据
-        return Result.ok(data);
+        return Result.success(data);
       }),
     );
   }

@@ -9,10 +9,10 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.usersService.findByUsername(username);
+    const user = await this.usersService.findByUsernameOrEmail(username);
 
     if (!user) {
       throw new UnauthorizedException('用户名不存在');
@@ -36,7 +36,7 @@ export class AuthService {
     const result = {
       token: this.jwtService.sign(payload),
       user,
-    }
+    };
     return result;
   }
 }

@@ -1,10 +1,12 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { local, STORAGE_KEYS } from '../storage';
-import { handleBusinessError, handleHttpError } from './error';
-import { BaseResponse, CustomRequestConfig } from './types';
+import { handleHttpError } from './error';
+import { BaseResponse, CustomRequestConfig, ResponseCode } from './types';
+import { message } from '@/hooks/useMessage';
 
 // 创建axios实例
 const service: AxiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || '', // 从环境变量获取基础URL
   timeout: 10000, // 请求超时时间
   headers: {
     'Content-Type': 'application/json'
@@ -14,17 +16,14 @@ const service: AxiosInstance = axios.create({
 // 请求拦截器
 service.interceptors.request.use(
   config => {
-    // 在发送请求之前做一些事情
     const token = local.get<string>(STORAGE_KEYS.TOKEN);
     if (token) {
-      // 让每个请求携带自定义token
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   error => {
-    // 处理请求错误
-    console.error('请求错误:', error);
+    console.error('请求配置错误:', error);
     return Promise.reject(error);
   }
 );
@@ -34,26 +33,43 @@ service.interceptors.response.use(
   (response: AxiosResponse): Promise<any> => {
     const res = response.data as BaseResponse;
     const config = response.config as CustomRequestConfig;
+    
+    // 自定义配置选项
     const showErrorMessage = config.showErrorMessage !== false;
-
-    console.log('响应数据:', res);
-    // 根据自定义错误码判断请求是否成功
-    if (res.code && res.code !== 200) {
-      if (!config.skipErrorHandler) {
-        return Promise.reject(handleBusinessError(res.code, res.message, showErrorMessage));
-      }
-      return Promise.reject(res);
-    } else {
-      return Promise.resolve(res);
+    
+    // 处理成功响应
+    const isSuccess = !res.code || res.code === ResponseCode.SUCCESS;
+    
+    if (isSuccess) {
+      // 统一返回数据部分，不再根据withFullResponse区分
+      return Promise.resolve(res.data);
     }
+    
+    // 处理业务错误，当code不等于200时，直接提示message信息
+    if (showErrorMessage && res.message) {
+      message.error(res.message);
+      
+      // 特殊处理401状态码（未授权）
+      if (res.code === ResponseCode.UNAUTHORIZED) {
+        const currentPath = window.location.pathname;
+        if (currentPath !== '/login') {
+          message.warning('登录已过期，请重新登录');
+          sessionStorage.setItem('redirectPath', currentPath);
+          window.location.href = '/login';
+        }
+      }
+    }
+    
+    return Promise.reject(res);
   },
   error => {
     const config = error.config as CustomRequestConfig;
     const showErrorMessage = config?.showErrorMessage !== false;
-
-    if (!config?.skipErrorHandler) {
-      handleHttpError(error, showErrorMessage);
+    
+    if (showErrorMessage) {
+      handleHttpError(error, true);
     }
+    
     return Promise.reject(error);
   }
 );

@@ -1,10 +1,4 @@
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  Logger,
-} from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 import Result from 'src/common/utils/result';
 
@@ -26,18 +20,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
     let message = exception.message;
     // 处理验证错误等情况，获取详细的错误信息
     if (typeof exceptionResponse === 'object' && 'message' in exceptionResponse) {
-      message = Array.isArray(exceptionResponse.message)
-        ? exceptionResponse.message[0]
-        : exceptionResponse.message;
+      message = Array.isArray(exceptionResponse.message) ? exceptionResponse.message[0] : exceptionResponse.message;
     }
 
-    this.logger.error(
-      `${request.method} ${request.url} - ${status} - ${message}`,
-    );
+    this.logger.error(`${request.method} ${request.url} - ${status} - ${message}`);
 
     // 使用统一的Result格式响应错误
     const result = Result.error(message, status);
-    
+
     response.status(status).json(result);
   }
 }

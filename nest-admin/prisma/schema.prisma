@@ -14,7 +14,8 @@ model User {
   email     String   @unique
   name      String?
   avatar    String?
-  status    Int      @default(1)
+  status    String   @default("1")
+  isSystem  String   @default("0")  // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
   roleId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime? @updatedAt
@@ -25,10 +26,57 @@ model User {
 
 model Role {
   id          Int      @id @default(autoincrement())
+  key         String   @unique   // 角色唯一标识
   name        String   @unique
   description String?
-  status      Int      @default(1)
+  status      String   @default("1")
+  isSystem    String   @default("0")  // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
   createdAt   DateTime @default(now())
   updatedAt   DateTime? @updatedAt
   User        User[]
+}
+
+model Config {
+  id          Int       @id @default(autoincrement())
+  key         String    @unique
+  value       String
+  description String?
+  type        String    @default("string")  // 可以是string, number, boolean, json等
+  group       String?   // 可以用于分组配置项
+  sort        Int       @default(0)         // 排序字段
+  status      String    @default("1")       // 1-启用 0-禁用
+  isSystem    String    @default("0")       // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+}
+
+model Dictionary {
+  id          Int              @id @default(autoincrement())
+  code        String           @unique      // 字典编码，唯一标识
+  name        String           // 字典名称
+  description String?          // 字典描述
+  sort        Int              @default(0)  // 排序字段
+  status      String           @default("1")  // 1-启用 0-禁用
+  isSystem    String           @default("0")  // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime?        @updatedAt
+  items       DictionaryItem[] // 字典项
+}
+
+model DictionaryItem {
+  id           Int       @id @default(autoincrement())
+  dictionaryId Int       // 所属字典ID
+  code         String    // 字典项编码
+  value        String    // 字典项值
+  label        String    // 字典项标签
+  color        String?   // 字典项颜色值，如 #FF0000
+  extra        String?   // 附加数据，JSON字符串
+  sort         Int       @default(0)  // 排序字段
+  status       String    @default("1")  // 1-启用 0-禁用
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+  dictionary   Dictionary @relation(fields: [dictionaryId], references: [id], onDelete: Cascade)
+
+  @@index([dictionaryId])
+  @@unique([dictionaryId, code])
 }

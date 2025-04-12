@@ -10,9 +10,9 @@ export class RedisService {
     this.redis = new Redis({
       host: this.configService.get('redis.host', 'localhost'),
       port: this.configService.get('redis.port', 6379),
-      password: this.configService.get('redis.password', ''),  // 添加密码配置
+      password: this.configService.get('redis.password', ''), // 添加密码配置
     });
-    
+
     // 添加错误处理
     this.redis.on('error', (err) => {
       console.error('Redis连接错误:', err);
@@ -33,7 +33,7 @@ export class RedisService {
 
   async set(key: string, value: any, ttl?: number): Promise<void> {
     const stringValue = typeof value === 'object' ? JSON.stringify(value) : value;
-    
+
     if (ttl) {
       await this.redis.set(key, stringValue, 'EX', ttl);
     } else {

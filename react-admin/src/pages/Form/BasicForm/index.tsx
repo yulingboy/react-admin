@@ -1,275 +1,134 @@
 import React, { useState } from 'react';
+import { Form, Input, Button, Card, Row, Col, Select } from 'antd';
+import { ProForm } from '@ant-design/pro-components';
+import DictionarySelect from '@/components/DictionarySelect';
+import { DictionaryTag } from '@/components/DictionaryTag';
+import { useDictionary } from '@/hooks/useDictionary';
 
-interface FormState {
-  title: string;
-  description: string;
-  owner: string;
-  approver: string;
-  dateRange: string;
-  type: string;
-  priority: string;
-  notifications: string[];
-}
+const FormExample: React.FC = () => {
+  const [form] = Form.useForm();
+  const [submitResult, setSubmitResult] = useState<any>(null);
 
-const BasicForm: React.FC = () => {
-  const [formState, setFormState] = useState<FormState>({
-    title: '',
-    description: '',
-    owner: '',
-    approver: '',
-    dateRange: '',
-    type: 'private',
-    priority: 'medium',
-    notifications: []
-  });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormState(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
-    if (checked) {
-      setFormState(prev => ({
-        ...prev,
-        notifications: [...prev.notifications, value]
-      }));
-    } else {
-      setFormState(prev => ({
-        ...prev,
-        notifications: prev.notifications.filter(item => item !== value)
-      }));
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log(formState);
-    // 在这里处理表单提交逻辑
-    alert('表单已提交');
+  const handleSubmit = async (values: any) => {
+    console.log('表单提交数据:', values);
+    setSubmitResult(values);
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">基础表单</h1>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 gap-6">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                标题
-              </label>
-              <input
-                type="text"
-                name="title"
-                id="title"
-                value={formState.title}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="请输入标题"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                描述
-              </label>
-              <textarea
-                name="description"
-                id="description"
-                value={formState.description}
-                onChange={handleInputChange}
-                rows={4}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="请输入描述信息"
-              ></textarea>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="owner" className="block text-sm font-medium text-gray-700">
-                  负责人
-                </label>
-                <input
-                  type="text"
-                  name="owner"
-                  id="owner"
-                  value={formState.owner}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="请输入负责人"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="approver" className="block text-sm font-medium text-gray-700">
-                  审批人
-                </label>
-                <input
-                  type="text"
-                  name="approver"
-                  id="approver"
-                  value={formState.approver}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="请输入审批人"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="dateRange" className="block text-sm font-medium text-gray-700">
-                有效日期
-              </label>
-              <input
-                type="date"
-                name="dateRange"
-                id="dateRange"
-                value={formState.dateRange}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700">
-                表单类型
-              </label>
-              <select
-                name="type"
-                id="type"
-                value={formState.type}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              >
-                <option value="private">私密</option>
-                <option value="public">公开</option>
-                <option value="internal">内部</option>
-              </select>
-            </div>
-
-            <div>
-              <span className="block text-sm font-medium text-gray-700">优先级</span>
-              <div className="mt-2 space-y-2">
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="priority-high"
-                    name="priority"
-                    value="high"
-                    checked={formState.priority === 'high'}
-                    onChange={handleInputChange}
-                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                  />
-                  <label htmlFor="priority-high" className="ml-2 block text-sm text-gray-700">
-                    高
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="priority-medium"
-                    name="priority"
-                    value="medium"
-                    checked={formState.priority === 'medium'}
-                    onChange={handleInputChange}
-                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                  />
-                  <label htmlFor="priority-medium" className="ml-2 block text-sm text-gray-700">
-                    中
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="priority-low"
-                    name="priority"
-                    value="low"
-                    checked={formState.priority === 'low'}
-                    onChange={handleInputChange}
-                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                  />
-                  <label htmlFor="priority-low" className="ml-2 block text-sm text-gray-700">
-                    低
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <span className="block text-sm font-medium text-gray-700">通知</span>
-              <div className="mt-2 space-y-2">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="notify-email"
-                    name="notifications"
-                    value="email"
-                    checked={formState.notifications.includes('email')}
-                    onChange={handleCheckboxChange}
-                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-                  />
-                  <label htmlFor="notify-email" className="ml-2 block text-sm text-gray-700">
-                    邮件
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="notify-sms"
-                    name="notifications"
-                    value="sms"
-                    checked={formState.notifications.includes('sms')}
-                    onChange={handleCheckboxChange}
-                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-                  />
-                  <label htmlFor="notify-sms" className="ml-2 block text-sm text-gray-700">
-                    短信
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="notify-wx"
-                    name="notifications"
-                    value="wechat"
-                    checked={formState.notifications.includes('wechat')}
-                    onChange={handleCheckboxChange}
-                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-                  />
-                  <label htmlFor="notify-wx" className="ml-2 block text-sm text-gray-700">
-                    微信
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-3 border-t pt-5">
-            <button
-              type="button"
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+    <Card title="基础表单 - 使用字典数据" bordered={false} className="form-card">
+      <ProForm
+        form={form}
+        onFinish={handleSubmit}
+        submitter={{
+          render: (props, dom) => <Button type="primary" onClick={props.form?.submit}>提交</Button>,
+        }}
+      >
+        <Row gutter={24}>
+          <Col span={12}>
+            <Form.Item
+              name="name"
+              label="姓名"
+              rules={[{ required: true, message: '请输入姓名' }]}
             >
-              取消
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              <Input placeholder="请输入" />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              name="gender"
+              label="性别"
+              rules={[{ required: true, message: '请选择性别' }]}
             >
-              提交
-            </button>
+              <DictionarySelect code="gender" placeholder="请选择性别" />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              name="department"
+              label="部门"
+              rules={[{ required: true, message: '请选择部门' }]}
+            >
+              <DictionarySelect code="department" placeholder="请选择部门" />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              name="education"
+              label="学历"
+            >
+              <DictionarySelect code="education" placeholder="请选择学历" />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              name="status"
+              label="状态"
+              rules={[{ required: true, message: '请选择状态' }]}
+            >
+              <DictionarySelect code="user_status" placeholder="请选择状态" />
+            </Form.Item>
+          </Col>
+        </Row>
+      </ProForm>
+
+      {submitResult && (
+        <Card title="表单提交结果" className="mt-4">
+          <div className="mb-2">
+            <strong>姓名:</strong> {submitResult.name}
           </div>
-        </form>
-      </div>
-    </div>
+          <div className="mb-2">
+            <strong>性别:</strong> <DictionaryTag code="gender" value={submitResult.gender} />
+          </div>
+          <div className="mb-2">
+            <strong>部门:</strong> <DictionaryTag code="department" value={submitResult.department} />
+          </div>
+          <div className="mb-2">
+            <strong>学历:</strong> <DictionaryTag code="education" value={submitResult.education} />
+          </div>
+          <div className="mb-2">
+            <strong>状态:</strong> <DictionaryTag 
+              code="user_status" 
+              value={submitResult.status} 
+              colorMapping={{
+                "1": "success",
+                "0": "error"
+              }} 
+            />
+          </div>
+        </Card>
+      )}
+
+      {/* 直接使用useDictionary获取数据 */}
+      <DirectDictionarySelect />
+    </Card>
   );
 };
 
-export default BasicForm;
+// 直接使用useDictionary获取数据的组件示例
+const DirectDictionarySelect: React.FC = () => {
+  // useDictionary现在直接返回options数组
+  const departmentOptions = useDictionary('department');
+  
+  return (
+    <Card title="直接使用hook获取字典数据" className="mt-4">
+      <p>这个组件直接使用useDictionary hook获取数据，每个组件独立获取自己需要的字典数据</p>
+      <Form layout="vertical">
+        <Form.Item label="部门">
+          <Select
+            placeholder="请选择部门"
+            options={departmentOptions.map(item => ({
+              label: item.label,
+              value: item.value
+            }))}
+          />
+        </Form.Item>
+      </Form>
+    </Card>
+  );
+};
+
+export default FormExample;

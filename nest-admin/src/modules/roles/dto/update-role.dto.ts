@@ -1,4 +1,6 @@
-import { IsString, IsOptional, IsInt, Min, Max, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsOptional, IsInt, Min, Max, MinLength, MaxLength, IsIn, IsEnum } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { StatusEnum } from 'src/common/enums/common.enum';
 
 /**
  * 更新角色DTO
@@ -12,6 +14,16 @@ export class UpdateRoleDto {
   @Min(1, { message: '角色ID必须大于0' })
   @Max(999999, { message: '角色ID不能大于999999' })
   id: number;
+
+  /**
+   * 角色唯一标识
+   */
+  @IsOptional()
+  @IsString({ message: '角色标识必须是字符串' })
+  @MinLength(2, { message: '角色标识长度不能小于2' })
+  @MaxLength(50, { message: '角色标识长度不能大于50' })
+  key?: string;
+
   /**
    * 角色名称
    */
@@ -33,8 +45,6 @@ export class UpdateRoleDto {
    * 角色状态
    */
   @IsOptional()
-  @IsInt({ message: '状态必须是整数' })
-  @Min(0, { message: '状态值不能小于0' })
-  @Max(10, { message: '状态值不能大于10' })
-  status?: number;
+  @IsEnum(StatusEnum, { message: '状态值必须是有效的枚举值' })
+  status?: string;
 }

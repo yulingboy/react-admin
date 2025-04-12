@@ -1,5 +1,6 @@
-import { IsString, IsEmail, IsOptional, IsInt, Min, Max, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsInt, Min, Max, MinLength, MaxLength, IsEnum } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { StatusEnum } from 'src/common/enums/common.enum';
 
 /**
  * 更新用户DTO
@@ -14,6 +15,7 @@ export class UpdateUserDto {
   @Max(999999, { message: '用户ID不能大于999999' })
   @Transform(({ value }) => Number(value))
   id: number;
+
   /**
    * 用户名
    */
@@ -58,11 +60,8 @@ export class UpdateUserDto {
    * 用户状态
    */
   @IsOptional()
-  @IsInt({ message: '状态必须是整数' })
-  @Min(0, { message: '状态值不能小于0' })
-  @Max(10, { message: '状态值不能大于10' })
-  @Transform(({ value }) => Number(value))
-  status?: number;
+  @IsEnum(StatusEnum, { message: '状态值必须是有效的枚举值' })
+  status?: string;
 
   /**
    * 用户角色ID

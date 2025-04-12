@@ -1,6 +1,7 @@
-import { IsString, IsOptional, IsInt, Min } from 'class-validator';
+import { IsString, IsOptional, IsInt, Min, IsEnum } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
+import { StatusEnum } from 'src/common/enums/common.enum';
 
 /**
  * 查询用户DTO
@@ -25,9 +26,8 @@ export class QueryUserDto extends PaginationDto {
    * 用户状态筛选
    */
   @IsOptional()
-  @IsInt({ message: '状态必须是整数' })
-  @Transform(({ value }) => value ? Number(value) : undefined)
-  status?: number;
+  @IsEnum(StatusEnum, { message: '状态值必须是有效的枚举值' })
+  status?: string;
 
   /**
    * 角色ID筛选
@@ -35,6 +35,6 @@ export class QueryUserDto extends PaginationDto {
   @IsOptional()
   @IsInt({ message: '角色ID必须是整数' })
   @Min(1, { message: '角色ID必须大于0' })
-  @Transform(({ value }) => value ? Number(value) : undefined)
+  @Transform(({ value }) => (value ? Number(value) : undefined))
   roleId?: number;
 }

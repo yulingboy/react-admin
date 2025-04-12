@@ -26,7 +26,7 @@ export class AppLoggerService extends ConsoleLogger implements LoggerService {
     const logFilePath = path.join(this.logDir, logFileName);
     const logTime = date.toISOString();
     const logEntry = `[${logTime}] [${level}] ${message}\n`;
-    
+
     fs.appendFile(logFilePath, logEntry, (err) => {
       if (err) {
         console.error('写入日志文件失败:', err);

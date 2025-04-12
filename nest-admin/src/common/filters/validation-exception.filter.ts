@@ -28,24 +28,24 @@ export class ValidationExceptionFilter implements ExceptionFilter {
    */
   private formatErrors(validationErrors: ValidationError[]): Record<string, string[]> {
     const result: Record<string, string[]> = {};
-    
-    validationErrors.forEach(error => {
+
+    validationErrors.forEach((error) => {
       const property = error.property;
       const errorMessages = Object.values(error.constraints || {});
-      
+
       if (errorMessages.length > 0) {
         result[property] = errorMessages;
       }
-      
+
       if (error.children?.length) {
         const childErrors = this.formatErrors(error.children);
-        Object.keys(childErrors).forEach(key => {
+        Object.keys(childErrors).forEach((key) => {
           const nestedKey = `${property}.${key}`;
           result[nestedKey] = childErrors[key];
         });
       }
     });
-    
+
     return result;
   }
 }

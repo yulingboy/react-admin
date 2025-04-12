@@ -1,6 +1,4 @@
-
-
-import { HttpStatus } from "src/common/constant/httpStatus";
+import { HttpStatus } from 'src/common/constant/httpStatus';
 
 /**
  * 通用返回结果类
@@ -10,11 +8,7 @@ export default class Result<T> {
   message: string;
   data: T;
 
-  constructor(
-    code: number = HttpStatus.SUCCESS,
-    message: string = '成功',
-    data: T = null,
-  ) {
+  constructor(code: number = HttpStatus.SUCCESS, message: string = '成功', data: T = null) {
     this.code = code;
     this.message = message;
     this.data = data;
@@ -23,7 +17,7 @@ export default class Result<T> {
   /**
    * 返回成功结果
    */
-  static ok<K = null>(data: K = null, message: string = '成功') {
+  static success<K = null>(data: K = null, message: string = '成功') {
     return new Result<K>(HttpStatus.SUCCESS, message, data);
   }
 
@@ -80,18 +74,19 @@ export default class Result<T> {
    * 根据影响行数返回操作结果
    */
   static toAjax(affectRows: number) {
-    return affectRows > 0
-      ? Result.ok(null, '操作成功')
-      : Result.error('操作失败');
+    return affectRows > 0 ? Result.success(null, '操作成功') : Result.error('操作失败');
   }
 
   /**
    * 返回表格数据
    */
   static tableData<L = any>(rows: L[], total: number) {
-    return Result.ok({
-      rows,
-      total,
-    }, '查询成功');
+    return Result.success(
+      {
+        rows,
+        total,
+      },
+      '查询成功',
+    );
   }
 }

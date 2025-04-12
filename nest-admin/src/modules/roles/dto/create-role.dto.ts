@@ -1,10 +1,19 @@
-import { IsString, IsOptional, IsInt, Min, Max, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsOptional, IsEnum, MinLength, MaxLength } from 'class-validator';
+import { StatusEnum } from 'src/common/enums/common.enum';
 
 /**
  * 创建角色DTO
  * 定义创建角色需要的参数
  */
 export class CreateRoleDto {
+  /**
+   * 角色唯一标识
+   */
+  @IsString({ message: '角色标识必须是字符串' })
+  @MinLength(2, { message: '角色标识长度不能小于2' })
+  @MaxLength(50, { message: '角色标识长度不能大于50' })
+  key: string;
+
   /**
    * 角色名称，唯一标识
    */
@@ -22,11 +31,10 @@ export class CreateRoleDto {
   description?: string;
 
   /**
-   * 角色状态，默认为1（启用）
+   * 角色状态，默认为启用
    */
   @IsOptional()
-  @IsInt({ message: '状态必须是整数' })
-  @Min(0, { message: '状态值不能小于0' })
-  @Max(10, { message: '状态值不能大于10' })
-  status?: number = 1;
+  @IsEnum(StatusEnum, { message: '状态值必须是有效的枚举值' })
+  status?: string = StatusEnum.ENABLED;
+
 }

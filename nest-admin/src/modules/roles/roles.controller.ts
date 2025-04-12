@@ -1,79 +1,112 @@
-import { Controller, Get, Post, Body, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Body, ParseIntPipe, Get, Query, Put, Delete, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { QueryRoleDto } from './dto/query-role.dto';
+import Result from 'src/common/utils/result';
+import { BatchDeleteDto } from './dto/batch-delete.dto';
 
+
+/**
+ * 角色管理控制器
+ * 提供角色的增删改查接口
+ * @class RolesController
+ * @constructor
+ * @param {RolesService} rolesService - 角色服务
+ * @method add - 添加角色
+ * @method getList - 获取角色列表
+ * @method getDetail - 获取角色详情
+ * @method update - 更新角色
+ * @method delete - 删除角色
+ * @method deleteBatch - 批量删除角色
+ */
 @Controller('roles')
 export class RolesController {
-  /**
-   * 构造函数，注入角色服务
-   * @param rolesService 角色服务实例
-   */
+  private readonly logger = new Logger(RolesController.name);
+  
   constructor(private readonly rolesService: RolesService) {}
 
   /**
-   * 创建角色
-   * @POST /roles/create
-   * @param createRoleDto 创建角色参数
-   * @returns 创建结果
+   * 添加角色
+   * @param createRoleDto - 创建角色数据传输对象
+   * @returns 
    */
-  @Post('create')
-  create(@Body() createRoleDto: CreateRoleDto) {
-    return this.rolesService.create(createRoleDto);
+  @Post('add')
+  async add(@Body() createRoleDto: CreateRoleDto) {
+    const data = await this.rolesService.create(createRoleDto);
+    return Result.success(data);
   }
 
   /**
-   * 分页查询角色列表
-   * @GET /roles/list
-   * @param queryRoleDto 查询参数
-   * @returns 分页角色列表
+   * 获取角色列表
+   * @param query - 查询参数
+   * @returns 
    */
   @Get('list')
-  findAll(@Query() queryRoleDto: QueryRoleDto) {
-    return this.rolesService.findAll(queryRoleDto);
+  async getList(@Query() query: QueryRoleDto) {
+    return await this.rolesService.findPagationList(query);
   }
 
   /**
-   * 获取所有角色选项（用于下拉框）
-   * @GET /roles/options
-   * @returns 所有可用角色
-   */
-  @Get('options')
-  findAllOptions() {
-    return this.rolesService.findAllOptions();
-  }
-
-  /**
-   * 查询单个角色
-   * @GET /roles/detail
-   * @param id 角色ID
-   * @returns 角色详情
+   * 获取角色详情
+   * @param id - 角色ID
+   * @returns 
    */
   @Get('detail')
-  findOne(@Query('id', ParseIntPipe) id: number) {
-    return this.rolesService.findOne(id);
+  async getDetail(@Query('id', ParseIntPipe) id: number) {
+    const data = await this.rolesService.findOne(id);
+    return Result.success(data);
   }
 
   /**
    * 更新角色
-   * @POST /roles/update
-   * @param updateRoleDto 更新参数(包含id)
-   * @returns 更新结果
+   * @param updateRoleDto - 更新角色数据传输对象
+   * @returns 
    */
-  @Post('update')
-  update(@Body() updateRoleDto: UpdateRoleDto) {
-    return this.rolesService.update(updateRoleDto.id, updateRoleDto);
+  @Put('update')
+  async update(@Body() updateRoleDto: UpdateRoleDto) {
+    const data = await this.rolesService.update(updateRoleDto.id, updateRoleDto);
+    return Result.success(data);
   }
 
   /**
    * 删除角色
-   * @POST /roles/delete
-   * @param id 角色ID
-   * @returns 删除结果
+   * @param id - 角色ID
+   * @returns 
    */
-  @Post('delete')
-  remove(@Body('id', ParseIntPipe) id: number) {
-    return this.rolesService.remove(id);
+  @Delete('delete')
+  async delete(@Query('id', ParseIntPipe) id: number) {
+    try {
+      await this.rolesService.remove(id);
+      return Result.success();
+    } catch (error) {
+      this.logger.error(`删除角色失败: ${error.message}`, error.stack);
+      return Result.error(error.message);
+    }
+  }
+
+  /**
+   * 批量删除角色
+   * @param params - 批量删除参数
+   * @returns 
+   */
+  @Delete('deleteBatch')
+  async deleteBatch(@Body() params: BatchDeleteDto) {
+    try {
+      await this.rolesService.batchRemove(params.ids);
+      return Result.success();
+    } catch (error) {
+      this.logger.error(`批量删除角色失败: ${error.message}`, error.stack);
+      return Result.error(error.message);
+    }
+  }
+  /**
+   * 获取所有角色 用于下拉选择
+   * @returns 
+   */
+  @Get('options')
+  async getOptions() {
+    const data = await this.rolesService.findAllOptions();
+    return Result.success(data);
   }
 }

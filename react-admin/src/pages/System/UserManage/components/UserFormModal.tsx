@@ -1,45 +1,150 @@
-import React from 'react';
-import { ModalForm, ProFormText, ProFormSelect, ProFormRadio, ProFormTextArea } from '@ant-design/pro-components';
-import { UserType, UserFormData, sexOptions, statusOptions, userTypeOptions } from '../types';
+import React, { useEffect, useState } from 'react';
+import { Modal, Form, Input, Select, message } from 'antd';
+import { UserOutlined, MailOutlined } from '@ant-design/icons';
+import { UserFormData } from '@/types/user';
+import { createUser, updateUser } from '@/api/user';
+import DictionarySelect from '@/components/Dictionary/DictionarySelect';
 
 interface UserFormModalProps {
   visible: boolean;
-  onVisibleChange: (visible: boolean) => void;
-  onFinish: (values: UserFormData) => Promise<void>;
-  userInfo?: UserType;
-  title: string;
-  isEdit: boolean;
+  onCancel: () => void;
+  onSuccess: () => void;
+  initialValues?: UserFormData;
+  isEdit?: boolean;
+  roleOptions: { label: string; value: number }[];
 }
 
-const UserFormModal: React.FC<UserFormModalProps> = ({ visible, onVisibleChange, onFinish, userInfo, title, isEdit }) => {
+const UserFormModal: React.FC<UserFormModalProps> = ({
+  visible,
+  onCancel,
+  onSuccess,
+  initialValues,
+  isEdit = false,
+  roleOptions
+}) => {
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+
+  // 设置表单初始值
+  useEffect(() => {
+    if (visible) {
+      if (initialValues) {
+        form.setFieldsValue(initialValues);
+      } else {
+        form.resetFields();
+        form.setFieldsValue({ status: '1' }); // 默认启用
+      }
+    }
+  }, [form, initialValues, visible]);
+
+  // 提交表单
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      setLoading(true);
+      
+      if (isEdit && initialValues?.id) {
+        await updateUser({
+          ...values,
+          id: initialValues.id
+        });
+        message.success('用户更新成功');
+      } else {
+        await createUser(values);
+        message.success('用户创建成功');
+      }
+      
+      setLoading(false);
+      onSuccess();
+    } catch (error) {
+      setLoading(false);
+      console.error('表单提交错误:', error);
+    }
+  };
+
+  const formItems = [
+    {
+      name: 'username',
+      label: '用户名',
+      rules: [
+        { required: true, message: '请输入用户名' },
+        { min: 3, max: 20, message: '用户名长度为3-20个字符' }
+      ],
+      component: (
+        <Input 
+          prefix={<UserOutlined />}
+          placeholder="请输入用户名" 
+          disabled={isEdit}
+        />
+      )
+    },
+    {
+      name: 'email',
+      label: '电子邮箱',
+      rules: [
+        { required: true, message: '请输入电子邮箱' },
+        { type: 'email', message: '请输入有效的电子邮箱' },
+        { max: 50, message: '电子邮箱最大长度为50个字符' }
+      ],
+      component: (
+        <Input 
+          prefix={<MailOutlined />}
+          placeholder="请输入电子邮箱" 
+        />
+      )
+    },
+    {
+      name: 'status',
+      label: '用户状态',
+      rules: [{ required: true, message: '请选择用户状态' }],
+      component: (
+        <DictionarySelect
+          code="sys_common_status"
+          placeholder="请选择用户状态"
+        />
+      )
+    },
+    {
+      name: 'roleId',
+      label: '用户角色',
+      rules: [{ required: true, message: '请选择用户角色' }],
+      component: (
+        <Select
+          placeholder="请选择用户角色"
+          options={roleOptions}
+        />
+      )
+    }
+  ];
+
   return (
-    <ModalForm<UserFormData> title={title} width={600} open={visible} onOpenChange={onVisibleChange} onFinish={onFinish} initialValues={userInfo}>
-      <ProFormText name="userName" label="用户名" placeholder="请输入用户名" rules={[{ required: true, message: '请输入用户名' }]} disabled={isEdit} />
-      <ProFormText name="nickName" label="昵称" placeholder="请输入昵称" rules={[{ required: true, message: '请输入昵称' }]} />
-      <ProFormText
-        name="email"
-        label="邮箱"
-        placeholder="请输入邮箱"
-        rules={[
-          { required: true, message: '请输入邮箱' },
-          { type: 'email', message: '请输入有效的邮箱地址' }
-        ]}
-      />
-      <ProFormText
-        name="phonenumber"
-        label="手机号"
-        placeholder="请输入手机号"
-        rules={[
-          { required: true, message: '请输入手机号' },
-          { pattern: /^1\d{10}$/, message: '请输入有效的手机号' }
-        ]}
-      />
-      <ProFormRadio.Group name="sex" label="性别" options={sexOptions} rules={[{ required: true, message: '请选择性别' }]} />
-      <ProFormRadio.Group name="status" label="状态" options={statusOptions} rules={[{ required: true, message: '请选择状态' }]} />
-      <ProFormSelect name="userType" label="角色" options={userTypeOptions} rules={[{ required: true, message: '请选择角色' }]} />
-      {!isEdit && <ProFormText.Password name="password" label="密码" placeholder="请输入密码" rules={[{ required: !isEdit, message: '请输入密码' }]} />}
-      <ProFormTextArea name="remark" label="备注" placeholder="请输入备注" />
-    </ModalForm>
+    <Modal
+      title={isEdit ? '编辑用户' : '新增用户'}
+      open={visible}
+      onCancel={onCancel}
+      onOk={handleSubmit}
+      okButtonProps={{ loading }}
+      destroyOnClose
+      maskClosable={false}
+      width={520}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ status: '1' }} // 默认启用
+      >
+        {formItems.map(item => (
+          <Form.Item
+            key={item.name}
+            name={item.name}
+            label={item.label}
+            rules={item.rules}
+          >
+            {item.component}
+          </Form.Item>
+        ))}
+      </Form>
+    </Modal>
   );
 };
 

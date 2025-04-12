@@ -10,6 +10,7 @@ const Home = lazyLoadHelper(() => import('@/pages/Home'));
 const Dashboard = lazyLoadHelper(() => import('@/pages/Dashboard'));
 const UserManage = lazyLoadHelper(() => import('@/pages/System/UserManage'));
 const RoleManage = lazyLoadHelper(() => import('@/pages/System/RoleManage'));
+const DictionaryManage = lazyLoadHelper(() => import('@/pages/System/DictionaryManage'));
 const BasicForm = lazyLoadHelper(() => import('@/pages/Form/BasicForm'));
 const AdvancedForm = lazyLoadHelper(() => import('@/pages/Form/AdvancedForm'));
 const BasicTable = lazyLoadHelper(() => import('@/pages/Table/BasicTable'));
@@ -63,6 +64,13 @@ export const routes: AppRouteObject[] = [
             element: <RoleManage />,
             meta: {
               title: '角色管理'
+            }
+          },
+          {
+            path: 'dictionary',
+            element: <DictionaryManage />,
+            meta: {
+              title: '字典管理'
             }
           }
         ]

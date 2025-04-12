@@ -1,11 +1,4 @@
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
-  Logger,
-} from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import Result from 'src/common/utils/result';
 
@@ -22,7 +15,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
     const { httpAdapter } = this.httpAdapterHost;
     const ctx = host.switchToHttp();
-    
+
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = '服务器内部错误';
 
@@ -32,9 +25,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const exceptionResponse = exception.getResponse();
 
       if (typeof exceptionResponse === 'object' && 'message' in exceptionResponse) {
-        message = Array.isArray(exceptionResponse.message)
-          ? exceptionResponse.message[0]
-          : exceptionResponse.message;
+        message = Array.isArray(exceptionResponse.message) ? exceptionResponse.message[0] : exceptionResponse.message;
       } else {
         message = exception.message;
       }

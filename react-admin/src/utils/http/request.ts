@@ -1,27 +1,26 @@
 import service from './service';
-import { BaseResponse, CustomRequestConfig, RequestParams } from './types';
+import { BaseResponse, CustomRequestConfig } from './types';
 
-// 封装请求方法
+/**
+ * 统一请求方法，提供类型安全和简化API
+ */
 export const request = {
   /**
    * GET请求
    * @param url 请求地址
-   * @param params 请求参数
-   * @param config 额外配置
-   * @returns Promise
+   * @param config 请求配置
    */
-  get<T = any>(url: string, params?: RequestParams, config?: CustomRequestConfig): Promise<BaseResponse<T>> {
-    return service.get(url, { params, ...config });
+  get<T = any>(url: string, config?: CustomRequestConfig): Promise<T> {
+    return service.get(url, config);
   },
 
   /**
    * POST请求
    * @param url 请求地址
    * @param data 请求数据
-   * @param config 额外配置
-   * @returns Promise
+   * @param config 请求配置
    */
-  post<T = any>(url: string, data?: any, config?: CustomRequestConfig): Promise<BaseResponse<T>> {
+  post<T = any>(url: string, data?: any, config?: CustomRequestConfig): Promise<T> {
     return service.post(url, data, config);
   },
 
@@ -29,20 +28,18 @@ export const request = {
    * PUT请求
    * @param url 请求地址
    * @param data 请求数据
-   * @param config 额外配置
-   * @returns Promise
+   * @param config 请求配置
    */
-  put<T = any>(url: string, data?: any, config?: CustomRequestConfig): Promise<BaseResponse<T>> {
+  put<T = any>(url: string, data?: any, config?: CustomRequestConfig): Promise<T> {
     return service.put(url, data, config);
   },
 
   /**
    * DELETE请求
    * @param url 请求地址
-   * @param config 额外配置
-   * @returns Promise
+   * @param config 请求配置
    */
-  delete<T = any>(url: string, config?: CustomRequestConfig): Promise<BaseResponse<T>> {
+  delete<T = any>(url: string, config?: CustomRequestConfig): Promise<T> {
     return service.delete(url, config);
   },
 
@@ -50,47 +47,64 @@ export const request = {
    * 文件上传
    * @param url 请求地址
    * @param file 文件对象
-   * @param name 文件参数名
-   * @param config 额外配置
-   * @returns Promise
+   * @param options 上传配置
    */
-  upload<T = any>(url: string, file: File, name: string = 'file', config?: CustomRequestConfig): Promise<BaseResponse<T>> {
+  upload<T = any>(
+    url: string, 
+    file: File | File[], 
+    options?: {
+      name?: string;
+      data?: Record<string, any>;
+      config?: CustomRequestConfig;
+    }
+  ): Promise<T> {
     const formData = new FormData();
-    formData.append(name, file);
+    const { name = 'file', data = {}, config = {} } = options || {};
+    
+    // 处理单个或多个文件
+    if (Array.isArray(file)) {
+      file.forEach(f => formData.append(name, f));
+    } else {
+      formData.append(name, file);
+    }
+    
+    // 添加额外的表单数据
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
 
     return service.post(url, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
       ...config
     });
   },
 
   /**
-   * 多文件上传
+   * 下载文件
    * @param url 请求地址
-   * @param files 文件对象数组
-   * @param name 文件参数名
-   * @param config 额外配置
-   * @returns Promise
+   * @param params 查询参数
+   * @param filename 文件名(可选)
+   * @param config 请求配置
    */
-  uploadMultiple<T = any>(url: string, files: File[], name: string = 'files', config?: CustomRequestConfig): Promise<BaseResponse<T>> {
-    const formData = new FormData();
-    files.forEach(file => {
-      formData.append(name, file);
-    });
-
-    return service.post(url, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      ...config
+  download(url: string, params?: Record<string, any>, filename?: string, config?: CustomRequestConfig): Promise<Blob> {
+    return service.get(url, {
+      params,
+      responseType: 'blob',
+      ...config,
+    }).then(response => {
+      // 这里需要特殊处理，因为返回的是二进制数据
+      const blob = new Blob([response.data]);
+      // 如果提供了文件名，直接下载
+      if (filename) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+      return blob;
     });
   }
 };
 
-// 导出axios实例以便进行高级自定义
-export { default as service } from './service';
-export * from './types';
-export * from './error';
 export default request;
