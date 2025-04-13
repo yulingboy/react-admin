@@ -389,4 +389,26 @@ export class DictionariesService {
       },
     });
   }
+
+  /**
+   * 获取所有可用的字典类型
+   * 用于前端字典类型下拉选择
+   * @returns 可用的字典类型列表
+   */
+  async findAllDictionaries() {
+    // 只返回启用状态的字典
+    return this.prisma.dictionary.findMany({
+      where: { status: StatusEnum.ENABLED },
+      orderBy: [
+        { sort: 'asc' },
+        { name: 'asc' },
+      ],
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        status: true,
+      },
+    });
+  }
 }

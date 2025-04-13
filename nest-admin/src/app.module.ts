@@ -12,6 +12,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { NotFoundExceptionFilter } from './common/filters/not-found.filter';
 import { ConfigModule } from '@nestjs/config';
 import { DictionariesModule } from './modules/dictionaries/dictionaries.module';
+import { CodeGeneratorModule } from './modules/code-generator/code-generator.module';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
 
@@ -28,6 +29,7 @@ import redisConfig from './config/redis.config';
     AuthModule,
     ConfigsModule,
     DictionariesModule,
+    CodeGeneratorModule,
   ],
   controllers: [AppController],
   providers: [

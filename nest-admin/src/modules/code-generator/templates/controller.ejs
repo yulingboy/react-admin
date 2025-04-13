@@ -1,0 +1,64 @@
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query } from '@nestjs/common';
+import { <%= className %>Service } from '../services/<%= helper.toKebabCase(className) %>.service';
+import { Create<%= className %>Dto, Update<%= className %>Dto, Query<%= className %>Dto } from '../dto/<%= helper.toKebabCase(className) %>.dto';
+
+/**
+ * <%= modelName %> 控制器
+ * @author <%= generator.functionAuthor %>
+ * @date <%= new Date().toISOString().slice(0, 10) %>
+ */
+@Controller('<%= helper.toKebabCase(className) %>')
+export class <%= className %>Controller {
+  constructor(private readonly <%= helper.toCamelCase(className) %>Service: <%= className %>Service) {}
+
+  /**
+   * 创建<%= modelName %>
+   */
+  @Post()
+  async create(@Body() dto: Create<%= className %>Dto) {
+    return await this.<%= helper.toCamelCase(className) %>Service.create(dto);
+  }
+
+  /**
+   * 更新<%= modelName %>
+   */
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() dto: Update<%= className %>Dto) {
+    return await this.<%= helper.toCamelCase(className) %>Service.update(+id, dto);
+  }
+
+  /**
+   * 删除<%= modelName %>
+   */
+  @Delete(':id')
+  @HttpCode(204)
+  async delete(@Param('id') id: string) {
+    await this.<%= helper.toCamelCase(className) %>Service.delete(+id);
+  }
+
+  /**
+   * 获取<%= modelName %>详情
+   */
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return await this.<%= helper.toCamelCase(className) %>Service.findOne(+id);
+  }
+
+  /**
+   * 获取<%= modelName %>列表
+   */
+  @Get()
+  async findAll(
+    <% columns.forEach((column, index) => { if (column.isQuery) { %>
+    @Query('<%= column.columnName %>') <%= column.columnName %>: <%= column.tsType === 'number' ? 'string' : column.tsType %>,<% }}); %>
+    @Query('page') page: string,
+    @Query('pageSize') pageSize: string,
+  ) {
+    return await this.<%= helper.toCamelCase(className) %>Service.findAll({
+      <% columns.forEach((column, index) => { if (column.isQuery) { %>
+      <%= column.columnName %>: <%= column.tsType === 'number' ? `${column.columnName} ? +${column.columnName} : undefined` : column.columnName %>,<% }}); %>
+      page: page ? +page : undefined,
+      pageSize: pageSize ? +pageSize : undefined,
+    });
+  }
+}

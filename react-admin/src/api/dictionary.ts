@@ -69,6 +69,14 @@ export const batchDeleteDictionaries = (ids: number[]) => {
   return request.delete<null>('/api/dictionaries/deleteBatch', { params: { ids: idsStr } });
 };
 
+/**
+ * 获取所有字典类型
+ * 返回所有可用的字典列表，用于下拉选择字典类型
+ */
+export const getAllDictionaries = () => {
+  return request.get<Dictionary[]>('/api/dictionaries/all');
+};
+
 // 字典项管理接口
 
 /**

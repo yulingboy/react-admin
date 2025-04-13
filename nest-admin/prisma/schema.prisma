@@ -80,3 +80,44 @@ model DictionaryItem {
   @@index([dictionaryId])
   @@unique([dictionaryId, code])
 }
+
+model CodeGenerator {
+  id          Int       @id @default(autoincrement())
+  name        String    // 代码生成名称
+  description String?   // 描述
+  tableName   String    // 表名称
+  moduleName  String    // 模块名称
+  businessName String   // 业务名称
+  packageName String    // 包名称
+  functionName String   // 功能名称
+  functionAuthor String // 功能作者
+  tablePrefix String?   // 表前缀
+  options     String?   // 选项，如是否生成API、是否生成表单等，JSON格式
+  remark      String?   // 备注
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  columns     CodeGeneratorColumn[] // 列信息
+}
+
+model CodeGeneratorColumn {
+  id              Int      @id @default(autoincrement())
+  generatorId     Int      // 关联的代码生成器ID
+  columnName      String   // 列名
+  columnComment   String?  // 列注释
+  columnType      String   // 列类型
+  tsType          String   // TypeScript类型
+  isPk            Boolean  @default(false) // 是否是主键
+  isIncrement     Boolean  @default(false) // 是否自增
+  isRequired      Boolean  @default(true)  // 是否必填
+  isInsert        Boolean  @default(true)  // 是否为插入字段
+  isEdit          Boolean  @default(true)  // 是否为编辑字段
+  isList          Boolean  @default(true)  // 是否为列表字段
+  isQuery         Boolean  @default(false) // 是否为查询字段
+  queryType       String?  // 查询方式（eq等于、like模糊）
+  htmlType        String?  // 显示类型（文本框、文本域、下拉框、复选框、单选框、日期控件）
+  dictType        String?  // 字典类型
+  sort            Int      @default(0)     // 排序
+  generator       CodeGenerator @relation(fields: [generatorId], references: [id], onDelete: Cascade)
+
+  @@index([generatorId])
+}

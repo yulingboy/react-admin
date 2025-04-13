@@ -1,0 +1,231 @@
+import React, { useEffect, useState } from 'react';
+import { Button, Card, Form, Input, Popconfirm, Space, Table, message } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, SyncOutlined } from '@ant-design/icons';
+import { <%= className %>, <%= className %>Query, list<%= className %>, delete<%= className %> } from '@/api/<%= helper.toKebabCase(className) %>';
+import <%= className %>Form from './components/<%= className %>Form';
+<% const hasDictColumns = columns.some(col => col.dictType); %>
+<% if (hasDictColumns) { %>import { useDictionary } from '@/hooks/useDictionary';<% } %>
+
+/**
+ * <%= modelName %>列表页面
+ * @author <%= generator.functionAuthor %>
+ * @date <%= new Date().toISOString().slice(0, 10) %>
+ */
+const <%= className %>List: React.FC = () => {
+  // 表单
+  const [form] = Form.useForm();
+  
+  // 表格数据
+  const [dataSource, setDataSource] = useState<<%=className %>[]>([]);
+  const [total, setTotal] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [current, setCurrent] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  
+  // 表单弹窗
+  const [formVisible, setFormVisible] = useState<boolean>(false);
+  const [formType, setFormType] = useState<'add' | 'edit'>('add');
+  const [currentRow, setCurrentRow] = useState<<%=className %> | undefined>(undefined);
+
+<% if (hasDictColumns) { %>
+  // 加载字典数据
+  const { dictionary, loading: dictLoading } = useDictionary([
+    <% 
+    const dictTypes = [...new Set(columns
+      .filter(col => col.dictType)
+      .map(col => `'${col.dictType}'`))]; 
+    %>
+    <%= dictTypes.join(', ') %>
+  ]);
+<% } %>
+  
+  // 加载表格数据
+  const loadData = async (params: <%= className %>Query = {}) => {
+    try {
+      setLoading(true);
+      const result = await list<%= className %>({
+        ...params,
+        page: current,
+        pageSize,
+      });
+      setDataSource(result.list);
+      setTotal(result.total);
+    } catch (error) {
+      message.error('加载数据失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 组件初始化
+  useEffect(() => {
+    loadData();
+  }, [current, pageSize]);
+
+  // 搜索
+  const handleSearch = () => {
+    const values = form.getFieldsValue();
+    setCurrent(1);
+    loadData(values);
+  };
+
+  // 重置
+  const handleReset = () => {
+    form.resetFields();
+    setCurrent(1);
+    loadData();
+  };
+
+  // 添加
+  const handleAdd = () => {
+    setFormType('add');
+    setCurrentRow(undefined);
+    setFormVisible(true);
+  };
+
+  // 编辑
+  const handleEdit = (record: <%= className %>) => {
+    setFormType('edit');
+    setCurrentRow(record);
+    setFormVisible(true);
+  };
+
+  // 删除
+  const handleDelete = async (id: number) => {
+    try {
+      await delete<%= className %>(id);
+      message.success('删除成功');
+      loadData();
+    } catch (error) {
+      message.error('删除失败');
+    }
+  };
+
+  // 表单提交成功
+  const handleFormSubmitSuccess = () => {
+    setFormVisible(false);
+    loadData();
+  };
+
+  // 表格列定义
+  const columns = [
+    <% columns.forEach((column, index) => { 
+      if (column.isList) { %>
+    { 
+      title: '<%= column.columnComment || column.columnName %>', 
+      dataIndex: '<%= column.columnName %>' 
+      <% if (column.dictType) { %>, 
+      render: (value: string) => { 
+        const item = dictionary['<%= column.dictType %>']?.find(item => item.value === value); 
+        return item ? <span style={{ color: item.color }}>{item.label}</span> : value; 
+      }
+      <% } %>
+    },
+    <% }}); %>
+    { 
+      title: '操作', 
+      key: 'action',
+      width: 180,
+      render: (_, record) => (
+        <Space>
+          <Button 
+            type="primary" 
+            icon={<EditOutlined />} 
+            size="small" 
+            onClick={() => handleEdit(record)}
+          >
+            编辑
+          </Button>
+          <Popconfirm
+            title="确定要删除这条记录吗?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button type="primary" danger icon={<DeleteOutlined />} size="small">
+              删除
+            </Button>
+          </Popconfirm>
+        </Space>
+      )
+    }
+  ];
+
+  return (
+    <div className="app-container">
+      <Card bordered={false}>
+        {/* 搜索区域 */}
+        <Form form={form} layout="inline" className="search-form">
+          <% columns.forEach(column => { 
+            if (column.isQuery) { %>
+            <Form.Item label="<%= column.columnComment || column.columnName %>" name="<%= column.columnName %>">
+              <% if (column.htmlType === 'input') { %>
+              <Input placeholder="请输入<%= column.columnComment || column.columnName %>" />
+              <% } else if (column.htmlType === 'select' && column.dictType) { %>
+              <Select
+                placeholder="请选择<%= column.columnComment || column.columnName %>"
+                allowClear
+                options={dictionary['<%= column.dictType %>']?.map(item => ({
+                  value: item.value,
+                  label: item.label
+                }))}
+              />
+              <% } %>
+            </Form.Item>
+          <% }}); %>
+          
+          <Form.Item>
+            <Space>
+              <Button type="primary" onClick={handleSearch} icon={<SearchOutlined />}>
+                搜索
+              </Button>
+              <Button onClick={handleReset} icon={<SyncOutlined />}>
+                重置
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+
+        {/* 表格工具栏 */}
+        <div style={{ marginBottom: 16 }}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+            新增
+          </Button>
+        </div>
+
+        {/* 表格 */}
+        <Table
+          rowKey="id"
+          columns={columns}
+          dataSource={dataSource}
+          pagination={{
+            current,
+            pageSize,
+            total,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => `共 ${total} 条记录`,
+            onChange: (page, pageSize) => {
+              setCurrent(page);
+              setPageSize(pageSize);
+            },
+          }}
+          loading={loading<% if (hasDictColumns) { %> || dictLoading<% } %>}
+        />
+      </Card>
+
+      {/* 表单弹窗 */}
+      {formVisible && (
+        <<%= className %>Form
+          visible={formVisible}
+          type={formType}
+          initialValues={currentRow}
+          onCancel={() => setFormVisible(false)}
+          onSuccess={handleFormSubmitSuccess}
+        />
+      )}
+    </div>
+  );
+};
+
+export default <%= className %>List;

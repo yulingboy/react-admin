@@ -3,6 +3,12 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "watchAssets": true
+    "watchAssets": true,
+    "assets": [
+      {
+        "include": "modules/code-generator/templates/**/*",
+        "outDir": "dist/src"
+      }
+    ]
   }
 }

@@ -175,6 +175,39 @@ export interface DictionarySelectProps {
   style?: React.CSSProperties;
 }
 
+/**
+ * 字典选择组件Props
+ */
+export interface DictionaryTypeSelectProps {
+  code?: string;
+  value?: string | string[];
+  placeholder?: string;
+  allowClear?: boolean;
+  disabled?: boolean;
+  mode?: 'multiple' | 'tags';
+  onChange?: (value: any, option: any) => void;
+  style?: React.CSSProperties;
+  [key: string]: any;
+}
+
+// 导出刷新函数
+export const refreshDictionaryCache = (code?: string) => {
+  if (code) {
+    // 清除特定字典的缓存
+    const dictCacheKey = `dict_${code}`;
+    if (MEMORY_CACHE[dictCacheKey]) {
+      delete MEMORY_CACHE[dictCacheKey];
+    }
+  } else {
+    // 清除所有字典缓存
+    Object.keys(MEMORY_CACHE).forEach(key => {
+      if (key.startsWith('dict_')) {
+        delete MEMORY_CACHE[key];
+      }
+    });
+  }
+};
+
 // 用于实现字典搜索的类型
 export interface DictionarySearchConfig {
   code: string;

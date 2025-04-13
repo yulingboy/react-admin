@@ -135,6 +135,22 @@ export class DictionariesController {
   }
 
   /**
+   * 获取所有可用的字典类型列表
+   * 用于前端下拉选择
+   * @returns 字典类型列表
+   */
+  @Get('all')
+  async getAllDictionaries() {
+    try {
+      const data = await this.dictionariesService.findAllDictionaries();
+      return Result.success(data);
+    } catch (error) {
+      this.logger.error(`获取所有字典类型失败: ${error.message}`, error.stack);
+      return Result.error(error.message);
+    }
+  }
+
+  /**
    * 获取字典项列表
    * @param dictionaryId - 字典ID
    * @returns 字典项列表

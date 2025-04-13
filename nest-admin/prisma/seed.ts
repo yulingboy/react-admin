@@ -175,6 +175,15 @@ async function main() {
         ]
       },
       {
+        code: 'sys_is_system',
+        name: '系统内置',
+        description: '是否为系统内置',
+        items: [
+          { code: '0', value: '0', label: '否', sort: 0 },
+          { code: '1', value: '1', label: '是', sort: 1 }
+        ]
+      },
+      {
         code: 'sys_job_status',
         name: '任务状态',
         description: '任务状态列表',
