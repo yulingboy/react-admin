@@ -22,7 +22,7 @@ import { BatchDeleteDto } from './dto/batch-delete.dto';
 @Controller('users')
 export class UsersController {
   private readonly logger = new Logger(UsersController.name);
-  
+
   constructor(private readonly usersService: UsersService) {}
 
   /**

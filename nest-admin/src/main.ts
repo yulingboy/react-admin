@@ -38,7 +38,8 @@ async function bootstrap() {
 
   // 启动应用
   await app.listen(3000);
-  const logger = app.get(AppLoggerService);
-  logger.log(`Application is running on: ${await app.getUrl()}`);
+
+  // 只在控制台输出，不写入日志文件
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();

@@ -44,6 +44,9 @@ service.interceptors.response.use(
       // 统一返回数据部分，不再根据withFullResponse区分
       return Promise.resolve(res.data);
     }
+    console.error('请求失败:', res.message || '未知错误');
+    console.log('请求失败的响应:', res);
+    console.log('showErrorMessage', showErrorMessage)
     
     // 处理业务错误，当code不等于200时，直接提示message信息
     if (showErrorMessage && res.message) {
@@ -63,6 +66,7 @@ service.interceptors.response.use(
     return Promise.reject(res);
   },
   error => {
+    console.error('响应错误:', error);
     const config = error.config as CustomRequestConfig;
     const showErrorMessage = config?.showErrorMessage !== false;
     

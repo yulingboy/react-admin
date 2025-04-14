@@ -36,5 +36,4 @@ export class CreateRoleDto {
   @IsOptional()
   @IsEnum(StatusEnum, { message: '状态值必须是有效的枚举值' })
   status?: string = StatusEnum.ENABLED;
-
 }

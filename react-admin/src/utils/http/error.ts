@@ -30,6 +30,7 @@ export const handleHttpError = (error: AxiosError, showMessage: boolean = true):
   
   if (error.response) {
     const status = error.response.status;
+    const errorMessage = error.response.data?.message || '未知错误';
     switch (status) {
       case ResponseCode.UNAUTHORIZED:
         redirectToLogin();
@@ -44,7 +45,7 @@ export const handleHttpError = (error: AxiosError, showMessage: boolean = true):
         message.error('服务器错误，请稍后重试');
         break;
       default:
-        message.error(`请求失败(${status})`);
+        message.error(errorMessage || `请求失败(${status})`);
     }
   } else if (error.request) {
     message.error('网络异常，请检查您的网络连接');

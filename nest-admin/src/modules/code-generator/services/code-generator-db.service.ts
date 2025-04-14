@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/shared/prisma/prisma.service';
 import { TableInfo, ColumnInfo } from '../interfaces/code-generator.interface';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CodeGeneratorDbService {
@@ -9,6 +8,8 @@ export class CodeGeneratorDbService {
 
   /**
    * 获取所有表信息
+   * 
+   * @returns 返回数据库中所有表的信息，排除系统表和Prisma表
    */
   async getAllTables(): Promise<TableInfo[]> {
     const result = await this.prisma.$queryRaw`
@@ -19,6 +20,8 @@ export class CodeGeneratorDbService {
         information_schema.tables
       WHERE
         table_schema = DATABASE()
+        AND table_name NOT LIKE '%sys%'
+        AND table_name NOT LIKE '%prisma%'
       ORDER BY
         table_name
     `;

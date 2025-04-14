@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './shared/prisma/prisma.module';
@@ -15,6 +15,7 @@ import { DictionariesModule } from './modules/dictionaries/dictionaries.module';
 import { CodeGeneratorModule } from './modules/code-generator/code-generator.module';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
+import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware';
 
 @Module({
   imports: [
@@ -44,4 +45,9 @@ import redisConfig from './config/redis.config';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // 将 HTTP 日志中间件应用到所有路由
+    consumer.apply(HttpLoggerMiddleware).forRoutes('*');
+  }
+}

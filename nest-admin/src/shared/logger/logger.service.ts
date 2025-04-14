@@ -20,7 +20,12 @@ export class AppLoggerService extends ConsoleLogger implements LoggerService {
   }
 
   // 将日志写入文件
-  private writeLog(level: string, message: string) {
+  private writeLog(level: string, message: string, context?: string) {
+    // 只记录 HTTP 请求日志，跳过系统启动日志
+    if (context !== 'HttpRequest') {
+      return;
+    }
+
     const date = new Date();
     const logFileName = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}.log`;
     const logFilePath = path.join(this.logDir, logFileName);
@@ -36,26 +41,26 @@ export class AppLoggerService extends ConsoleLogger implements LoggerService {
 
   log(message: string, context?: string) {
     super.log(message, context);
-    this.writeLog('INFO', `[${context || ''}] ${message}`);
+    this.writeLog('INFO', `[${context || ''}] ${message}`, context);
   }
 
   error(message: string, trace?: string, context?: string) {
     super.error(message, trace, context);
-    this.writeLog('ERROR', `[${context || ''}] ${message}${trace ? '\nStack: ' + trace : ''}`);
+    this.writeLog('ERROR', `[${context || ''}] ${message}${trace ? '\nStack: ' + trace : ''}`, context);
   }
 
   warn(message: string, context?: string) {
     super.warn(message, context);
-    this.writeLog('WARN', `[${context || ''}] ${message}`);
+    this.writeLog('WARN', `[${context || ''}] ${message}`, context);
   }
 
   debug(message: string, context?: string) {
     super.debug(message, context);
-    this.writeLog('DEBUG', `[${context || ''}] ${message}`);
+    this.writeLog('DEBUG', `[${context || ''}] ${message}`, context);
   }
 
   verbose(message: string, context?: string) {
     super.verbose(message, context);
-    this.writeLog('VERBOSE', `[${context || ''}] ${message}`);
+    this.writeLog('VERBOSE', `[${context || ''}] ${message}`, context);
   }
 }

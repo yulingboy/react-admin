@@ -20,7 +20,7 @@ export function tableNameToClassName(tableName: string, prefix?: string): string
  */
 export function dbTypeToTsType(dbType: string): string {
   dbType = dbType.toLowerCase();
-  
+
   if (dbType.includes('int') || dbType.includes('float') || dbType.includes('double') || dbType.includes('decimal') || dbType.includes('numeric')) {
     return 'number';
   } else if (dbType.includes('char') || dbType.includes('text') || dbType.includes('json') || dbType.includes('enum')) {
@@ -30,7 +30,7 @@ export function dbTypeToTsType(dbType: string): string {
   } else if (dbType.includes('boolean') || dbType.includes('bit')) {
     return 'boolean';
   } else {
-    return 'string';  // 默认为string
+    return 'string'; // 默认为string
   }
 }
 
@@ -40,7 +40,7 @@ export function dbTypeToTsType(dbType: string): string {
 export function dbTypeToHtmlType(dbType: string, columnName: string): string {
   dbType = dbType.toLowerCase();
   columnName = columnName.toLowerCase();
-  
+
   // 根据列名猜测类型
   if (columnName.includes('content') || columnName.includes('description') || columnName.includes('remark')) {
     return 'textarea';
@@ -55,7 +55,7 @@ export function dbTypeToHtmlType(dbType: string, columnName: string): string {
   } else if (dbType.includes('boolean') || dbType.includes('bit') || dbType.includes('tinyint(1)')) {
     return 'checkbox';
   } else {
-    return 'input';  // 默认为input
+    return 'input'; // 默认为input
   }
 }
 

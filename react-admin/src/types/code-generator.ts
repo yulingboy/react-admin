@@ -8,10 +8,6 @@ export interface CodeGenerator {
   tableName: string;
   moduleName: string;
   businessName: string;
-  packageName: string;
-  functionName: string;
-  functionAuthor: string;
-  tablePrefix?: string;
   options?: string;
   remark?: string;
   createdAt: string;

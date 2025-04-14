@@ -40,8 +40,6 @@ const CodeGeneratorFormModal: React.FC<CodeGeneratorFormModalProps> = ({
         form.resetFields();
         // 设置默认值
         form.setFieldsValue({
-          packageName: 'com.example',
-          functionAuthor: 'admin',
           options: {
             generateApi: true,
             generateCrud: true,
@@ -81,7 +79,6 @@ const CodeGeneratorFormModal: React.FC<CodeGeneratorFormModalProps> = ({
       form.setFieldsValue({
         moduleName,
         businessName,
-        functionName: selectedTable.tableComment || tableName,
       });
     }
   };
@@ -140,37 +137,6 @@ const CodeGeneratorFormModal: React.FC<CodeGeneratorFormModalProps> = ({
             rules={[{ required: true, message: '请输入业务名称' }]}
           >
             <Input placeholder="请输入业务名称" />
-          </Form.Item>
-
-          <Form.Item
-            label="包名称"
-            name="packageName"
-            rules={[{ required: true, message: '请输入包名称' }]}
-          >
-            <Input placeholder="请输入包名称" />
-          </Form.Item>
-
-          <Form.Item
-            label="功能名称"
-            name="functionName"
-            rules={[{ required: true, message: '请输入功能名称' }]}
-          >
-            <Input placeholder="请输入功能名称" />
-          </Form.Item>
-
-          <Form.Item
-            label="功能作者"
-            name="functionAuthor"
-            rules={[{ required: true, message: '请输入功能作者' }]}
-          >
-            <Input placeholder="请输入功能作者" />
-          </Form.Item>
-
-          <Form.Item
-            label="表前缀"
-            name="tablePrefix"
-          >
-            <Input placeholder="请输入表前缀（可选）" />
           </Form.Item>
 
           <Form.Item

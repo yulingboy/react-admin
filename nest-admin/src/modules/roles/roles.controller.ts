@@ -6,7 +6,6 @@ import { QueryRoleDto } from './dto/query-role.dto';
 import Result from 'src/common/utils/result';
 import { BatchDeleteDto } from './dto/batch-delete.dto';
 
-
 /**
  * 角色管理控制器
  * 提供角色的增删改查接口
@@ -23,13 +22,13 @@ import { BatchDeleteDto } from './dto/batch-delete.dto';
 @Controller('roles')
 export class RolesController {
   private readonly logger = new Logger(RolesController.name);
-  
+
   constructor(private readonly rolesService: RolesService) {}
 
   /**
    * 添加角色
    * @param createRoleDto - 创建角色数据传输对象
-   * @returns 
+   * @returns
    */
   @Post('add')
   async add(@Body() createRoleDto: CreateRoleDto) {
@@ -40,7 +39,7 @@ export class RolesController {
   /**
    * 获取角色列表
    * @param query - 查询参数
-   * @returns 
+   * @returns
    */
   @Get('list')
   async getList(@Query() query: QueryRoleDto) {
@@ -50,7 +49,7 @@ export class RolesController {
   /**
    * 获取角色详情
    * @param id - 角色ID
-   * @returns 
+   * @returns
    */
   @Get('detail')
   async getDetail(@Query('id', ParseIntPipe) id: number) {
@@ -61,7 +60,7 @@ export class RolesController {
   /**
    * 更新角色
    * @param updateRoleDto - 更新角色数据传输对象
-   * @returns 
+   * @returns
    */
   @Put('update')
   async update(@Body() updateRoleDto: UpdateRoleDto) {
@@ -72,7 +71,7 @@ export class RolesController {
   /**
    * 删除角色
    * @param id - 角色ID
-   * @returns 
+   * @returns
    */
   @Delete('delete')
   async delete(@Query('id', ParseIntPipe) id: number) {
@@ -88,7 +87,7 @@ export class RolesController {
   /**
    * 批量删除角色
    * @param params - 批量删除参数
-   * @returns 
+   * @returns
    */
   @Delete('deleteBatch')
   async deleteBatch(@Body() params: BatchDeleteDto) {
@@ -102,7 +101,7 @@ export class RolesController {
   }
   /**
    * 获取所有角色 用于下拉选择
-   * @returns 
+   * @returns
    */
   @Get('options')
   async getOptions() {

@@ -107,23 +107,23 @@ export class UsersService {
 
     // 构建查询条件
     const where: any = {};
-    
+
     if (username) {
       where.username = {
         contains: username,
       };
     }
-    
+
     if (email) {
       where.email = {
         contains: email,
       };
     }
-    
+
     if (status !== undefined) {
       where.status = String(status); // 确保 status 是字符串类型
     }
-    
+
     if (roleId) {
       where.roleId = roleId;
     }
@@ -158,7 +158,7 @@ export class UsersService {
     ]);
 
     // 扁平化用户数据
-    const data = users.map(user => ({
+    const data = users.map((user) => ({
       id: user.id,
       username: user.username,
       email: user.email,
@@ -179,7 +179,7 @@ export class UsersService {
         pageSize: pageSize,
         total,
         totalPages: Math.ceil(total / pageSize),
-      }
+      },
     };
   }
 
@@ -247,7 +247,7 @@ export class UsersService {
     // 如果更新用户名或邮箱，检查是否与其他用户冲突
     if (updateUserDto.username && updateUserDto.username !== user.username) {
       const existingUser = await this.prisma.user.findUnique({
-        where: { username: updateUserDto.username }
+        where: { username: updateUserDto.username },
       });
       if (existingUser && existingUser.id !== id) {
         throw new ConflictException(`用户名 '${updateUserDto.username}' 已存在`);
@@ -256,7 +256,7 @@ export class UsersService {
 
     if (updateUserDto.email && updateUserDto.email !== user.email) {
       const existingUser = await this.prisma.user.findUnique({
-        where: { email: updateUserDto.email }
+        where: { email: updateUserDto.email },
       });
       if (existingUser && existingUser.id !== id) {
         throw new ConflictException(`邮箱 '${updateUserDto.email}' 已存在`);
@@ -342,7 +342,7 @@ export class UsersService {
     });
 
     if (systemUsers.length > 0) {
-      const systemUserNames = systemUsers.map(user => user.username).join(', ');
+      const systemUserNames = systemUsers.map((user) => user.username).join(', ');
       throw new ForbiddenException(`系统用户不允许删除: ${systemUserNames}`);
     }
 

@@ -20,7 +20,7 @@ import { Dictionary, DictionaryItem } from '@prisma/client';
 @Controller('dictionaries')
 export class DictionariesController {
   private readonly logger = new Logger(DictionariesController.name);
-  
+
   constructor(private readonly dictionariesService: DictionariesService) {}
 
   /**
@@ -206,10 +206,7 @@ export class DictionariesController {
   @Put('item/update')
   async updateItem(@Body() updateDictionaryItemDto: UpdateDictionaryItemDto) {
     try {
-      const data = await this.dictionariesService.updateItem(
-        updateDictionaryItemDto.id,
-        updateDictionaryItemDto
-      );
+      const data = await this.dictionariesService.updateItem(updateDictionaryItemDto.id, updateDictionaryItemDto);
       return Result.success(data);
     } catch (error) {
       this.logger.error(`更新字典项失败: ${error.message}`, error.stack);

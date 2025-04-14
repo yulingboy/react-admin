@@ -67,17 +67,14 @@ export class ConfigsService {
         where,
         skip,
         take: pageSize,
-        orderBy: [
-          { sort: 'asc' },
-          { createdAt: 'desc' },
-        ],
+        orderBy: [{ sort: 'asc' }, { createdAt: 'desc' }],
       }),
       this.prisma.config.count({ where }),
     ]);
 
     return {
       rows: data,
-      total
+      total,
     };
   }
 

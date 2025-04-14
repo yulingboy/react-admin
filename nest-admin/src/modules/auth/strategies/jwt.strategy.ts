@@ -17,7 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any) {
     this.logger.log(`验证 JWT payload: ${JSON.stringify(payload)}`);
-    if(!payload || !payload.sub) {
+    if (!payload || !payload.sub) {
       this.logger.warn('身份验证失败: JWT payload 无效');
       throw new UnauthorizedException('身份验证失败');
     }

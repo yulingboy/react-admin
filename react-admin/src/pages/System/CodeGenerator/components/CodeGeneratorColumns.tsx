@@ -50,18 +50,6 @@ export const getCodeGeneratorColumns = (props: {
       width: 120,
     },
     {
-      title: '功能名称',
-      dataIndex: 'functionName',
-      ellipsis: true,
-      width: 120,
-    },
-    {
-      title: '功能作者',
-      dataIndex: 'functionAuthor',
-      ellipsis: true,
-      width: 120,
-    },
-    {
       title: '备注',
       dataIndex: 'remark',
       ellipsis: true,

@@ -51,19 +51,19 @@ export class DictionariesService {
 
     // 构建查询条件
     const where: any = {};
-    
+
     if (code) {
       where.code = {
         contains: code,
       };
     }
-    
+
     if (name) {
       where.name = {
         contains: name,
       };
     }
-    
+
     if (status !== undefined) {
       where.status = status;
     }
@@ -74,10 +74,7 @@ export class DictionariesService {
         where,
         skip,
         take: pageSize,
-        orderBy: [
-          { sort: 'asc' },
-          { createdAt: 'desc' },
-        ],
+        orderBy: [{ sort: 'asc' }, { createdAt: 'desc' }],
         include: {
           _count: {
             select: { items: true },
@@ -88,7 +85,7 @@ export class DictionariesService {
     ]);
 
     // 格式化结果
-    const formattedData = data.map(dict => ({
+    const formattedData = data.map((dict) => ({
       ...dict,
       itemCount: dict._count.items,
       _count: undefined,
@@ -101,7 +98,7 @@ export class DictionariesService {
         pageSize: pageSize,
         total,
         totalPages: Math.ceil(total / pageSize),
-      }
+      },
     };
   }
 
@@ -249,10 +246,7 @@ export class DictionariesService {
     // 查询字典项列表
     return this.prisma.dictionaryItem.findMany({
       where: { dictionaryId },
-      orderBy: [
-        { sort: 'asc' },
-        { createdAt: 'asc' },
-      ],
+      orderBy: [{ sort: 'asc' }, { createdAt: 'asc' }],
     });
   }
 
@@ -273,14 +267,11 @@ export class DictionariesService {
 
     // 查询字典项列表
     return this.prisma.dictionaryItem.findMany({
-      where: { 
+      where: {
         dictionaryId: dictionary.id,
-        status: StatusEnum.ENABLED // 只返回启用状态的字典项
+        status: StatusEnum.ENABLED, // 只返回启用状态的字典项
       },
-      orderBy: [
-        { sort: 'asc' },
-        { createdAt: 'asc' },
-      ],
+      orderBy: [{ sort: 'asc' }, { createdAt: 'asc' }],
     });
   }
 
@@ -303,9 +294,9 @@ export class DictionariesService {
 
     // 检查字典项编码在同一字典下是否已存在
     const existItem = await this.prisma.dictionaryItem.findFirst({
-      where: { 
+      where: {
         dictionaryId: createDictionaryItemDto.dictionaryId,
-        code: createDictionaryItemDto.code
+        code: createDictionaryItemDto.code,
       },
     });
 
@@ -339,9 +330,9 @@ export class DictionariesService {
     // 如果更新code，需要检查code是否已存在
     if (updateDictionaryItemDto.code && updateDictionaryItemDto.code !== item.code) {
       const existItem = await this.prisma.dictionaryItem.findFirst({
-        where: { 
+        where: {
           dictionaryId: item.dictionaryId,
-          code: updateDictionaryItemDto.code
+          code: updateDictionaryItemDto.code,
         },
       });
 
@@ -399,10 +390,7 @@ export class DictionariesService {
     // 只返回启用状态的字典
     return this.prisma.dictionary.findMany({
       where: { status: StatusEnum.ENABLED },
-      orderBy: [
-        { sort: 'asc' },
-        { name: 'asc' },
-      ],
+      orderBy: [{ sort: 'asc' }, { name: 'asc' }],
       select: {
         id: true,
         name: true,

@@ -7,7 +7,7 @@ import { StatusEnum, IsSystemEnum } from 'src/common/enums/common.enum';
 
 @Injectable()
 export class RolesService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   /**
    * 创建角色
@@ -148,17 +148,17 @@ export class RolesService {
     if (!role) {
       throw new NotFoundException(`角色不存在`);
     }
-    
+
     // 校验是否是系统角色
     if (role.isSystem === IsSystemEnum.YES) {
       throw new ForbiddenException(`系统角色无法删除`);
     }
-    
+
     // 检查角色是否被使用
     const users = await this.prisma.user.findMany({
       where: { roleId: id },
     });
-    
+
     if (users.length > 0) {
       throw new ForbiddenException(`该角色已被使用，无法删除`);
     }
@@ -179,13 +179,13 @@ export class RolesService {
     const roles = await this.prisma.role.findMany({
       where: { id: { in: ids } },
     });
-    
+
     if (roles.length !== ids.length) {
       throw new NotFoundException(`部分角色不存在`);
     }
 
     // 检查是否包含系统角色
-    const systemRoles = roles.filter(role => role.isSystem === IsSystemEnum.YES);
+    const systemRoles = roles.filter((role) => role.isSystem === IsSystemEnum.YES);
     if (systemRoles.length > 0) {
       throw new ForbiddenException(`系统角色不允许删除`);
     }
