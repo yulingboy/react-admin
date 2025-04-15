@@ -1,0 +1,237 @@
+import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { PrismaService } from '../../../shared/prisma/prisma.service';
+import { Create{{className}}Dto, Update{{className}}Dto, Query{{className}}Dto } from '../dto/{{kebabName}}.dto';
+import { StatusEnum, IsSystemEnum } from 'src/common/enums/common.enum';
+
+/**
+ * {{generator.businessName}}管理服务类
+ * 提供{{generator.businessName}}的增删改查业务逻辑和数据校验
+ * @class {{className}}Service
+ * @constructor
+ * @param {PrismaService} prisma - Prisma服务
+ */
+@Injectable()
+export class {{className}}Service {
+  constructor(private prisma: PrismaService) {}
+
+  /**
+   * 创建{{generator.businessName}}
+   * @param create{{className}}Dto 创建参数
+   * @returns 创建的{{generator.businessName}}对象
+   */
+  async create(create{{className}}Dto: Create{{className}}Dto) {
+    {{#each columns}}
+    {{#if unique}}
+    // 检查{{name}}是否存在
+    const exist{{toPascalCase name}} = await this.prisma.{{toLowerFirstCase ../className}}.findUnique({
+      where: { {{name}}: create{{className}}Dto.{{name}} },
+    });
+
+    if (exist{{toPascalCase name}}) {
+      throw new ConflictException(`{{comment}} ${create{{className}}Dto.{{name}}} 已存在`);
+    }
+
+    {{/if}}
+    {{/each}}
+    // 创建记录
+    const data = await this.prisma.{{toLowerFirstCase className}}.create({
+      data: {
+        ...create{{className}}Dto,
+        isSystem: IsSystemEnum.NO, // 设置为非系统数据
+      },
+    });
+
+    return data;
+  }
+
+  /**
+   * 分页查询{{generator.businessName}}列表
+   * @param query{{className}}Dto 查询参数
+   * @returns 分页的{{generator.businessName}}列表
+   */
+  async findAll(query{{className}}Dto: Query{{className}}Dto) {
+    const { current = 1, pageSize = 10, {{#each columns}}{{name}}, {{/each}}status } = query{{className}}Dto;
+    const skip = (current - 1) * pageSize;
+
+    // 构建查询条件
+    const where: any = {};
+
+    {{#each columns}}
+    if ({{name}}) {
+      where.{{name}} = {
+        contains: {{name}},
+      };
+    }
+
+    {{/each}}
+    if (status !== undefined) {
+      where.status = status;
+    }
+
+    // 执行查询
+    const [items, total] = await Promise.all([
+      this.prisma.{{toLowerFirstCase className}}.findMany({
+        where,
+        skip,
+        take: pageSize,
+        orderBy: { id: 'asc' },
+      }),
+      this.prisma.{{toLowerFirstCase className}}.count({ where }),
+    ]);
+
+    return {
+      items,
+      meta: {
+        page: current,
+        pageSize: pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    };
+  }
+
+  /**
+   * 根据ID查询{{generator.businessName}}
+   * @param id {{generator.businessName}}ID
+   * @returns {{generator.businessName}}详情
+   * @throws {NotFoundException} 当{{generator.businessName}}不存在时抛出异常
+   */
+  async findOne(id: number) {
+    const data = await this.prisma.{{toLowerFirstCase className}}.findUnique({
+      where: { id },
+    });
+
+    if (!data) {
+      throw new NotFoundException(`ID为${id}的{{generator.businessName}}不存在`);
+    }
+
+    return data;
+  }
+
+  /**
+   * 更新{{generator.businessName}}
+   * @param id {{generator.businessName}}ID
+   * @param update{{className}}Dto 更新参数
+   * @returns 更新后的{{generator.businessName}}
+   * @throws {NotFoundException} 当{{generator.businessName}}不存在时抛出异常
+   */
+  async update(id: number, update{{className}}Dto: Update{{className}}Dto) {
+    // 检查记录是否存在
+    const existingItem = await this.prisma.{{toLowerFirstCase className}}.findUnique({
+      where: { id },
+    });
+
+    if (!existingItem) {
+      throw new NotFoundException(`ID为${id}的{{generator.businessName}}不存在`);
+    }
+
+    // 如果是系统内置数据，禁止修改某些关键字段
+    if (existingItem.isSystem === IsSystemEnum.YES) {
+      {{#each columns}}
+      {{#if isSystem}}
+      delete update{{../className}}Dto.{{name}};
+      {{/if}}
+      {{/each}}
+    }
+
+    {{#each columns}}
+    {{#if unique}}
+    // 检查是否存在重复的{{name}}（排除自身）
+    if (update{{../className}}Dto.{{name}} && update{{../className}}Dto.{{name}} !== existingItem.{{name}}) {
+      const duplicate = await this.prisma.{{toLowerFirstCase ../className}}.findFirst({
+        where: {
+          {{name}}: update{{../className}}Dto.{{name}},
+          id: { not: id },
+        },
+      });
+
+      if (duplicate) {
+        throw new ConflictException(`{{comment}} ${update{{../className}}Dto.{{name}}} 已存在`);
+      }
+    }
+
+    {{/if}}
+    {{/each}}
+    // 更新数据
+    return this.prisma.{{toLowerFirstCase className}}.update({
+      where: { id },
+      data: update{{className}}Dto,
+    });
+  }
+
+  /**
+   * 删除{{generator.businessName}}
+   * @param id {{generator.businessName}}ID
+   * @returns 删除结果
+   * @throws {NotFoundException} 当{{generator.businessName}}不存在时抛出异常
+   * @throws {ForbiddenException} 当尝试删除系统内置数据时抛出异常
+   */
+  async remove(id: number) {
+    // 检查记录是否存在
+    const item = await this.prisma.{{toLowerFirstCase className}}.findUnique({
+      where: { id },
+    });
+
+    if (!item) {
+      throw new NotFoundException(`ID为${id}的{{generator.businessName}}不存在`);
+    }
+
+    // 检查是否是系统内置数据
+    if (item.isSystem === IsSystemEnum.YES) {
+      throw new ForbiddenException(`系统内置数据不允许删除`);
+    }
+
+    // 物理删除
+    return this.prisma.{{toLowerFirstCase className}}.delete({
+      where: { id },
+    });
+  }
+
+  /**
+   * 批量删除{{generator.businessName}}
+   * @param ids {{generator.businessName}}ID数组
+   * @returns 删除结果
+   * @throws {NotFoundException} 当存在记录不存在时抛出异常
+   * @throws {ForbiddenException} 当尝试删除系统内置数据时抛出异常
+   */
+  async batchRemove(ids: number[]) {
+    // 检查记录是否都存在
+    const items = await this.prisma.{{toLowerFirstCase className}}.findMany({
+      where: { id: { in: ids } },
+    });
+
+    if (items.length !== ids.length) {
+      throw new NotFoundException(`部分记录不存在`);
+    }
+
+    // 检查是否包含系统内置数据
+    const systemItems = items.filter((item) => item.isSystem === IsSystemEnum.YES);
+    if (systemItems.length > 0) {
+      throw new ForbiddenException(`系统内置数据不允许删除`);
+    }
+
+    // 批量删除
+    return this.prisma.{{toLowerFirstCase className}}.deleteMany({
+      where: { id: { in: ids } },
+    });
+  }
+
+  /**
+   * 获取所有{{generator.businessName}}（不分页，用于下拉选择）
+   * @returns 所有{{generator.businessName}}列表
+   */
+  async findAllOptions() {
+    return await this.prisma.{{toLowerFirstCase className}}.findMany({
+      where: { status: StatusEnum.ENABLED },
+      select: {
+        id: true,
+        {{#each columns}}
+        {{#if isLabel}}
+        {{name}}: true,
+        {{/if}}
+        {{/each}}
+      },
+      orderBy: { id: 'asc' },
+    });
+  }
+}

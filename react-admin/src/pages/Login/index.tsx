@@ -32,7 +32,7 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const { data: { token, user } } = await login({
+      const {token, user } = await login({
         username: values.username,
         password: values.password,
       });

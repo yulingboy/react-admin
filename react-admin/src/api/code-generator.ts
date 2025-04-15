@@ -120,3 +120,11 @@ export function generateCode(id: number) {
     responseType: 'blob'
   });
 }
+
+/**
+ * 执行SQL语句
+ * @param sql SQL语句
+ */
+export function executeSql(sql: string) {
+  return http.post<any>('/api/code-generator/execute-sql', { sql });
+}

@@ -1,0 +1,47 @@
+// {{generator.businessName}}实体类型
+export interface {{className}} {
+  id: number;
+  {{#each columns}}
+  {{name}}{{#unless isRequired}}?{{/unless}}: string;
+  {{/each}}
+  status: string; // 状态：0-禁用，1-启用
+  isSystem: string; // 是否为系统内置：0-否，1-是
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// {{generator.businessName}}表单数据类型
+export interface {{className}}FormData {
+  id?: number;
+  {{#each columns}}
+  {{name}}{{#unless isRequired}}?{{/unless}}: string;
+  {{/each}}
+  status?: string;
+}
+
+// {{generator.businessName}}列表查询参数
+export interface {{className}}ListParams {
+  {{#each columns}}
+  {{name}}?: string;
+  {{/each}}
+  status?: string;
+  current: number;
+  pageSize: number;
+}
+
+// {{generator.businessName}}列表响应结果
+export interface {{className}}ListResult {
+  items: {{className}}[];
+  meta: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// {{generator.businessName}}选项类型
+export interface {{className}}Option {
+  value: number;
+  label: string;
+}

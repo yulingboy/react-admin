@@ -1,0 +1,37 @@
+import request from '@/utils/http';
+import { {{className}}, {{className}}ListParams, {{className}}FormData, {{className}}ListResult } from '@/types/{{kebabName}}';
+
+// 分页获取{{generator.businessName}}列表
+export const get{{className}}List = (params: {{className}}ListParams) => {
+  return request.get<{{className}}ListResult>('/api/{{kebabName}}/list', { params });
+};
+
+// 获取{{generator.businessName}}详情
+export const get{{className}}Detail = (id: number) => {
+  return request.get<{{className}}>('/api/{{kebabName}}/detail', { params: { id } });
+};
+
+// 获取所有{{generator.businessName}}选项
+export const get{{className}}Options = () => {
+  return request.get<Array<{ id: number, {{#each columns}}{{#if isLabel}}{{name}}: string,{{/if}}{{/each}} }>>('/api/{{kebabName}}/options');
+};
+
+// 创建{{generator.businessName}}
+export const create{{className}} = (data: {{className}}FormData) => {
+  return request.post<{{className}}>('/api/{{kebabName}}/add', data);
+};
+
+// 更新{{generator.businessName}}
+export const update{{className}} = (data: {{className}}FormData) => {
+  return request.put<{{className}}>('/api/{{kebabName}}/update', data);
+};
+
+// 删除{{generator.businessName}}
+export const delete{{className}} = (id: number) => {
+  return request.delete<boolean>('/api/{{kebabName}}/delete', { params: { id } });
+};
+
+// 批量删除{{generator.businessName}}
+export const batchDelete{{className}}s = (ids: number[]) => {
+  return request.delete<boolean>('/api/{{kebabName}}/deleteBatch', { data: { ids } });
+};

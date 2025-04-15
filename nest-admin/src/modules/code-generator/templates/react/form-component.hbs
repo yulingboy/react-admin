@@ -1,0 +1,101 @@
+import React, { useEffect } from 'react';
+import { Modal, Form, Input, Radio, message } from 'antd';
+import type { FormInstance } from 'antd/es/form';
+import { create{{className}}, update{{className}} } from '@/api/{{kebabName}}';
+import { {{className}}FormData } from '@/types/{{kebabName}}';
+
+interface {{className}}FormModalProps {
+  visible: boolean;
+  onCancel: () => void;
+  onSuccess: () => void;
+  initialValues?: {{className}}FormData;
+  isEdit: boolean;
+}
+
+const {{className}}FormModal: React.FC<{{className}}FormModalProps> = ({
+  visible,
+  onCancel,
+  onSuccess,
+  initialValues,
+  isEdit,
+}) => {
+  const [form] = Form.useForm();
+  const title = isEdit ? '编辑{{generator.businessName}}' : '新增{{generator.businessName}}';
+  
+  useEffect(() => {
+    if (visible && initialValues) {
+      form.setFieldsValue(initialValues);
+    }
+    return () => {
+      form.resetFields();
+    };
+  }, [form, initialValues, visible]);
+
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      
+      if (isEdit && initialValues?.id) {
+        await update{{className}}({
+          ...values,
+          id: initialValues.id
+        });
+        message.success('{{generator.businessName}}更新成功');
+      } else {
+        await create{{className}}(values);
+        message.success('{{generator.businessName}}创建成功');
+      }
+      
+      onSuccess();
+    } catch (error) {
+      console.error('提交表单失败', error);
+    }
+  };
+
+  return (
+    <Modal
+      title={title}
+      open={visible}
+      onCancel={onCancel}
+      onOk={handleSubmit}
+      maskClosable={false}
+      destroyOnClose
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ status: '1' }}
+      >
+        {{#each columns}}
+        <Form.Item
+          label="{{comment}}"
+          name="{{name}}"
+          rules={[
+            {{#if isRequired}}
+            { required: true, message: '请输入{{comment}}' },
+            {{/if}}
+            {{#if maxLength}}
+            { max: {{maxLength}}, message: '{{comment}}不能超过{{maxLength}}个字符' },
+            {{/if}}
+          ]}
+        >
+          <Input placeholder="请输入{{comment}}" maxLength={{maxLength}} />
+        </Form.Item>
+        {{/each}}
+
+        <Form.Item
+          label="状态"
+          name="status"
+          rules={[{ required: true, message: '请选择状态' }]}
+        >
+          <Radio.Group>
+            <Radio value="1">启用</Radio>
+            <Radio value="0">禁用</Radio>
+          </Radio.Group>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
+
+export default {{className}}FormModal;

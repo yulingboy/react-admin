@@ -13,6 +13,9 @@ import { NotFoundExceptionFilter } from './common/filters/not-found.filter';
 import { ConfigModule } from '@nestjs/config';
 import { DictionariesModule } from './modules/dictionaries/dictionaries.module';
 import { CodeGeneratorModule } from './modules/code-generator/code-generator.module';
+import { SqlExecutorModule } from './modules/sql-executor/sql-executor.module';
+import { ApiTesterModule } from './modules/api-tester/api-tester.module';
+import { DbManagerModule } from './modules/db-manager/db-manager.module';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware';
@@ -31,6 +34,9 @@ import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware
     ConfigsModule,
     DictionariesModule,
     CodeGeneratorModule,
+    SqlExecutorModule,
+    ApiTesterModule,
+    DbManagerModule,
   ],
   controllers: [AppController],
   providers: [

@@ -21,7 +21,12 @@ model User {
   updatedAt DateTime? @updatedAt
   Role      Role     @relation(fields: [roleId], references: [id])
 
+  // 接口测试关联
+  apiTestHistories ApiTestHistory[]
+  apiTestTemplates ApiTestTemplate[]
+
   @@index([roleId])
+  @@map("users")
 }
 
 model Role {
@@ -116,4 +121,58 @@ model CodeGeneratorColumn {
   generator       CodeGenerator @relation(fields: [generatorId], references: [id], onDelete: Cascade)
 
   @@index([generatorId])
+}
+
+// 接口测试历史记录
+model ApiTestHistory {
+  id        Int      @id @default(autoincrement())
+  name      String?  @db.VarChar(100)
+  url       String   @db.VarChar(500)
+  method    String   @db.VarChar(10)
+  request   Json     // 请求详情，包含头、参数、请求体等
+  response  Json?    // 响应详情
+  createdAt DateTime @default(now()) @map("created_at")
+  userId    Int?     @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("api_test_history")
+}
+
+// 接口测试模板
+model ApiTestTemplate {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  url         String   @db.VarChar(500)
+  method      String   @db.VarChar(10)
+  headers     Json     // 请求头
+  params      Json?    // URL参数
+  body        Json?    // 请求体
+  contentType String   @map("content_type") @db.VarChar(100)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  userId      Int?     @map("user_id")
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("api_test_template")
+}
+
+// 数据库连接配置
+model DatabaseConnection {
+  id        Int       @id @default(autoincrement())
+  name      String    // 连接名称
+  type      String    // 数据库类型: mysql, postgres, mssql, mariadb, sqlite
+  host      String?   // 主机地址
+  port      Int?      // 端口
+  username  String?   // 用户名
+  password  String?   // 密码
+  database  String    // 数据库名
+  filename  String?   // SQLite文件路径
+  ssl       Boolean   @default(false) // 是否启用SSL
+  status    String    @default("1")   // 1-启用 0-禁用
+  isSystem  String    @default("0")   // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@map("database_connections")
 }

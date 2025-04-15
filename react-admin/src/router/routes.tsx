@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { HomeOutlined, DashboardOutlined, SettingOutlined, TableOutlined, FormOutlined } from '@ant-design/icons';
+import { HomeOutlined, DashboardOutlined, SettingOutlined, TableOutlined, FormOutlined, CodeOutlined, DatabaseOutlined, ApiOutlined } from '@ant-design/icons';
 import { lazyLoadHelper } from '@/utils/lazyLoadHelper';
 import AuthRoute from '@/components/AuthRoute';
 import { AppRouteObject } from './types';
@@ -11,7 +11,10 @@ const Dashboard = lazyLoadHelper(() => import('@/pages/Dashboard'));
 const UserManage = lazyLoadHelper(() => import('@/pages/System/UserManage'));
 const RoleManage = lazyLoadHelper(() => import('@/pages/System/RoleManage'));
 const DictionaryManage = lazyLoadHelper(() => import('@/pages/System/DictionaryManage'));
-const CodeGenerator = lazyLoadHelper(() => import('@/pages/System/CodeGenerator'));
+const CodeGenerator = lazyLoadHelper(() => import('@/pages/Tools/CodeGenerator'));
+const SqlExecutor = lazyLoadHelper(() => import('@/pages/Tools/SqlExecutor'));
+const ApiTester = lazyLoadHelper(() => import('@/pages/Tools/ApiTester'));
+const DbManager = lazyLoadHelper(() => import('@/pages/Tools/DbManager'));
 const BasicForm = lazyLoadHelper(() => import('@/pages/Form/BasicForm'));
 const AdvancedForm = lazyLoadHelper(() => import('@/pages/Form/AdvancedForm'));
 const BasicTable = lazyLoadHelper(() => import('@/pages/Table/BasicTable'));
@@ -74,11 +77,42 @@ export const routes: AppRouteObject[] = [
               title: '字典管理'
             }
           },
+          
+        ]
+      },
+      {
+        path: 'tools',
+        meta: {
+          title: '系统工具',
+          icon: <CodeOutlined />
+        },
+        children: [
+          {
+            path: 'api-tester',
+            element: <ApiTester />,
+            meta: {
+              title: '接口测试',
+            }
+          },
           {
             path: 'code-generator',
             element: <CodeGenerator />,
             meta: {
               title: '代码生成器'
+            }
+          },
+          {
+            path: 'sql-executor',
+            element: <SqlExecutor />,
+            meta: {
+              title: 'SQL执行器',
+            }
+          },
+          {
+            path: 'db-manager',
+            element: <DbManager />,
+            meta: {
+              title: '数据库管理',
             }
           }
         ]

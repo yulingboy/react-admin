@@ -1,0 +1,75 @@
+import React from 'react';
+import { Button } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { ProTable } from '@ant-design/pro-components';
+import { {{className}}, {{className}}ListParams } from '@/types/{{kebabName}}';
+import { use{{className}}Manage } from './hooks/use{{className}}';
+import { get{{className}}Columns } from './components/{{className}}Columns';
+import {{className}}FormModal from './components/{{className}}Form';
+
+const {{className}}Manage: React.FC = () => {
+  const {
+    formModalVisible,
+    setFormModalVisible,
+    current{{className}},
+    isEdit,
+    tableRef,
+    handleAdd{{className}},
+    handleEdit{{className}},
+    handleDelete{{className}},
+    handleFormSuccess,
+    load{{className}}List
+  } = use{{className}}Manage();
+
+  // 获取表格列配置
+  const columns = get{{className}}Columns({
+    handleEdit{{className}},
+    handleDelete{{className}}
+  });
+
+  return (
+    <div>
+      <ProTable<{{className}}, {{className}}ListParams>
+        headerTitle="{{generator.businessName}}列表"
+        actionRef={tableRef}
+        rowKey="id"
+        search={{
+          labelWidth: 'auto',
+        }}
+        cardBordered
+        toolBarRender={() => [
+          <Button 
+            key="add" 
+            type="primary" 
+            icon={<PlusOutlined />}
+            onClick={handleAdd{{className}}}
+          >
+            新增{{generator.businessName}}
+          </Button>,
+        ]}
+        request={load{{className}}List}
+        pagination={{
+          showSizeChanger: true,
+          defaultPageSize: 10,
+        }}
+        columns={columns}
+      />
+      
+      <{{className}}FormModal
+        visible={formModalVisible}
+        onCancel={() => setFormModalVisible(false)}
+        onSuccess={handleFormSuccess}
+        initialValues={current{{className}} ? {
+          id: current{{className}}.id,
+          {{#each columns}}
+          {{name}}: current{{className}}.{{name}},
+          {{/each}}
+          status: current{{className}}.status,
+        } : undefined}
+        isEdit={isEdit}
+      />
+    </div>
+  );
+};
+
+export default {{className}}Manage;

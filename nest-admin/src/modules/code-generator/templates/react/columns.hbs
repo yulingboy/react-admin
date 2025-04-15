@@ -1,0 +1,103 @@
+import React from 'react';
+import { Space, Tag, Button, Popconfirm } from 'antd';
+import type { ProColumns } from '@ant-design/pro-components';
+import { {{className}} } from '@/types/{{kebabName}}';
+import DictionaryTag from '@/components/Dictionary';
+
+interface {{className}}ColumnsProps {
+  handleEdit{{className}}: (record: {{className}}) => void;
+  handleDelete{{className}}: (id: number) => void;
+}
+
+export const get{{className}}Columns = ({
+  handleEdit{{className}},
+  handleDelete{{className}},
+}: {{className}}ColumnsProps): ProColumns<{{className}}>[] => [
+  {
+    title: 'ID',
+    dataIndex: 'id',
+    key: 'id',
+    width: 80,
+    align: 'center',
+  },
+  {{#each columns}}
+  {
+    title: '{{comment}}',
+    dataIndex: '{{name}}',
+    key: '{{name}}',
+    {{#if isSearch}}
+    // 设置为可搜索列
+    search: {
+      transform: (value) => value,
+    },
+    {{/if}}
+    width: 180,
+  },
+  {{/each}}
+  {
+    title: '状态',
+    dataIndex: 'status',
+    key: 'status',
+    width: 100,
+    align: 'center',
+    valueType: 'select',
+    valueEnum: {
+      '0': { text: '禁用', status: 'Error' },
+      '1': { text: '启用', status: 'Success' },
+    },
+    render: (_, record) => (
+      <DictionaryTag code="sys_common_status" value={record.status} />
+    ),
+  },
+  {
+    title: '系统内置',
+    dataIndex: 'isSystem',
+    key: 'isSystem',
+    width: 100,
+    align: 'center',
+    render: (_, record) => (
+      <DictionaryTag code="sys_is_system" value={record.isSystem} />
+    ),
+  },
+  {
+    title: '创建时间',
+    dataIndex: 'createdAt',
+    key: 'createdAt',
+    width: 180,
+    valueType: 'dateTime',
+  },
+  {
+    title: '操作',
+    key: 'action',
+    width: 180,
+    align: 'center',
+    render: (_, record) => (
+      <Space size="small">
+        <Button 
+          type="link" 
+          size="small" 
+          onClick={() => handleEdit{{className}}(record)}
+          disabled={record.isSystem === '1'}
+        >
+          编辑
+        </Button>
+        <Popconfirm
+          title="确定要删除此{{generator.businessName}}吗?"
+          onConfirm={() => handleDelete{{className}}(record.id)}
+          okText="确定"
+          cancelText="取消"
+          disabled={record.isSystem === '1'}
+        >
+          <Button 
+            type="link" 
+            size="small" 
+            danger 
+            disabled={record.isSystem === '1'}
+          >
+            删除
+          </Button>
+        </Popconfirm>
+      </Space>
+    ),
+  },
+];

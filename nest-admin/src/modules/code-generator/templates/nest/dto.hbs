@@ -1,0 +1,105 @@
+import { IsOptional, IsString, IsEnum, MinLength, MaxLength, IsNumber } from 'class-validator';
+import { StatusEnum } from 'src/common/enums/common.enum';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+
+/**
+ * 创建{{generator.businessName}}DTO
+ * 定义创建{{generator.businessName}}需要的参数
+ */
+export class Create{{className}}Dto {
+  {{#each columns}}
+  {{#if comment}}
+  /**
+   * {{comment}}
+   */
+  {{/if}}
+  {{#if isRequired}}
+  @IsString({ message: '{{comment}}必须是字符串' })
+  {{#if maxLength}}
+  @MaxLength({{maxLength}}, { message: '{{comment}}长度不能大于{{maxLength}}' })
+  {{/if}}
+  {{name}}: string;
+  {{else}}
+  @IsOptional()
+  @IsString({ message: '{{comment}}必须是字符串' })
+  {{#if maxLength}}
+  @MaxLength({{maxLength}}, { message: '{{comment}}长度不能大于{{maxLength}}' })
+  {{/if}}
+  {{name}}?: string;
+  {{/if}}
+
+  {{/each}}
+  /**
+   * 状态：0-禁用，1-启用
+   */
+  @IsOptional()
+  @IsEnum(StatusEnum, { message: '状态值必须是有效的枚举值' })
+  status?: string;
+}
+
+/**
+ * 更新{{generator.businessName}}DTO
+ * 定义更新{{generator.businessName}}需要的参数，所有字段都是可选的
+ */
+export class Update{{className}}Dto {
+  /**
+   * ID
+   */
+  @IsNumber({}, { message: 'ID必须是数字' })
+  id: number;
+  
+  {{#each columns}}
+  {{#if comment}}
+  /**
+   * {{comment}}
+   */
+  {{/if}}
+  @IsOptional()
+  @IsString({ message: '{{comment}}必须是字符串' })
+  {{#if maxLength}}
+  @MaxLength({{maxLength}}, { message: '{{comment}}长度不能大于{{maxLength}}' })
+  {{/if}}
+  {{name}}?: string;
+
+  {{/each}}
+  /**
+   * 状态：0-禁用，1-启用
+   */
+  @IsOptional()
+  @IsEnum(StatusEnum, { message: '状态值必须是有效的枚举值' })
+  status?: string;
+}
+
+/**
+ * 查询{{generator.businessName}}参数DTO
+ * 定义查询{{generator.businessName}}的参数
+ */
+export class Query{{className}}Dto extends PaginationDto {
+  {{#each columns}}
+  {{#if comment}}
+  /**
+   * {{comment}}
+   */
+  {{/if}}
+  @IsOptional()
+  @IsString()
+  {{name}}?: string;
+
+  {{/each}}
+  /**
+   * 状态：0-禁用，1-启用
+   */
+  @IsOptional()
+  @IsString()
+  status?: string;
+}
+
+/**
+ * 批量删除DTO
+ */
+export class BatchDelete{{className}}Dto {
+  /**
+   * ID列表
+   */
+  ids: number[];
+}

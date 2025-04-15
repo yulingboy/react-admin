@@ -30,7 +30,7 @@ export const handleHttpError = (error: AxiosError, showMessage: boolean = true):
   
   if (error.response) {
     const status = error.response.status;
-    const errorMessage = error.response.data?.message || '未知错误';
+    const errorMessage = (error.response.data as { message?: string })?.message || '未知错误';
     switch (status) {
       case ResponseCode.UNAUTHORIZED:
         redirectToLogin();

@@ -1,0 +1,135 @@
+import { Controller, Post, Body, ParseIntPipe, Get, Query, Put, Delete, Logger } from '@nestjs/common';
+import { {{className}}Service } from '../services/{{kebabName}}.service';
+import { Create{{className}}Dto, Update{{className}}Dto, Query{{className}}Dto, BatchDelete{{className}}Dto } from '../dto/{{kebabName}}.dto';
+import Result from 'src/common/utils/result';
+
+/**
+ * {{generator.businessName}}管理控制器
+ * 提供{{generator.businessName}}的增删改查接口
+ * @class {{className}}Controller
+ * @constructor
+ * @param {{{className}}Service} {{camelName}}Service - {{generator.businessName}}服务
+ * @method add - 添加{{generator.businessName}}
+ * @method getList - 获取{{generator.businessName}}列表
+ * @method getDetail - 获取{{generator.businessName}}详情
+ * @method update - 更新{{generator.businessName}}
+ * @method delete - 删除{{generator.businessName}}
+ * @method deleteBatch - 批量删除{{generator.businessName}}
+ */
+@Controller('{{kebabName}}')
+export class {{className}}Controller {
+  private readonly logger = new Logger({{className}}Controller.name);
+
+  constructor(private readonly {{camelName}}Service: {{className}}Service) {}
+
+  /**
+   * 添加{{generator.businessName}}
+   * @param create{{className}}Dto - 创建{{generator.businessName}}数据传输对象
+   * @returns 创建的{{generator.businessName}}对象
+   */
+  @Post('add')
+  async add(@Body() create{{className}}Dto: Create{{className}}Dto) {
+    try {
+      const data = await this.{{camelName}}Service.create(create{{className}}Dto);
+      return Result.success(data);
+    } catch (error) {
+      this.logger.error(`添加{{generator.businessName}}失败: ${error.message}`, error.stack);
+      return Result.error(error.message);
+    }
+  }
+
+  /**
+   * 获取{{generator.businessName}}列表（分页）
+   * @param query - 查询参数
+   * @returns 分页的{{generator.businessName}}列表
+   */
+  @Get('list')
+  async getList(@Query() query: Query{{className}}Dto) {
+    try {
+      const data = await this.{{camelName}}Service.findAll(query);
+      return Result.success(data);
+    } catch (error) {
+      this.logger.error(`获取{{generator.businessName}}列表失败: ${error.message}`, error.stack);
+      return Result.error(error.message);
+    }
+  }
+
+  /**
+   * 获取{{generator.businessName}}详情
+   * @param id - {{generator.businessName}}ID
+   * @returns {{generator.businessName}}详情
+   */
+  @Get('detail')
+  async getDetail(@Query('id', ParseIntPipe) id: number) {
+    try {
+      const data = await this.{{camelName}}Service.findOne(id);
+      return Result.success(data);
+    } catch (error) {
+      this.logger.error(`获取{{generator.businessName}}详情失败: ${error.message}`, error.stack);
+      return Result.error(error.message);
+    }
+  }
+
+  /**
+   * 更新{{generator.businessName}}
+   * @param update{{className}}Dto - 更新{{generator.businessName}}数据传输对象
+   * @returns 更新后的{{generator.businessName}}
+   */
+  @Put('update')
+  async update(@Body() update{{className}}Dto: Update{{className}}Dto) {
+    try {
+      const data = await this.{{camelName}}Service.update(update{{className}}Dto.id, update{{className}}Dto);
+      return Result.success(data);
+    } catch (error) {
+      this.logger.error(`更新{{generator.businessName}}失败: ${error.message}`, error.stack);
+      return Result.error(error.message);
+    }
+  }
+
+  /**
+   * 删除{{generator.businessName}}
+   * @param id - {{generator.businessName}}ID
+   * @returns 操作结果
+   */
+  @Delete('delete')
+  async delete(@Query('id', ParseIntPipe) id: number) {
+    try {
+      await this.{{camelName}}Service.remove(id);
+      return Result.success();
+    } catch (error) {
+      this.logger.error(`删除{{generator.businessName}}失败: ${error.message}`, error.stack);
+      return Result.error(error.message);
+    }
+  }
+
+  /**
+   * 批量删除{{generator.businessName}}
+   * @param params - 批量删除参数
+   * @returns 操作结果
+   */
+  @Delete('deleteBatch')
+  async deleteBatch(@Body() params: BatchDelete{{className}}Dto) {
+    try {
+      await this.{{camelName}}Service.batchRemove(params.ids);
+      return Result.success();
+    } catch (error) {
+      this.logger.error(`批量删除{{generator.businessName}}失败: ${error.message}`, error.stack);
+      return Result.error(error.message);
+    }
+  }
+
+  /**
+   * 获取所有{{generator.businessName}}（用于下拉选择）
+   * @returns {{generator.businessName}}选项列表
+   */
+  @Get('options')
+  async getOptions() {
+    try {
+      const data = await this.{{camelName}}Service.findAllOptions();
+      return Result.success(data);
+    } catch (error) {
+      this.logger.error(`获取{{generator.businessName}}选项列表失败: ${error.message}`, error.stack);
+      return Result.error(error.message);
+    }
+  }
+}

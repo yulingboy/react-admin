@@ -1,0 +1,63 @@
+import { useState, useRef } from 'react';
+import { message } from 'antd';
+import type { ActionType } from '@ant-design/pro-components';
+import { get{{className}}List, delete{{className}} } from '@/api/{{kebabName}}';
+import { {{className}}, {{className}}ListParams } from '@/types/{{kebabName}}';
+import { formatTableData } from '@/utils/tableHelper';
+
+export const use{{className}}Manage = () => {
+  const [formModalVisible, setFormModalVisible] = useState(false);
+  const [current{{className}}, setCurrent{{className}}] = useState<{{className}} | undefined>();
+  const [isEdit, setIsEdit] = useState(false);
+  const tableRef = useRef<ActionType | null>(null);
+
+  // 添加{{generator.businessName}}
+  const handleAdd{{className}} = () => {
+    setCurrent{{className}}(undefined);
+    setIsEdit(false);
+    setFormModalVisible(true);
+  };
+
+  // 编辑{{generator.businessName}}
+  const handleEdit{{className}} = (record: {{className}}) => {
+    setCurrent{{className}}(record);
+    setIsEdit(true);
+    setFormModalVisible(true);
+  };
+
+  // 删除{{generator.businessName}}
+  const handleDelete{{className}} = async (id: number) => {
+    try {
+      await delete{{className}}(id);
+      message.success('{{generator.businessName}}删除成功');
+      tableRef.current?.reload();
+    } catch (error) {
+      console.error('删除{{generator.businessName}}失败', error);
+    }
+  };
+
+  // 表单提交成功回调
+  const handleFormSuccess = () => {
+    setFormModalVisible(false);
+    tableRef.current?.reload();
+  };
+
+  // 加载{{generator.businessName}}列表数据
+  const load{{className}}List = async (params: {{className}}ListParams) => {
+    const response = await get{{className}}List(params);
+    return formatTableData<{{className}}>(response);
+  };
+
+  return {
+    formModalVisible,
+    setFormModalVisible,
+    current{{className}},
+    isEdit,
+    tableRef,
+    handleAdd{{className}},
+    handleEdit{{className}},
+    handleDelete{{className}},
+    handleFormSuccess,
+    load{{className}}List
+  };
+};

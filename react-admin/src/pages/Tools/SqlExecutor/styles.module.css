@@ -1,0 +1,52 @@
+.sqlExecutorContainer {
+  padding: 0;
+  width: 100%;
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sqlInputSection {
+  margin-bottom: 20px;
+}
+
+.sqlTextarea {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.actionBar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.resultSection {
+  min-height: 100px;
+}
+
+.resultContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.resultMeta {
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.executionTime {
+  font-style: italic;
+}
+
+.nullValue {
+  color: #999;
+  font-style: italic;
+}
