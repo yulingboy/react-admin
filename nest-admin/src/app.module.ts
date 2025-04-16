@@ -16,6 +16,7 @@ import { CodeGeneratorModule } from './modules/code-generator/code-generator.mod
 import { SqlExecutorModule } from './modules/sql-executor/sql-executor.module';
 import { ApiTesterModule } from './modules/api-tester/api-tester.module';
 import { DbManagerModule } from './modules/db-manager/db-manager.module';
+import { SystemMonitorModule } from './modules/system-monitor/system-monitor.module';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware';
@@ -37,6 +38,7 @@ import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware
     SqlExecutorModule,
     ApiTesterModule,
     DbManagerModule,
+    SystemMonitorModule, // 引入系统监控模块
   ],
   controllers: [AppController],
   providers: [

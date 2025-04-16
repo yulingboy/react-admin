@@ -176,3 +176,41 @@ model DatabaseConnection {
 
   @@map("database_connections")
 }
+
+// 系统资源监控记录
+model SystemResource {
+  id        Int      @id @default(autoincrement())
+  cpuUsage  Float    // CPU使用率
+  memUsage  Float    // 内存使用率
+  diskUsage Float    // 磁盘使用率
+  uptime    Int      // 系统运行时间(秒)
+  timestamp DateTime @default(now()) // 记录时间
+  
+  @@map("system_resources")
+}
+
+// API请求监控记录
+model ApiMonitor {
+  id            Int      @id @default(autoincrement())
+  path          String   // API路径
+  method        String   // 请求方法
+  statusCode    Int      // 状态码
+  responseTime  Int      // 响应时间(ms)
+  requestCount  Int      // 请求计数
+  errorCount    Int      // 错误计数
+  date          DateTime @default(now()) // 日期(按天统计)
+  
+  @@unique([path, method, date])
+  @@map("api_monitors")
+}
+
+// 系统日志统计
+model LogStat {
+  id        Int      @id @default(autoincrement())
+  level     String   // 日志级别: error, warn, info
+  count     Int      // 计数
+  date      DateTime @default(now()) // 日期(按天统计)
+  
+  @@unique([level, date])
+  @@map("log_stats")
+}

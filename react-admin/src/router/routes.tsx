@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { HomeOutlined, DashboardOutlined, SettingOutlined, TableOutlined, FormOutlined, CodeOutlined, DatabaseOutlined, ApiOutlined } from '@ant-design/icons';
+import { HomeOutlined, DashboardOutlined, SettingOutlined, TableOutlined, FormOutlined, CodeOutlined, DatabaseOutlined, ApiOutlined, LineChartOutlined } from '@ant-design/icons';
 import { lazyLoadHelper } from '@/utils/lazyLoadHelper';
 import AuthRoute from '@/components/AuthRoute';
 import { AppRouteObject } from './types';
@@ -15,6 +15,7 @@ const CodeGenerator = lazyLoadHelper(() => import('@/pages/Tools/CodeGenerator')
 const SqlExecutor = lazyLoadHelper(() => import('@/pages/Tools/SqlExecutor'));
 const ApiTester = lazyLoadHelper(() => import('@/pages/Tools/ApiTester'));
 const DbManager = lazyLoadHelper(() => import('@/pages/Tools/DbManager'));
+const SystemMonitor = lazyLoadHelper(() => import('@/pages/Tools/SystemMonitor'));
 const BasicForm = lazyLoadHelper(() => import('@/pages/Form/BasicForm'));
 const AdvancedForm = lazyLoadHelper(() => import('@/pages/Form/AdvancedForm'));
 const BasicTable = lazyLoadHelper(() => import('@/pages/Table/BasicTable'));
@@ -113,6 +114,14 @@ export const routes: AppRouteObject[] = [
             element: <DbManager />,
             meta: {
               title: '数据库管理',
+            }
+          },
+          {
+            path: 'system-monitor',
+            element: <SystemMonitor />,
+            meta: {
+              title: '系统监控',
+              icon: <LineChartOutlined />
             }
           }
         ]
