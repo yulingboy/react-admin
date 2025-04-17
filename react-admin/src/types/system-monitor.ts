@@ -20,7 +20,22 @@ export interface SystemResourceRealtime extends SystemResource {
     cpus: number;
     loadavg: number[];
     networkInterfaces: any;
+    usedMemory?: number;
+    cpuModel?: string;
+    systemModel?: string;
+    diskSize?: number;
+    diskFree?: number;
+    diskUsed?: number;
   };
+}
+
+// 兼容现有组件的类型
+export interface SystemResourceInfo extends SystemResourceRealtime {
+  cpuCores?: number;
+  memoryUsed?: number;
+  totalMemory?: number;
+  diskFree?: number;
+  loadAvg?: number[];
 }
 
 // API监控记录
@@ -33,6 +48,24 @@ export interface ApiMonitor {
   requestCount: number; // 请求计数
   errorCount: number;   // 错误计数
   date: string;         // 日期(按天统计)
+}
+
+// 实时API监控数据
+export interface RealtimeApiData {
+  recentCalls: ApiMonitor[];
+  statusCodeDistribution: {
+    statusCode: number;
+    _sum: {
+      requestCount: number;
+    };
+  }[];
+  slowestApis: {
+    path: string;
+    method: string;
+    responseTime: number;
+    requestCount: number;
+  }[];
+  timestamp: string;
 }
 
 // API统计数据
@@ -52,6 +85,25 @@ export interface ApiStatistics {
     method: string;
     errorCount: number;
     requestCount: number;
+    errorRate: number;
+  }[];
+}
+
+// API性能指标
+export interface ApiPerformanceMetrics {
+  performanceTrends: {
+    date: string;
+    avgResponseTime: number;
+    requestCount: number;
+    errorCount: number;
+    errorRate: number;
+  }[];
+  apiPerformance: {
+    path: string;
+    method: string;
+    responseTime: number;
+    requestCount: number;
+    errorCount: number;
     errorRate: number;
   }[];
 }
@@ -82,11 +134,36 @@ export interface LogTrend {
   INFO: number;
 }
 
+// 日志级别分布
+export interface LogDistribution {
+  level: string;
+  count: number;
+}
+
+// 错误日志详情
+export interface ErrorLog {
+  timestamp: string;
+  message: string;
+  level: string;
+}
+
 // 系统监控概览
 export interface SystemMonitorOverview {
   resources: SystemResourceRealtime;
   apiStats: ApiStatistics;
   logTrends: LogTrend[];
+}
+
+// 系统健康状态
+export interface SystemHealth {
+  status: 'healthy' | 'warning' | 'critical';
+  timestamp: string;
+  checks: {
+    cpu: { status: 'healthy' | 'warning' | 'critical' };
+    memory: { status: 'healthy' | 'warning' | 'critical' };
+    api: { status: 'healthy' | 'warning' | 'critical' };
+    logs: { status: 'healthy' | 'warning' | 'critical' };
+  };
 }
 
 // 查询参数

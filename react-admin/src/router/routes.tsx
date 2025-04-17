@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { HomeOutlined, DashboardOutlined, SettingOutlined, TableOutlined, FormOutlined, CodeOutlined, DatabaseOutlined, ApiOutlined, LineChartOutlined } from '@ant-design/icons';
+import { HomeOutlined, DashboardOutlined, SettingOutlined, TableOutlined, FormOutlined, CodeOutlined, DatabaseOutlined, ApiOutlined, LineChartOutlined, DashboardFilled, FileTextOutlined } from '@ant-design/icons';
 import { lazyLoadHelper } from '@/utils/lazyLoadHelper';
 import AuthRoute from '@/components/AuthRoute';
 import { AppRouteObject } from './types';
@@ -15,7 +15,9 @@ const CodeGenerator = lazyLoadHelper(() => import('@/pages/Tools/CodeGenerator')
 const SqlExecutor = lazyLoadHelper(() => import('@/pages/Tools/SqlExecutor'));
 const ApiTester = lazyLoadHelper(() => import('@/pages/Tools/ApiTester'));
 const DbManager = lazyLoadHelper(() => import('@/pages/Tools/DbManager'));
-const SystemMonitor = lazyLoadHelper(() => import('@/pages/Tools/SystemMonitor'));
+const SystemResourceMonitor = lazyLoadHelper(() => import('@/pages/Tools/SystemResourceMonitor'));
+const ApiMonitor = lazyLoadHelper(() => import('@/pages/Tools/ApiMonitor'));
+const LogMonitor = lazyLoadHelper(() => import('@/pages/Tools/LogMonitor'));
 const BasicForm = lazyLoadHelper(() => import('@/pages/Form/BasicForm'));
 const AdvancedForm = lazyLoadHelper(() => import('@/pages/Form/AdvancedForm'));
 const BasicTable = lazyLoadHelper(() => import('@/pages/Table/BasicTable'));
@@ -117,11 +119,27 @@ export const routes: AppRouteObject[] = [
             }
           },
           {
-            path: 'system-monitor',
-            element: <SystemMonitor />,
+            path: 'system-resources',
+            element: <SystemResourceMonitor />,
             meta: {
-              title: '系统监控',
-              icon: <LineChartOutlined />
+              title: '系统资源监控',
+              icon: <DashboardFilled />
+            }
+          },
+          {
+            path: 'api-monitor',
+            element: <ApiMonitor />,
+            meta: {
+              title: 'API监控',
+              icon: <ApiOutlined />
+            }
+          },
+          {
+            path: 'log-monitor',
+            element: <LogMonitor />,
+            meta: {
+              title: '日志统计',
+              icon: <FileTextOutlined />
             }
           }
         ]

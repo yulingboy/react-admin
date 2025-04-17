@@ -1,34 +1,25 @@
 import { Module } from '@nestjs/common';
-import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { PrismaModule } from '../../shared/prisma/prisma.module';
 
 import { SystemMonitorController } from './controllers/system-monitor.controller';
-import { SystemResourceService } from './services/system-resource.service';
-import { ApiMonitorService } from './services/api-monitor.service';
-import { LogStatsService } from './services/log-stats.service';
-import { ApiMonitorInterceptor } from './interceptors/api-monitor.interceptor';
-
-import { PrismaModule } from '../../shared/prisma/prisma.module';
+import { SystemResourceModule } from './modules/system-resource/system-resource.module';
+import { ApiMonitorModule } from './modules/api-monitor/api-monitor.module';
+import { LogStatsModule } from './modules/log-stats/log-stats.module';
 
 @Module({
   imports: [
     PrismaModule,
-    ScheduleModule.forRoot(), // 引入定时任务模块，用于定期收集系统资源信息
+    ScheduleModule.forRoot(),
+    SystemResourceModule,
+    ApiMonitorModule,
+    LogStatsModule
   ],
   controllers: [SystemMonitorController],
-  providers: [
-    SystemResourceService,
-    ApiMonitorService,
-    LogStatsService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: ApiMonitorInterceptor,
-    },
-  ],
   exports: [
-    SystemResourceService,
-    ApiMonitorService,
-    LogStatsService,
+    SystemResourceModule,
+    ApiMonitorModule,
+    LogStatsModule
   ],
 })
 export class SystemMonitorModule {}
