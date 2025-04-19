@@ -26,7 +26,7 @@ const StatusCodePieChart: React.FC<StatusCodePieChartProps> = ({ data, loading }
       if (!chartInstance.current) {
         chartInstance.current = echarts.init(chartRef.current);
       }
-      
+
       if (data && data.length > 0) {
         renderChart();
       }
@@ -47,9 +47,9 @@ const StatusCodePieChart: React.FC<StatusCodePieChartProps> = ({ data, loading }
         chartInstance.current.resize();
       }
     };
-    
+
     window.addEventListener('resize', handleResize);
-    
+
     return () => {
       window.removeEventListener('resize', handleResize);
     };
@@ -133,7 +133,7 @@ const StatusCodePieChart: React.FC<StatusCodePieChartProps> = ({ data, loading }
         }
       ]
     };
-    
+
     // 渲染图表
     chartInstance.current.setOption(option);
   };

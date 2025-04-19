@@ -31,32 +31,20 @@ const SystemInfoCards: React.FC<SystemInfoCardsProps> = ({ systemInfo }) => {
             </div>
           </Card>
         </Col>
-        
+
         <Col xs={24} sm={16}>
           <Card title="系统详情" className="w-full h-full bg-white rounded-lg shadow-sm">
-            {systemInfo.systemModel && (
-              <div className="mb-4 text-gray-700">{systemInfo.systemModel}</div>
-            )}
-            
+            {systemInfo.systemModel && <div className="mb-4 text-gray-700">{systemInfo.systemModel}</div>}
+
             <Row gutter={16}>
               <Col span={8}>
-                <Statistic 
-                  title="CPU型号" 
-                  value={systemInfo.cpuModel || '未知'} 
-                  valueStyle={{ fontSize: '14px', lineHeight: '1.4' }}
-                />
+                <Statistic title="CPU型号" value={systemInfo.cpuModel || '未知'} valueStyle={{ fontSize: '14px', lineHeight: '1.4' }} />
               </Col>
               <Col span={8}>
-                <Statistic 
-                  title="CPU核心数" 
-                  value={systemInfo.cpus || 0} 
-                />
+                <Statistic title="CPU核心数" value={systemInfo.cpus || 0} />
               </Col>
               <Col span={8}>
-                <Statistic 
-                  title="总内存" 
-                  value={formatBytes(systemInfo.totalMemory)} 
-                />
+                <Statistic title="总内存" value={formatBytes(systemInfo.totalMemory)} />
               </Col>
             </Row>
           </Card>
@@ -69,17 +57,18 @@ const SystemInfoCards: React.FC<SystemInfoCardsProps> = ({ systemInfo }) => {
             {Object.entries(systemInfo.networkInterfaces).map(([name, interfaces]) => (
               <div key={name} className="border rounded-md p-3 bg-gray-50">
                 <div className="font-medium mb-2">{name}:</div>
-                {Array.isArray(interfaces) && interfaces.map((iface: any, idx) => (
-                  <div key={idx} className="ml-2 mb-2 last:mb-0">
-                    <div className="flex items-center mb-1">
-                      <Tag color="blue" className="mr-2">{iface.family}</Tag>
-                      <span className="text-sm">{iface.address}</span>
+                {Array.isArray(interfaces) &&
+                  interfaces.map((iface: any, idx) => (
+                    <div key={idx} className="ml-2 mb-2 last:mb-0">
+                      <div className="flex items-center mb-1">
+                        <Tag color="blue" className="mr-2">
+                          {iface.family}
+                        </Tag>
+                        <span className="text-sm">{iface.address}</span>
+                      </div>
+                      {iface.mac && <div className="text-xs text-gray-500 ml-1">MAC: {iface.mac}</div>}
                     </div>
-                    {iface.mac && (
-                      <div className="text-xs text-gray-500 ml-1">MAC: {iface.mac}</div>
-                    )}
-                  </div>
-                ))}
+                  ))}
               </div>
             ))}
           </div>

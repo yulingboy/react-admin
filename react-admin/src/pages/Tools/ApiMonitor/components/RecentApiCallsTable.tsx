@@ -18,12 +18,7 @@ interface RecentApiCallsTableProps {
   timestamp?: string;
 }
 
-const RecentApiCallsTable: React.FC<RecentApiCallsTableProps> = ({ 
-  title = "实时API调用",
-  data, 
-  loading,
-  timestamp
-}) => {
+const RecentApiCallsTable: React.FC<RecentApiCallsTableProps> = ({ title = '实时API调用', data, loading, timestamp }) => {
   // 实时调用记录表格列定义
   const columns = [
     {
@@ -32,9 +27,7 @@ const RecentApiCallsTable: React.FC<RecentApiCallsTableProps> = ({
       key: 'path',
       render: (text: string) => (
         <Tooltip title={text}>
-          <span className="max-w-xs md:max-w-sm truncate inline-block">
-            {text}
-          </span>
+          <span className="max-w-xs md:max-w-sm truncate inline-block">{text}</span>
         </Tooltip>
       ),
       ellipsis: true
@@ -52,7 +45,7 @@ const RecentApiCallsTable: React.FC<RecentApiCallsTableProps> = ({
           DELETE: 'red'
         };
         return text ? <Badge color={colors[text] || 'default'} text={text} /> : '-';
-      },
+      }
     },
     {
       title: '状态码',
@@ -64,9 +57,9 @@ const RecentApiCallsTable: React.FC<RecentApiCallsTableProps> = ({
         if (code >= 500) color = 'red';
         else if (code >= 400) color = 'orange';
         else if (code >= 300) color = 'blue';
-        
+
         return <span style={{ color }}>{code}</span>;
-      },
+      }
     },
     {
       title: '响应时间',
@@ -77,35 +70,23 @@ const RecentApiCallsTable: React.FC<RecentApiCallsTableProps> = ({
         let color = 'green';
         if (value > 1000) color = 'red';
         else if (value > 500) color = 'orange';
-        
+
         return <span style={{ color }}>{formatMilliseconds(value)}</span>;
-      },
-    },
+      }
+    }
   ];
 
   return (
-    <Card 
+    <Card
       title={
         <span>
           {title}
-          {timestamp && (
-            <small className="text-xs text-gray-400 ml-2">
-              最后更新: {formatDateTime(timestamp)}
-            </small>
-          )}
+          {timestamp && <small className="text-xs text-gray-400 ml-2">最后更新: {formatDateTime(timestamp)}</small>}
         </span>
-      } 
+      }
       className="w-full bg-white rounded-lg shadow-sm"
     >
-      <Table 
-        dataSource={data}
-        columns={columns} 
-        rowKey="id"
-        size="small"
-        pagination={{ pageSize: 8 }}
-        className="w-full"
-        loading={loading}
-      />
+      <Table dataSource={data} columns={columns} rowKey="id" size="small" pagination={{ pageSize: 8 }} className="w-full" loading={loading} />
     </Card>
   );
 };

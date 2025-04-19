@@ -50,8 +50,8 @@ export const request = {
    * @param options 上传配置
    */
   upload<T = any>(
-    url: string, 
-    file: File | File[], 
+    url: string,
+    file: File | File[],
     options?: {
       name?: string;
       data?: Record<string, any>;
@@ -60,14 +60,14 @@ export const request = {
   ): Promise<T> {
     const formData = new FormData();
     const { name = 'file', data = {}, config = {} } = options || {};
-    
+
     // 处理单个或多个文件
     if (Array.isArray(file)) {
       file.forEach(f => formData.append(name, f));
     } else {
       formData.append(name, file);
     }
-    
+
     // 添加额外的表单数据
     Object.entries(data).forEach(([key, value]) => {
       formData.append(key, value);
@@ -87,23 +87,25 @@ export const request = {
    * @param config 请求配置
    */
   download(url: string, params?: Record<string, any>, filename?: string, config?: CustomRequestConfig): Promise<Blob> {
-    return service.get(url, {
-      params,
-      responseType: 'blob',
-      ...config,
-    }).then(response => {
-      // 这里需要特殊处理，因为返回的是二进制数据
-      const blob = new Blob([response.data]);
-      // 如果提供了文件名，直接下载
-      if (filename) {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        link.click();
-        URL.revokeObjectURL(link.href);
-      }
-      return blob;
-    });
+    return service
+      .get(url, {
+        params,
+        responseType: 'blob',
+        ...config
+      })
+      .then(response => {
+        // 这里需要特殊处理，因为返回的是二进制数据
+        const blob = new Blob([response.data]);
+        // 如果提供了文件名，直接下载
+        if (filename) {
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = filename;
+          link.click();
+          URL.revokeObjectURL(link.href);
+        }
+        return blob;
+      });
   }
 };
 

@@ -17,41 +17,36 @@ const ErrorLogsTable: React.FC<ErrorLogsTableProps> = ({ loading, errorLogs, onR
       dataIndex: 'timestamp',
       key: 'timestamp',
       render: (timestamp: string) => dayjs(timestamp).format('YYYY-MM-DD HH:mm:ss'),
-      width: 180,
+      width: 180
     },
     {
       title: '级别',
       dataIndex: 'level',
       key: 'level',
       render: (level: string) => <Tag color="error">{level}</Tag>,
-      width: 100,
+      width: 100
     },
     {
       title: '错误信息',
       dataIndex: 'message',
       key: 'message',
       ellipsis: {
-        showTitle: false,
+        showTitle: false
       },
       render: (message: string) => (
         <Tooltip placement="topLeft" title={message}>
           {message}
         </Tooltip>
-      ),
-    },
+      )
+    }
   ];
 
   return (
-    <Card 
-      title="最近错误日志" 
+    <Card
+      title="最近错误日志"
       className="w-full bg-white rounded-lg shadow-sm"
       extra={
-        <Button 
-          type="primary" 
-          danger
-          size="small"
-          onClick={onRefresh}
-        >
+        <Button type="primary" danger size="small" onClick={onRefresh}>
           刷新错误日志
         </Button>
       }
@@ -59,7 +54,7 @@ const ErrorLogsTable: React.FC<ErrorLogsTableProps> = ({ loading, errorLogs, onR
       <Table
         dataSource={errorLogs}
         columns={columns}
-        rowKey={(record) => `${record.timestamp}-${Math.random()}`}
+        rowKey={record => `${record.timestamp}-${Math.random()}`}
         pagination={{ pageSize: 10 }}
         size="middle"
         className="w-full"

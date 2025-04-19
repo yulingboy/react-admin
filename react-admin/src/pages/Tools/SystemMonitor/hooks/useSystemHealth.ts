@@ -23,7 +23,7 @@ export const useSystemHealth = () => {
 
   useEffect(() => {
     fetchHealthStatus();
-    
+
     // 每60秒更新一次系统健康状态
     const timer = setInterval(fetchHealthStatus, 60000);
     return () => clearInterval(timer);

@@ -15,7 +15,7 @@ export interface UserInfo {
   avatar: string;
   status: number;
   roleId: number;
-  }
+}
 // 登录响应数据接口
 export interface LoginResult {
   token: string;

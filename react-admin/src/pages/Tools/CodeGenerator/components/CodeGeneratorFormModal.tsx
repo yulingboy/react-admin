@@ -19,7 +19,7 @@ const CodeGeneratorFormModal: React.FC<CodeGeneratorFormModalProps> = ({
   onSubmit,
   record,
   tableList = [], // 添加默认空数组
-  loadingTables,
+  loadingTables
 }) => {
   const [form] = Form.useForm();
   const isEdit = !!record;
@@ -29,12 +29,14 @@ const CodeGeneratorFormModal: React.FC<CodeGeneratorFormModalProps> = ({
       if (record) {
         form.setFieldsValue({
           ...record,
-          options: record.options ? JSON.parse(record.options) : {
-            generateApi: true,
-            generateCrud: true,
-            generateRoutes: true,
-            generateTest: false,
-          }
+          options: record.options
+            ? JSON.parse(record.options)
+            : {
+                generateApi: true,
+                generateCrud: true,
+                generateRoutes: true,
+                generateTest: false
+              }
         });
       } else {
         form.resetFields();
@@ -44,7 +46,7 @@ const CodeGeneratorFormModal: React.FC<CodeGeneratorFormModalProps> = ({
             generateApi: true,
             generateCrud: true,
             generateRoutes: true,
-            generateTest: false,
+            generateTest: false
           }
         });
       }
@@ -68,40 +70,22 @@ const CodeGeneratorFormModal: React.FC<CodeGeneratorFormModalProps> = ({
   const handleTableChange = (tableName: string) => {
     const selectedTable = tableList.find(t => t.tableName === tableName);
     if (selectedTable) {
-      const moduleName = tableName.includes('_') 
-        ? tableName.split('_')[0] 
-        : tableName;
-        
-      const businessName = tableName.includes('_') 
-        ? tableName.substring(tableName.indexOf('_') + 1) 
-        : tableName;
-        
+      const moduleName = tableName.includes('_') ? tableName.split('_')[0] : tableName;
+
+      const businessName = tableName.includes('_') ? tableName.substring(tableName.indexOf('_') + 1) : tableName;
+
       form.setFieldsValue({
         moduleName,
-        businessName,
+        businessName
       });
     }
   };
 
   return (
-    <Modal
-      title={title}
-      open={visible}
-      onCancel={onCancel}
-      onOk={handleSubmit}
-      width={800}
-      destroyOnClose
-    >
+    <Modal title={title} open={visible} onCancel={onCancel} onOk={handleSubmit} width={800} destroyOnClose>
       <Spin spinning={loadingTables}>
-        <Form
-          form={form}
-          layout="vertical"
-        >
-          <Form.Item
-            label="表名称"
-            name="tableName"
-            rules={[{ required: true, message: '请选择表名称' }]}
-          >
+        <Form form={form} layout="vertical">
+          <Form.Item label="表名称" name="tableName" rules={[{ required: true, message: '请选择表名称' }]}>
             <Select
               placeholder="请选择表名称"
               showSearch
@@ -110,40 +94,24 @@ const CodeGeneratorFormModal: React.FC<CodeGeneratorFormModalProps> = ({
               disabled={isEdit}
               options={(tableList || []).map(table => ({
                 label: `${table.tableName}${table.tableComment ? ` (${table.tableComment})` : ''}`,
-                value: table.tableName,
+                value: table.tableName
               }))}
             />
           </Form.Item>
 
-          <Form.Item
-            label="名称"
-            name="name"
-            rules={[{ required: true, message: '请输入名称' }]}
-          >
+          <Form.Item label="名称" name="name" rules={[{ required: true, message: '请输入名称' }]}>
             <Input placeholder="请输入生成器名称" />
           </Form.Item>
 
-          <Form.Item
-            label="模块名称"
-            name="moduleName"
-            rules={[{ required: true, message: '请输入模块名称' }]}
-          >
+          <Form.Item label="模块名称" name="moduleName" rules={[{ required: true, message: '请输入模块名称' }]}>
             <Input placeholder="请输入模块名称" />
           </Form.Item>
 
-          <Form.Item
-            label="业务名称"
-            name="businessName"
-            rules={[{ required: true, message: '请输入业务名称' }]}
-          >
+          <Form.Item label="业务名称" name="businessName" rules={[{ required: true, message: '请输入业务名称' }]}>
             <Input placeholder="请输入业务名称" />
           </Form.Item>
 
-          <Form.Item
-            label="生成选项"
-            name={['options', 'generateApi']}
-            valuePropName="checked"
-          >
+          <Form.Item label="生成选项" name={['options', 'generateApi']} valuePropName="checked">
             <Select
               mode="multiple"
               placeholder="请选择生成选项"
@@ -156,10 +124,7 @@ const CodeGeneratorFormModal: React.FC<CodeGeneratorFormModalProps> = ({
             />
           </Form.Item>
 
-          <Form.Item
-            label="备注"
-            name="remark"
-          >
+          <Form.Item label="备注" name="remark">
             <Input.TextArea placeholder="请输入备注信息（可选）" rows={3} />
           </Form.Item>
         </Form>

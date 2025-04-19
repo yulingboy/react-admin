@@ -1,4 +1,3 @@
-
 import { Button, Tag } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
@@ -42,27 +41,27 @@ export const getTableColumns = ({ handleEdit, handleDelete, roleOptions }: Colum
       title: '关键字',
       dataIndex: 'keyword',
       valueType: 'text',
-      hideInTable: true,
+      hideInTable: true
     },
     {
       title: '用户名',
       dataIndex: 'username',
       ellipsis: true,
       align: 'center',
-      hideInSearch: true,
+      hideInSearch: true
     },
     {
       title: '姓名',
       dataIndex: 'name',
       ellipsis: true,
       align: 'center',
-      hideInSearch: true,
+      hideInSearch: true
     },
     {
       title: '邮箱',
       dataIndex: 'email',
       ellipsis: true,
-      hideInSearch: true,
+      hideInSearch: true
     },
     {
       title: '状态',
@@ -76,7 +75,7 @@ export const getTableColumns = ({ handleEdit, handleDelete, roleOptions }: Colum
         const color = statusLabelMap[status].color || 'success';
 
         return <Tag color={color}>{label}</Tag>;
-      },
+      }
     },
     {
       title: '角色',
@@ -87,9 +86,7 @@ export const getTableColumns = ({ handleEdit, handleDelete, roleOptions }: Colum
         acc[role.value] = { text: role.label, status: 'Default' };
         return acc;
       }, {}),
-      render: (_, record) => (
-        <Tag color="blue">{record.roleName}</Tag>
-      ),
+      render: (_, record) => <Tag color="blue">{record.roleName}</Tag>
     },
     {
       title: '系统内置',
@@ -110,7 +107,7 @@ export const getTableColumns = ({ handleEdit, handleDelete, roleOptions }: Colum
       valueType: 'dateTime',
       align: 'center',
       search: false,
-      sorter: true,
+      sorter: true
     },
     {
       title: '操作',
@@ -118,25 +115,13 @@ export const getTableColumns = ({ handleEdit, handleDelete, roleOptions }: Colum
       valueType: 'option',
       width: 180,
       render: (_, record) => [
-        <Button
-          key="edit"
-          type="link"
-          icon={<EditOutlined />}
-          onClick={() => handleEdit(record)}
-        >
+        <Button key="edit" type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
           编辑
         </Button>,
-        <Button
-          key="delete"
-          disabled={record.isSystem === '1'}
-          type="link"
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => confirmDelete(record)}
-        >
+        <Button key="delete" disabled={record.isSystem === '1'} type="link" danger icon={<DeleteOutlined />} onClick={() => confirmDelete(record)}>
           删除
         </Button>
-      ],
-    },
+      ]
+    }
   ];
 };

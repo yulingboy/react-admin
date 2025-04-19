@@ -19,7 +19,7 @@ const LogDistributionChart: React.FC<LogDistributionChartProps> = ({ logDistribu
       if (!chartInstance.current) {
         chartInstance.current = echarts.init(chartRef.current);
       }
-      
+
       if (logDistribution.length > 0) {
         renderChart();
       }
@@ -40,9 +40,9 @@ const LogDistributionChart: React.FC<LogDistributionChartProps> = ({ logDistribu
         chartInstance.current.resize();
       }
     };
-    
+
     window.addEventListener('resize', handleResize);
-    
+
     return () => {
       window.removeEventListener('resize', handleResize);
     };
@@ -94,11 +94,11 @@ const LogDistributionChart: React.FC<LogDistributionChartProps> = ({ logDistribu
           labelLine: {
             show: false
           },
-          data: chartData,
+          data: chartData
         }
       ]
     };
-    
+
     // 渲染图表
     chartInstance.current.setOption(option);
   };

@@ -9,27 +9,15 @@ interface LogAnalysisOverviewProps {
 
 const LogAnalysisOverview: React.FC<LogAnalysisOverviewProps> = ({ logAnalysis }) => {
   if (!logAnalysis) return null;
-  
+
   return (
-    <Card 
-      title="最新日志分析结果" 
-      className="w-full bg-white rounded-lg shadow-sm mb-6"
-    >
+    <Card title="最新日志分析结果" className="w-full bg-white rounded-lg shadow-sm mb-6">
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} md={6}>
-          <Statistic
-            title="分析文件"
-            value={logAnalysis.filename}
-            valueStyle={{ fontSize: '16px' }}
-            className="p-2 bg-gray-50 rounded"
-          />
+          <Statistic title="分析文件" value={logAnalysis.filename} valueStyle={{ fontSize: '16px' }} className="p-2 bg-gray-50 rounded" />
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <Statistic
-            title="总行数"
-            value={logAnalysis.totalLines}
-            className="p-2 bg-gray-50 rounded"
-          />
+          <Statistic title="总行数" value={logAnalysis.totalLines} className="p-2 bg-gray-50 rounded" />
         </Col>
         <Col xs={24} sm={8} md={4}>
           <Statistic
@@ -49,12 +37,7 @@ const LogAnalysisOverview: React.FC<LogAnalysisOverviewProps> = ({ logAnalysis }
           />
         </Col>
         <Col xs={24} sm={8} md={4}>
-          <Statistic
-            title="信息日志"
-            value={logAnalysis.infoCount}
-            valueStyle={{ color: '#52c41a' }}
-            className="p-2 bg-green-50 rounded"
-          />
+          <Statistic title="信息日志" value={logAnalysis.infoCount} valueStyle={{ color: '#52c41a' }} className="p-2 bg-green-50 rounded" />
         </Col>
       </Row>
     </Card>

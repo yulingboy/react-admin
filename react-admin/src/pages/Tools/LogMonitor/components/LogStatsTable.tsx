@@ -17,7 +17,7 @@ const LogStatsTable: React.FC<LogStatsTableProps> = ({ loading, logStats, dateRa
       title: '日期',
       dataIndex: 'date',
       key: 'date',
-      render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD')
     },
     {
       title: '日志级别',
@@ -27,35 +27,35 @@ const LogStatsTable: React.FC<LogStatsTableProps> = ({ loading, logStats, dateRa
         const colorMap: Record<string, string> = {
           ERROR: 'error',
           WARN: 'warning',
-          INFO: 'success',
+          INFO: 'success'
         };
-        
+
         return <Tag color={colorMap[level] || 'default'}>{level}</Tag>;
       },
       filters: [
         { text: 'ERROR', value: 'ERROR' },
         { text: 'WARN', value: 'WARN' },
-        { text: 'INFO', value: 'INFO' },
+        { text: 'INFO', value: 'INFO' }
       ],
-      onFilter: (value: string, record: LogStat) => record.level === value,
+      onFilter: (value: string, record: LogStat) => record.level === value
     },
     {
       title: '日志数量',
       dataIndex: 'count',
       key: 'count',
-      sorter: (a: LogStat, b: LogStat) => a.count - b.count,
-    },
+      sorter: (a: LogStat, b: LogStat) => a.count - b.count
+    }
   ];
 
   return (
-    <Card 
-      title="日志统计数据" 
+    <Card
+      title="日志统计数据"
       className="w-full bg-white rounded-lg shadow-sm"
       extra={
-        <DatePicker.RangePicker 
-          onChange={(dates) => {
+        <DatePicker.RangePicker
+          onChange={dates => {
             onDateRangeChange(dates as [dayjs.Dayjs, dayjs.Dayjs] | null);
-          }} 
+          }}
           value={dateRange}
         />
       }

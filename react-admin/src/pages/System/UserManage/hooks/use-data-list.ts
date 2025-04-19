@@ -14,7 +14,7 @@ export const useDataList = () => {
 
   // 加载角色选项
   const loadRoleOptions = useCallback(async () => {
-    const data = await getRoleOptions()
+    const data = await getRoleOptions();
 
     setRoleOptions(data.map(item => ({ label: item.name, value: item.id })));
   }, []);
@@ -34,7 +34,7 @@ export const useDataList = () => {
   const handleEdit = (record: User) => {
     setCurrentRecord(record);
     setFormVisible(true);
-  }
+  };
 
   // 删除记录
   const handleDelete = useCallback(async (id: number) => {

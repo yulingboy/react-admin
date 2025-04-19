@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 // 定义HTTP方法枚举
 export enum HttpMethod {
   GET = 'GET',
-  POST = 'POST', 
+  POST = 'POST',
   PUT = 'PUT',
   DELETE = 'DELETE',
   PATCH = 'PATCH',
@@ -98,12 +98,16 @@ export class ApiTestRequestDto {
 
 // 接口测试历史查询参数DTO
 export class ApiTestHistoryQueryDto {
-  @IsNumber()
+  @IsNumber({}, { message: '页码必须是数字' })
   @IsOptional()
-  page?: number;
+  // 转换为数字类型
+  @Type(() => Number)
+  current?: number;
 
-  @IsNumber()
+  @IsNumber({}, { message: '每页条数必须是数字' })
   @IsOptional()
+  // 转换为数字类型
+  @Type(() => Number)
   pageSize?: number;
 
   @IsString()
@@ -162,4 +166,4 @@ export class ApiTestTemplateCreateDto {
 }
 
 // 接口测试模板更新DTO
-export class ApiTestTemplateUpdateDto extends ApiTestTemplateCreateDto {}
+export class ApiTestTemplateUpdateDto extends ApiTestTemplateCreateDto { }

@@ -24,7 +24,7 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
 export const formatMilliseconds = (ms: number): string => {
   if (ms < 1000) return `${ms}ms`;
   if (ms < 60000) return `${(ms / 1000).toFixed(2)}s`;
-  
+
   const minutes = Math.floor(ms / 60000);
   const seconds = ((ms % 60000) / 1000).toFixed(2);
   return `${minutes}m ${seconds}s`;
@@ -68,14 +68,14 @@ export const formatPercent = (value: number, decimals = 2): string => {
  */
 export const formatDateTime = (date: Date | string, format = 'YYYY-MM-DD HH:mm:ss'): string => {
   const d = new Date(date);
-  
+
   const replacers: Record<string, () => string | number> = {
     YYYY: () => d.getFullYear(),
     MM: () => String(d.getMonth() + 1).padStart(2, '0'),
     DD: () => String(d.getDate()).padStart(2, '0'),
     HH: () => String(d.getHours()).padStart(2, '0'),
     mm: () => String(d.getMinutes()).padStart(2, '0'),
-    ss: () => String(d.getSeconds()).padStart(2, '0'),
+    ss: () => String(d.getSeconds()).padStart(2, '0')
   };
 
   let result = format;

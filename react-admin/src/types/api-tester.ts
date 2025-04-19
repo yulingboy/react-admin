@@ -92,7 +92,7 @@ export interface ApiTestHistory {
  * 接口测试历史查询参数
  */
 export interface ApiTestHistoryQueryParams {
-  page?: number;
+  current?: number;
   pageSize?: number;
   name?: string;
   method?: HttpMethod;

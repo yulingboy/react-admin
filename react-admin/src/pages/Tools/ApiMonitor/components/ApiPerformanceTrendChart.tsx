@@ -19,12 +19,7 @@ interface ApiPerformanceTrendChartProps {
   type: 'response-time' | 'request-count' | 'error-rate';
 }
 
-const ApiPerformanceTrendChart: React.FC<ApiPerformanceTrendChartProps> = ({ 
-  title, 
-  data, 
-  loading, 
-  type 
-}) => {
+const ApiPerformanceTrendChart: React.FC<ApiPerformanceTrendChartProps> = ({ title, data, loading, type }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
 
@@ -34,7 +29,7 @@ const ApiPerformanceTrendChart: React.FC<ApiPerformanceTrendChartProps> = ({
       if (!chartInstance.current) {
         chartInstance.current = echarts.init(chartRef.current);
       }
-      
+
       if (data && data.length > 0) {
         renderChart();
       }
@@ -55,9 +50,9 @@ const ApiPerformanceTrendChart: React.FC<ApiPerformanceTrendChartProps> = ({
         chartInstance.current.resize();
       }
     };
-    
+
     window.addEventListener('resize', handleResize);
-    
+
     return () => {
       window.removeEventListener('resize', handleResize);
     };
@@ -65,7 +60,7 @@ const ApiPerformanceTrendChart: React.FC<ApiPerformanceTrendChartProps> = ({
 
   const renderChart = () => {
     if (!chartInstance.current) return;
-    
+
     // 格式化日期
     const formatDate = (dateStr: string) => {
       return dateStr.split('T')[0];
@@ -73,13 +68,13 @@ const ApiPerformanceTrendChart: React.FC<ApiPerformanceTrendChartProps> = ({
 
     // 准备数据和配置
     let option: echarts.EChartsOption;
-    
+
     if (type === 'response-time') {
       // 响应时间趋势图
       option = {
         tooltip: {
           trigger: 'axis',
-          formatter: function(params: any) {
+          formatter: function (params: any) {
             const dataIndex = params[0].dataIndex;
             const date = formatDate(data[dataIndex].date);
             const value = formatMilliseconds(data[dataIndex].avgResponseTime);
@@ -186,7 +181,7 @@ const ApiPerformanceTrendChart: React.FC<ApiPerformanceTrendChartProps> = ({
       option = {
         tooltip: {
           trigger: 'axis',
-          formatter: function(params: any) {
+          formatter: function (params: any) {
             const dataIndex = params[0].dataIndex;
             const date = formatDate(data[dataIndex].date);
             const value = `${((data[dataIndex].errorRate || 0) / 100).toFixed(1)}%`;
@@ -239,7 +234,7 @@ const ApiPerformanceTrendChart: React.FC<ApiPerformanceTrendChartProps> = ({
         ]
       };
     }
-    
+
     // 渲染图表
     chartInstance.current.setOption(option);
   };

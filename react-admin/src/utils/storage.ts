@@ -4,8 +4,8 @@
 
 // 存储键名常量
 export const STORAGE_KEYS = {
-  TOKEN: 'token',  // 与旧的TOKEN_KEY保持一致
-  USER_INFO: 'userInfo'  // 与旧的存储键名保持一致
+  TOKEN: 'token', // 与旧的TOKEN_KEY保持一致
+  USER_INFO: 'userInfo' // 与旧的存储键名保持一致
 };
 
 /**

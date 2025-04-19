@@ -21,28 +21,14 @@ const SystemLoadCard: React.FC<SystemLoadCardProps> = ({ loadAvg, uptime, cpuCor
         {loadAvg && loadAvg.length >= 3 ? (
           <>
             <Col xs={24} sm={6}>
-              <Statistic 
-                title="系统负载（1分钟）" 
-                value={loadAvg[0].toFixed(2)} 
-                valueStyle={{ color: getLoadColor(loadAvg[0], cpuCores) }}
-              />
+              <Statistic title="系统负载（1分钟）" value={loadAvg[0].toFixed(2)} valueStyle={{ color: getLoadColor(loadAvg[0], cpuCores) }} />
             </Col>
             <Col xs={24} sm={6}>
-              <Statistic 
-                title="系统负载（5分钟）" 
-                value={loadAvg[1].toFixed(2)}
-                valueStyle={{ color: getLoadColor(loadAvg[1], cpuCores) }}
-              />
+              <Statistic title="系统负载（5分钟）" value={loadAvg[1].toFixed(2)} valueStyle={{ color: getLoadColor(loadAvg[1], cpuCores) }} />
             </Col>
             <Col xs={24} sm={6}>
-              <Statistic 
-                title="系统负载（15分钟）" 
-                value={loadAvg[2].toFixed(2)}
-                valueStyle={{ color: getLoadColor(loadAvg[2], cpuCores) }}
-              />
-              <div className="text-xs text-gray-500 mt-1">
-                {loadAvg[2] > cpuCores ? '系统负载过高' : '系统负载正常'}
-              </div>
+              <Statistic title="系统负载（15分钟）" value={loadAvg[2].toFixed(2)} valueStyle={{ color: getLoadColor(loadAvg[2], cpuCores) }} />
+              <div className="text-xs text-gray-500 mt-1">{loadAvg[2] > cpuCores ? '系统负载过高' : '系统负载正常'}</div>
             </Col>
           </>
         ) : (
@@ -51,10 +37,7 @@ const SystemLoadCard: React.FC<SystemLoadCardProps> = ({ loadAvg, uptime, cpuCor
           </Col>
         )}
         <Col xs={24} sm={6}>
-          <Statistic 
-            title="系统运行时间" 
-            value={formatUptime(uptime)}
-          />
+          <Statistic title="系统运行时间" value={formatUptime(uptime)} />
         </Col>
       </Row>
     </Card>

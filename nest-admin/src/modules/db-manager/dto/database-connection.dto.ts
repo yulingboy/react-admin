@@ -1,25 +1,12 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, IsBoolean, IsEnum,  } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, IsBoolean, IsEnum } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import { BaseDatabaseConnectionDto, DatabaseType, NetworkDatabasePropsDto, SqliteDatabasePropsDto } from './database-types.dto';
 
-// 数据库类型枚举
-export enum DatabaseType {
-  MYSQL = 'mysql',
-  POSTGRES = 'postgres',
-  MSSQL = 'mssql',
-  MARIADB = 'mariadb',
-  SQLITE = 'sqlite',
-}
-
-// 创建数据库连接DTO
-export class CreateDatabaseConnectionDto {
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @IsEnum(DatabaseType)
-  @IsNotEmpty()
-  type: DatabaseType;
-
+/**
+ * 创建数据库连接DTO
+ * 结合基础属性和各类数据库特定属性
+ */
+export class CreateDatabaseConnectionDto extends BaseDatabaseConnectionDto {
   @IsString()
   @IsOptional()
   host?: string;
@@ -47,35 +34,42 @@ export class CreateDatabaseConnectionDto {
   @IsBoolean()
   @IsOptional()
   ssl?: boolean;
-
-  @IsString()
-  @IsOptional()
-  status?: string = '1';
 }
 
-// 更新数据库连接DTO
+/**
+ * 更新数据库连接DTO
+ * 继承创建DTO的所有属性
+ */
 export class UpdateDatabaseConnectionDto extends CreateDatabaseConnectionDto {}
 
-// 查询数据库连接参数DTO
+/**
+ * 查询数据库连接参数DTO
+ * 用于列表查询和过滤
+ */
 export class QueryDatabaseConnectionDto {
+  /** 按名称过滤 */
   @IsString()
   @IsOptional()
   name?: string;
 
+  /** 按数据库类型过滤 */
   @IsEnum(DatabaseType)
   @IsOptional()
   type?: DatabaseType;
 
+  /** 按状态过滤 */
   @IsString()
   @IsOptional()
   status?: string;
 
+  /** 当前页码 */
   @Type(() => Number)
   @IsNumber()
   @IsOptional()
   @Transform(({ value }) => Number(value))
   current?: number = 1;
 
+  /** 每页条数 */
   @Type(() => Number)
   @IsNumber()
   @IsOptional()
@@ -83,12 +77,10 @@ export class QueryDatabaseConnectionDto {
   pageSize?: number = 10;
 }
 
-// 测试连接DTO
+/**
+ * 测试连接DTO
+ * 用于测试数据库连接的有效性
+ */
 export class TestConnectionDto extends CreateDatabaseConnectionDto {}
 
-// 执行SQL查询DTO
-export class ExecuteSqlDto {
-  @IsString()
-  @IsNotEmpty()
-  sql: string;
-}
+export { DatabaseType };

@@ -22,7 +22,7 @@ const UserInfoDropdown: React.FC = () => {
     // 使用新的存储工具清除登录信息
     local.remove(STORAGE_KEYS.TOKEN);
     local.remove(STORAGE_KEYS.USER_INFO);
-    
+
     message.success('退出登录成功');
     navigate('/login');
   };
@@ -49,12 +49,7 @@ const UserInfoDropdown: React.FC = () => {
   return (
     <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
       <div className="flex items-center cursor-pointer px-4 hover:bg-gray-100 py-2 rounded transition-colors">
-        <Avatar 
-          src={userInfo.avatar} 
-          size="small" 
-          className="mr-2"
-          icon={!userInfo.avatar && <UserOutlined />}
-        />
+        <Avatar src={userInfo.avatar} size="small" className="mr-2" icon={!userInfo.avatar && <UserOutlined />} />
         <span className="ml-2 text-sm">{userInfo.name || userInfo.username}</span>
       </div>
     </Dropdown>

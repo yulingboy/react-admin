@@ -53,8 +53,8 @@ const ResponsePanel: React.FC<ResponsePanelProps> = ({ response }) => {
         <div className="response-summary">
           <Descriptions size="small" column={3} bordered>
             <Descriptions.Item label="状态码">
-              <Badge 
-                status={getStatusColor(response.status) as any} 
+              <Badge
+                status={getStatusColor(response.status) as any}
                 text={
                   <span>
                     <Text strong>{response.status}</Text>
@@ -62,15 +62,11 @@ const ResponsePanel: React.FC<ResponsePanelProps> = ({ response }) => {
                       {response.statusText}
                     </Text>
                   </span>
-                } 
+                }
               />
             </Descriptions.Item>
-            <Descriptions.Item label="响应时间">
-              {response.time} ms
-            </Descriptions.Item>
-            <Descriptions.Item label="响应大小">
-              {(response.size / 1024).toFixed(2)} KB
-            </Descriptions.Item>
+            <Descriptions.Item label="响应时间">{response.time} ms</Descriptions.Item>
+            <Descriptions.Item label="响应大小">{(response.size / 1024).toFixed(2)} KB</Descriptions.Item>
           </Descriptions>
         </div>
 
@@ -78,39 +74,35 @@ const ResponsePanel: React.FC<ResponsePanelProps> = ({ response }) => {
 
         <Tabs activeKey={activeTab} onChange={setActiveTab}>
           <TabPane tab="响应体" key="body">
-            <JsonEditor 
-              value={response.data || {}}
-              readOnly={true}
-              height="400px"
-            />
+            <JsonEditor value={response.data || {}} readOnly={true} height="400px" />
           </TabPane>
 
           <TabPane tab="响应头" key="headers">
-            <Table 
-              columns={headerColumns} 
-              dataSource={headersData}
-              pagination={false}
-              size="small"
-              rowKey="key"
-            />
+            <Table columns={headerColumns} dataSource={headersData} pagination={false} size="small" rowKey="key" />
           </TabPane>
 
           {response.error && (
             <TabPane tab="错误信息" key="error">
               <div className="error-details">
-                <Alert 
-                  message="请求错误" 
+                <Alert
+                  message="请求错误"
                   description={
                     <div>
-                      <p><strong>状态码:</strong> {response.status}</p>
-                      <p><strong>错误信息:</strong> {response.statusText}</p>
+                      <p>
+                        <strong>状态码:</strong> {response.status}
+                      </p>
+                      <p>
+                        <strong>错误信息:</strong> {response.statusText}
+                      </p>
                       {response.data?.message && (
-                        <p><strong>服务器消息:</strong> {response.data.message}</p>
+                        <p>
+                          <strong>服务器消息:</strong> {response.data.message}
+                        </p>
                       )}
                     </div>
                   }
-                  type="error" 
-                  showIcon 
+                  type="error"
+                  showIcon
                 />
               </div>
             </TabPane>

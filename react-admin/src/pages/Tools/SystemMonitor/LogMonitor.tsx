@@ -21,29 +21,29 @@ const LogMonitor: React.FC = () => {
   const [logAnalysis, setLogAnalysis] = useState<LogAnalysis | null>(null);
   const [logDistribution, setLogDistribution] = useState<LogDistribution[]>([]);
   const [errorLogs, setErrorLogs] = useState<ErrorLog[]>([]);
-  
+
   const [loading, setLoading] = useState<boolean>(true);
   const [analyzingLogs, setAnalyzingLogs] = useState<boolean>(false);
   const [refreshInterval, setRefreshInterval] = useState<number>(300000); // 默认5分钟
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
   const [activeTab, setActiveTab] = useState<string>('1');
-  
+
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const [statsResult, trendsResult, distributionResult, errorsResult] = await Promise.all([
         logStatsApi.getStats({
           startDate: dateRange ? dateRange[0].format('YYYY-MM-DD') : undefined,
-          endDate: dateRange ? dateRange[1].format('YYYY-MM-DD') : undefined,
+          endDate: dateRange ? dateRange[1].format('YYYY-MM-DD') : undefined
         }),
         logStatsApi.getTrends(7), // 默认获取过去7天的日志趋势
         logStatsApi.getDistribution(),
         logStatsApi.getErrorLogs(10) // 获取最近10条错误日志
       ]);
-      
+
       setLogStats(statsResult);
       setLogTrends(trendsResult);
       setLogDistribution(distributionResult);
@@ -92,7 +92,7 @@ const LogMonitor: React.FC = () => {
       title: '日期',
       dataIndex: 'date',
       key: 'date',
-      render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD')
     },
     {
       title: '日志级别',
@@ -102,24 +102,24 @@ const LogMonitor: React.FC = () => {
         const colorMap: Record<string, string> = {
           ERROR: 'error',
           WARN: 'warning',
-          INFO: 'success',
+          INFO: 'success'
         };
-        
+
         return <Tag color={colorMap[level] || 'default'}>{level}</Tag>;
       },
       filters: [
         { text: 'ERROR', value: 'ERROR' },
         { text: 'WARN', value: 'WARN' },
-        { text: 'INFO', value: 'INFO' },
+        { text: 'INFO', value: 'INFO' }
       ],
-      onFilter: (value: string, record: LogStat) => record.level === value,
+      onFilter: (value: string, record: LogStat) => record.level === value
     },
     {
       title: '日志数量',
       dataIndex: 'count',
       key: 'count',
-      sorter: (a: LogStat, b: LogStat) => a.count - b.count,
-    },
+      sorter: (a: LogStat, b: LogStat) => a.count - b.count
+    }
   ];
 
   // 错误日志表格列定义
@@ -129,28 +129,28 @@ const LogMonitor: React.FC = () => {
       dataIndex: 'timestamp',
       key: 'timestamp',
       render: (timestamp: string) => dayjs(timestamp).format('YYYY-MM-DD HH:mm:ss'),
-      width: 180,
+      width: 180
     },
     {
       title: '级别',
       dataIndex: 'level',
       key: 'level',
       render: (level: string) => <Tag color="error">{level}</Tag>,
-      width: 100,
+      width: 100
     },
     {
       title: '错误信息',
       dataIndex: 'message',
       key: 'message',
       ellipsis: {
-        showTitle: false,
+        showTitle: false
       },
       render: (message: string) => (
         <Tooltip placement="topLeft" title={message}>
           {message}
         </Tooltip>
-      ),
-    },
+      )
+    }
   ];
 
   // 准备日志趋势图数据
@@ -169,26 +169,26 @@ const LogMonitor: React.FC = () => {
       color: ['#ff4d4f', '#faad14', '#52c41a'],
       meta: {
         count: {
-          alias: '日志数量',
+          alias: '日志数量'
         },
         date: {
           alias: '日期',
-          formatter: (value: string) => value.split('T')[0],
-        },
+          formatter: (value: string) => value.split('T')[0]
+        }
       },
       xAxis: {
         tickCount: 5,
         label: {
-          formatter: (value: string) => value.split('T')[0],
+          formatter: (value: string) => value.split('T')[0]
         }
       },
       slider: {
         start: 0,
-        end: 1,
+        end: 1
       },
       legend: {
-        position: 'top-right',
-      },
+        position: 'top-right'
+      }
     };
 
     return (
@@ -211,7 +211,7 @@ const LogMonitor: React.FC = () => {
     const colorMap: Record<string, string> = {
       ERROR: '#ff4d4f',
       WARN: '#faad14',
-      INFO: '#52c41a',
+      INFO: '#52c41a'
     };
 
     // 饼图配置
@@ -224,9 +224,9 @@ const LogMonitor: React.FC = () => {
       color: ['#ff4d4f', '#faad14', '#52c41a'],
       label: {
         type: 'outer',
-        content: '{name}: {percentage}',
+        content: '{name}: {percentage}'
       },
-      interactions: [{ type: 'pie-legend-active' }, { type: 'element-active' }],
+      interactions: [{ type: 'pie-legend-active' }, { type: 'element-active' }]
     };
 
     return (
@@ -253,17 +253,10 @@ const LogMonitor: React.FC = () => {
             <Card title="最新日志分析结果" className="dashboard-card">
               <Row gutter={[16, 16]}>
                 <Col xs={24} sm={12} md={6}>
-                  <Statistic
-                    title="分析文件"
-                    value={logAnalysis.filename}
-                    valueStyle={{ fontSize: '16px' }}
-                  />
+                  <Statistic title="分析文件" value={logAnalysis.filename} valueStyle={{ fontSize: '16px' }} />
                 </Col>
                 <Col xs={24} sm={12} md={6}>
-                  <Statistic
-                    title="总行数"
-                    value={logAnalysis.totalLines}
-                  />
+                  <Statistic title="总行数" value={logAnalysis.totalLines} />
                 </Col>
                 <Col xs={24} sm={8} md={4}>
                   <Statistic
@@ -274,18 +267,10 @@ const LogMonitor: React.FC = () => {
                   />
                 </Col>
                 <Col xs={24} sm={8} md={4}>
-                  <Statistic
-                    title="警告日志"
-                    value={logAnalysis.warnCount}
-                    valueStyle={{ color: logAnalysis.warnCount > 0 ? '#faad14' : undefined }}
-                  />
+                  <Statistic title="警告日志" value={logAnalysis.warnCount} valueStyle={{ color: logAnalysis.warnCount > 0 ? '#faad14' : undefined }} />
                 </Col>
                 <Col xs={24} sm={8} md={4}>
-                  <Statistic
-                    title="信息日志"
-                    value={logAnalysis.infoCount}
-                    valueStyle={{ color: '#52c41a' }}
-                  />
+                  <Statistic title="信息日志" value={logAnalysis.infoCount} valueStyle={{ color: '#52c41a' }} />
                 </Col>
               </Row>
             </Card>
@@ -301,14 +286,14 @@ const LogMonitor: React.FC = () => {
         </Col>
 
         <Col span={24}>
-          <Card 
-            title="日志统计数据" 
+          <Card
+            title="日志统计数据"
             className="dashboard-card"
             extra={
-              <DatePicker.RangePicker 
-                onChange={(dates) => {
+              <DatePicker.RangePicker
+                onChange={dates => {
                   setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs]);
-                }} 
+                }}
               />
             }
           >
@@ -332,16 +317,11 @@ const LogMonitor: React.FC = () => {
     return (
       <Row gutter={[24, 24]}>
         <Col span={24}>
-          <Card 
-            title="最近错误日志" 
+          <Card
+            title="最近错误日志"
             className="dashboard-card"
             extra={
-              <Button 
-                type="primary" 
-                danger
-                size="small"
-                onClick={() => fetchData()}
-              >
+              <Button type="primary" danger size="small" onClick={() => fetchData()}>
                 刷新错误日志
               </Button>
             }
@@ -349,7 +329,7 @@ const LogMonitor: React.FC = () => {
             <Table
               dataSource={errorLogs}
               columns={errorColumns}
-              rowKey={(record) => `${record.timestamp}-${Math.random()}`}
+              rowKey={record => `${record.timestamp}-${Math.random()}`}
               pagination={{ pageSize: 10 }}
               size="middle"
               className="data-table"
@@ -373,11 +353,7 @@ const LogMonitor: React.FC = () => {
       color: ['#ff4d4f', '#faad14', '#52c41a'],
       label: {
         position: 'middle',
-        layout: [
-          { type: 'interval-adjust-position' },
-          { type: 'interval-hide-overlap' },
-          { type: 'adjust-color' },
-        ],
+        layout: [{ type: 'interval-adjust-position' }, { type: 'interval-hide-overlap' }, { type: 'adjust-color' }]
       },
       meta: {
         count: { alias: '日志数量' },
@@ -389,10 +365,7 @@ const LogMonitor: React.FC = () => {
     return (
       <Row gutter={[24, 24]}>
         <Col span={24}>
-          <Card 
-            title="日志数量分析" 
-            className="dashboard-card"
-          >
+          <Card title="日志数量分析" className="dashboard-card">
             <div className="chart-container">
               {logStats.length > 0 ? (
                 <Column {...dateCountConfig} />
@@ -404,7 +377,7 @@ const LogMonitor: React.FC = () => {
             </div>
           </Card>
         </Col>
-        
+
         <Col span={24}>
           <Alert
             message="日志分析说明"
@@ -452,49 +425,30 @@ const LogMonitor: React.FC = () => {
         </div>
         <div>
           <Button.Group style={{ marginRight: 16 }}>
-            <Button 
-              type={refreshInterval === 60000 ? 'primary' : 'default'} 
-              onClick={() => handleIntervalChange(60000)}
-            >
+            <Button type={refreshInterval === 60000 ? 'primary' : 'default'} onClick={() => handleIntervalChange(60000)}>
               1分钟
             </Button>
-            <Button 
-              type={refreshInterval === 300000 ? 'primary' : 'default'} 
-              onClick={() => handleIntervalChange(300000)}
-            >
+            <Button type={refreshInterval === 300000 ? 'primary' : 'default'} onClick={() => handleIntervalChange(300000)}>
               5分钟
             </Button>
-            <Button 
-              type={refreshInterval === 600000 ? 'primary' : 'default'} 
-              onClick={() => handleIntervalChange(600000)}
-            >
+            <Button type={refreshInterval === 600000 ? 'primary' : 'default'} onClick={() => handleIntervalChange(600000)}>
               10分钟
             </Button>
           </Button.Group>
-          
-          <Button 
-            type="primary" 
-            icon={<FileTextOutlined />} 
-            loading={analyzingLogs}
-            onClick={handleAnalyzeLogs}
-            style={{ marginRight: 16 }}
-          >
+
+          <Button type="primary" icon={<FileTextOutlined />} loading={analyzingLogs} onClick={handleAnalyzeLogs} style={{ marginRight: 16 }}>
             分析最新日志
           </Button>
-          
-          <Button 
-            icon={<ReloadOutlined />} 
-            onClick={fetchData}
-            loading={loading}
-          >
+
+          <Button icon={<ReloadOutlined />} onClick={fetchData} loading={loading}>
             刷新数据
           </Button>
         </div>
       </div>
 
       <Spin spinning={loading && !logStats.length}>
-        <Tabs 
-          activeKey={activeTab} 
+        <Tabs
+          activeKey={activeTab}
           onChange={setActiveTab}
           className="log-monitor-tabs"
           items={[

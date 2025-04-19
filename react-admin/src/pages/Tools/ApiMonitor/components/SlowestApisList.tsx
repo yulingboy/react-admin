@@ -35,8 +35,8 @@ const SlowestApisList: React.FC<SlowestApisListProps> = ({ data, loading }) => {
   };
 
   return (
-    <Card 
-      title="最慢的API" 
+    <Card
+      title="最慢的API"
       className="w-full bg-white rounded-lg shadow-sm h-full"
       extra={
         <Tooltip title="按响应时间排序的最慢API调用">
@@ -53,24 +53,16 @@ const SlowestApisList: React.FC<SlowestApisListProps> = ({ data, loading }) => {
           {data.map((api, index) => (
             <li key={index} className="py-3 flex flex-col sm:flex-row justify-between items-start sm:items-center">
               <div className="flex items-center mb-2 sm:mb-0">
-                <Badge 
-                  color={getMethodColor(api.method)}
-                  text={<span className="font-mono">{api.method}</span>}
-                  className="mr-2"
-                />
+                <Badge color={getMethodColor(api.method)} text={<span className="font-mono">{api.method}</span>} className="mr-2" />
                 <Tooltip title={api.path}>
-                  <span className="max-w-xs sm:max-w-sm md:max-w-md truncate inline-block">
-                    {api.path}
-                  </span>
+                  <span className="max-w-xs sm:max-w-sm md:max-w-md truncate inline-block">{api.path}</span>
                 </Tooltip>
               </div>
               <div className="flex items-center gap-3 ml-8 sm:ml-0">
                 <span className={`px-2 py-1 rounded text-xs ${getResponseTimeColor(api.responseTime)} bg-gray-100`}>
                   {formatMilliseconds(api.responseTime)}
                 </span>
-                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                  {api.requestCount}次调用
-                </span>
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">{api.requestCount}次调用</span>
               </div>
             </li>
           ))}

@@ -137,8 +137,8 @@ export class ApiTesterService {
    * @param userId 当前用户ID
    */
   async getHistory(query: ApiTestHistoryQueryDto, userId: number) {
-    const { page = 1, pageSize = 10, name, method, url, startTime, endTime } = query;
-    const skip = (page - 1) * pageSize;
+    const { current = 1, pageSize = 10, name, method, url, startTime, endTime } = query;
+    const skip = (current - 1) * pageSize;
 
     // 构建过滤条件
     const where: any = { userId };
@@ -258,9 +258,9 @@ export class ApiTesterService {
    * @param query 查询参数
    * @param userId 当前用户ID
    */
-  async getTemplateList(query: { name?: string; page?: number; pageSize?: number }, userId: number) {
-    const { page = 1, pageSize = 10, name } = query;
-    const skip = (page - 1) * pageSize;
+  async getTemplateList(query: { name?: string; current?: number; pageSize?: number }, userId: number) {
+    const { current = 1, pageSize = 10, name } = query;
+    const skip = (current - 1) * pageSize;
 
     // 构建过滤条件
     const where: any = { userId };

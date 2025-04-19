@@ -36,7 +36,7 @@ const CodeGeneratorPage: React.FC = () => {
   const [configPanelVisible, setConfigPanelVisible] = useState<boolean>(false);
   const [configId, setConfigId] = useState<number | null>(null);
   const [columnsData, setColumnsData] = useState<any[]>([]);
-  
+
   // 处理预览代码
   const handlePreview = (record: CodeGenerator) => {
     setPreviewId(record.id);
@@ -74,7 +74,7 @@ const CodeGeneratorPage: React.FC = () => {
     handleEdit,
     handleDelete,
     handlePreview,
-    handleGenerate: (record) => handleGenerateCode(record.id),
+    handleGenerate: record => handleGenerateCode(record.id),
     handleConfig
   });
 
@@ -85,23 +85,18 @@ const CodeGeneratorPage: React.FC = () => {
         actionRef={tableRef}
         rowKey="id"
         search={{
-          labelWidth: 120,
+          labelWidth: 120
         }}
         cardBordered
         toolBarRender={() => [
-          <Button 
-            key="add" 
-            type="primary" 
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-          >
+          <Button key="add" type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
             新增生成配置
-          </Button>,
+          </Button>
         ]}
         request={loadCodeGeneratorList}
         pagination={{
           showSizeChanger: true,
-          defaultPageSize: 10,
+          defaultPageSize: 10
         }}
         columns={columns}
       />
@@ -118,11 +113,7 @@ const CodeGeneratorPage: React.FC = () => {
       />
 
       {/* 代码预览 */}
-      <CodePreviewModal
-        visible={previewVisible}
-        generatorId={previewId}
-        onCancel={() => setPreviewVisible(false)}
-      />
+      <CodePreviewModal visible={previewVisible} generatorId={previewId} onCancel={() => setPreviewVisible(false)} />
 
       {/* 字段配置 */}
       <ColumnConfigPanel

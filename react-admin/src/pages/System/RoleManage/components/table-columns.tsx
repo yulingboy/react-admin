@@ -39,14 +39,14 @@ export const getRoleColumns = ({ handleEditRole, handleDeleteRole }: ColumnsProp
     {
       title: '关键字',
       dataIndex: 'keyword',
-      hideInTable: true,
+      hideInTable: true
     },
     {
       title: '角色名称',
       dataIndex: 'name',
       ellipsis: true,
       hideInSearch: true,
-      align: 'center',
+      align: 'center'
     },
     {
       title: '角色标识',
@@ -54,13 +54,13 @@ export const getRoleColumns = ({ handleEditRole, handleDeleteRole }: ColumnsProp
       ellipsis: true,
       copyable: true,
       hideInSearch: true,
-      align: 'center',
+      align: 'center'
     },
     {
       title: '描述',
       dataIndex: 'description',
       ellipsis: true,
-      search: false,
+      search: false
     },
     {
       title: '状态',
@@ -74,7 +74,7 @@ export const getRoleColumns = ({ handleEditRole, handleDeleteRole }: ColumnsProp
         const color = statusLabelMap[status].color || 'success';
 
         return <Tag color={color}>{label}</Tag>;
-      },
+      }
     },
     {
       title: '角色类型',
@@ -93,23 +93,21 @@ export const getRoleColumns = ({ handleEditRole, handleDeleteRole }: ColumnsProp
       title: '用户数量',
       dataIndex: 'userCount',
       search: false,
-      render: (_, record) => (
-        <Tag color="blue">{record.userCount || 0} 用户</Tag>
-      ),
+      render: (_, record) => <Tag color="blue">{record.userCount || 0} 用户</Tag>
     },
     {
       title: '创建时间',
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       search: false,
-      sorter: true,
+      sorter: true
     },
     {
       title: '更新时间',
       dataIndex: 'updatedAt',
       valueType: 'dateTime',
       search: false,
-      sorter: true,
+      sorter: true
     },
     {
       title: '操作',
@@ -117,25 +115,13 @@ export const getRoleColumns = ({ handleEditRole, handleDeleteRole }: ColumnsProp
       valueType: 'option',
       width: 180,
       render: (_, record) => [
-        <Button
-          key="edit"
-          type="link"
-          icon={<EditOutlined />}
-          onClick={() => handleEditRole(record)}
-        >
+        <Button key="edit" type="link" icon={<EditOutlined />} onClick={() => handleEditRole(record)}>
           编辑
         </Button>,
-        <Button
-          key="delete"
-          disabled={record.isSystem === '1'}
-          type="link"
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => confirmDelete(record)}
-        >
+        <Button key="delete" disabled={record.isSystem === '1'} type="link" danger icon={<DeleteOutlined />} onClick={() => confirmDelete(record)}>
           删除
         </Button>
-      ],
-    },
+      ]
+    }
   ];
 };

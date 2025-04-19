@@ -20,7 +20,7 @@ const LogTrendsChart: React.FC<LogTrendsChartProps> = ({ logTrends }) => {
       if (!chartInstance.current) {
         chartInstance.current = echarts.init(chartRef.current);
       }
-      
+
       if (logTrends.length > 0) {
         renderChart();
       }
@@ -41,9 +41,9 @@ const LogTrendsChart: React.FC<LogTrendsChartProps> = ({ logTrends }) => {
         chartInstance.current.resize();
       }
     };
-    
+
     window.addEventListener('resize', handleResize);
-    
+
     return () => {
       window.removeEventListener('resize', handleResize);
     };
@@ -54,7 +54,7 @@ const LogTrendsChart: React.FC<LogTrendsChartProps> = ({ logTrends }) => {
 
     // 准备数据
     const dates = [...new Set(logTrends.map(trend => dayjs(trend.date).format('MM-DD')))];
-    
+
     const errorData = logTrends.map(trend => trend.ERROR);
     const warnData = logTrends.map(trend => trend.WARN);
     const infoData = logTrends.map(trend => trend.INFO);
@@ -151,7 +151,7 @@ const LogTrendsChart: React.FC<LogTrendsChartProps> = ({ logTrends }) => {
         }
       ]
     };
-    
+
     // 渲染图表
     chartInstance.current.setOption(option);
   };

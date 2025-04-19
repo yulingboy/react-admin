@@ -1,5 +1,17 @@
 import { Navigate } from 'react-router-dom';
-import { HomeOutlined, DashboardOutlined, SettingOutlined, TableOutlined, FormOutlined, CodeOutlined, DatabaseOutlined, ApiOutlined, LineChartOutlined, DashboardFilled, FileTextOutlined } from '@ant-design/icons';
+import {
+  HomeOutlined,
+  DashboardOutlined,
+  SettingOutlined,
+  TableOutlined,
+  FormOutlined,
+  CodeOutlined,
+  DatabaseOutlined,
+  ApiOutlined,
+  LineChartOutlined,
+  DashboardFilled,
+  FileTextOutlined
+} from '@ant-design/icons';
 import { lazyLoadHelper } from '@/utils/lazyLoadHelper';
 import AuthRoute from '@/components/AuthRoute';
 import { AppRouteObject } from './types';
@@ -79,8 +91,7 @@ export const routes: AppRouteObject[] = [
             meta: {
               title: '字典管理'
             }
-          },
-          
+          }
         ]
       },
       {
@@ -94,7 +105,7 @@ export const routes: AppRouteObject[] = [
             path: 'api-tester',
             element: <ApiTester />,
             meta: {
-              title: '接口测试',
+              title: '接口测试'
             }
           },
           {
@@ -108,38 +119,35 @@ export const routes: AppRouteObject[] = [
             path: 'sql-executor',
             element: <SqlExecutor />,
             meta: {
-              title: 'SQL执行器',
+              title: 'SQL执行器'
             }
           },
           {
             path: 'db-manager',
             element: <DbManager />,
             meta: {
-              title: '数据库管理',
+              title: '数据库管理'
             }
           },
           {
             path: 'system-resources',
             element: <SystemResourceMonitor />,
             meta: {
-              title: '系统资源监控',
-              icon: <DashboardFilled />
+              title: '系统资源监控'
             }
           },
           {
             path: 'api-monitor',
             element: <ApiMonitor />,
             meta: {
-              title: 'API监控',
-              icon: <ApiOutlined />
+              title: 'API监控'
             }
           },
           {
             path: 'log-monitor',
             element: <LogMonitor />,
             meta: {
-              title: '日志统计',
-              icon: <FileTextOutlined />
+              title: '日志统计'
             }
           }
         ]

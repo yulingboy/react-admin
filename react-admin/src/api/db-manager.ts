@@ -1,11 +1,5 @@
 import { request as http } from '@/utils/http';
-import {
-  DatabaseConnection,
-  DatabaseConnectionListParams,
-  DatabaseTable,
-  DatabaseColumn,
-  QueryResult,
-} from '@/types/db-manager';
+import { DatabaseConnection, DatabaseConnectionListParams, DatabaseTable, DatabaseColumn, QueryResult } from '@/types/db-manager';
 
 /**
  * 获取数据库连接列表

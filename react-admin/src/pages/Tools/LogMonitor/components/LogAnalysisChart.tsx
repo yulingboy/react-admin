@@ -20,7 +20,7 @@ const LogAnalysisChart: React.FC<LogAnalysisChartProps> = ({ logStats }) => {
       if (!chartInstance.current) {
         chartInstance.current = echarts.init(chartRef.current);
       }
-      
+
       if (logStats.length > 0) {
         renderChart();
       }
@@ -41,9 +41,9 @@ const LogAnalysisChart: React.FC<LogAnalysisChartProps> = ({ logStats }) => {
         chartInstance.current.resize();
       }
     };
-    
+
     window.addEventListener('resize', handleResize);
-    
+
     return () => {
       window.removeEventListener('resize', handleResize);
     };
@@ -54,21 +54,19 @@ const LogAnalysisChart: React.FC<LogAnalysisChartProps> = ({ logStats }) => {
 
     // 准备数据
     const dates = [...new Set(logStats.map(stat => dayjs(stat.date).format('MM-DD')))];
-    
+
     // 按日期和日志级别重组数据
     const errorData: number[] = [];
     const warnData: number[] = [];
     const infoData: number[] = [];
-    
+
     dates.forEach(date => {
-      const dayStats = logStats.filter(stat => 
-        dayjs(stat.date).format('MM-DD') === date
-      );
-      
+      const dayStats = logStats.filter(stat => dayjs(stat.date).format('MM-DD') === date);
+
       const errorStat = dayStats.find(stat => stat.level === 'ERROR');
       const warnStat = dayStats.find(stat => stat.level === 'WARN');
       const infoStat = dayStats.find(stat => stat.level === 'INFO');
-      
+
       errorData.push(errorStat ? errorStat.count : 0);
       warnData.push(warnStat ? warnStat.count : 0);
       infoData.push(infoStat ? infoStat.count : 0);
@@ -126,7 +124,7 @@ const LogAnalysisChart: React.FC<LogAnalysisChartProps> = ({ logStats }) => {
         }
       ]
     };
-    
+
     // 渲染图表
     chartInstance.current.setOption(option);
   };
@@ -142,7 +140,7 @@ const LogAnalysisChart: React.FC<LogAnalysisChartProps> = ({ logStats }) => {
           </div>
         )}
       </Card>
-      
+
       <Alert
         message="日志分析说明"
         description={

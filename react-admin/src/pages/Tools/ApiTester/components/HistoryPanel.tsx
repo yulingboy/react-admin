@@ -1,18 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Card,
-  Table,
-  Button,
-  Space,
-  Input,
-  Popconfirm,
-  message,
-  Select,
-  DatePicker,
-  Tag,
-  Tooltip,
-  Modal
-} from 'antd';
+import { Card, Table, Button, Space, Input, Popconfirm, message, Select, DatePicker, Tag, Tooltip, Modal } from 'antd';
 import { SearchOutlined, DeleteOutlined, LoadingOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons';
 import { ApiTestHistory, HttpMethod } from '@/types/api-tester';
 import { getApiTestHistoryList, deleteApiTestHistory, batchDeleteApiTestHistory } from '@/api';
@@ -30,7 +17,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
   const [loading, setLoading] = useState(false);
   const [list, setList] = useState<ApiTestHistory[]>([]);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
+  const [current, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [queryParams, setQueryParams] = useState({
@@ -38,7 +25,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
     method: undefined as HttpMethod | undefined,
     url: '',
     startTime: '',
-    endTime: '',
+    endTime: ''
   });
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [currentHistory, setCurrentHistory] = useState<ApiTestHistory | null>(null);
@@ -49,9 +36,9 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
     try {
       setLoading(true);
       const result = await getApiTestHistoryList({
-        page,
+        current,
         pageSize,
-        ...queryParams,
+        ...queryParams
       });
       setList(result.list);
       setTotal(result.total);
@@ -66,7 +53,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
   // 首次加载和查询参数变化时加载数据
   useEffect(() => {
     loadHistoryList();
-  }, [page, pageSize, queryParams]);
+  }, [current, pageSize, queryParams]);
 
   // 处理查询
   const handleSearch = () => {
@@ -80,7 +67,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
       method: undefined,
       url: '',
       startTime: '',
-      endTime: '',
+      endTime: ''
     });
     setPage(1);
   };
@@ -146,15 +133,13 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
       title: '名称',
       dataIndex: 'name',
       key: 'name',
-      ellipsis: true,
+      ellipsis: true
     },
     {
       title: '请求方法',
       dataIndex: 'method',
       key: 'method',
-      render: (method: HttpMethod) => (
-        <Tag color={getMethodColor(method)}>{method}</Tag>
-      ),
+      render: (method: HttpMethod) => <Tag color={getMethodColor(method)}>{method}</Tag>
     },
     {
       title: 'URL',
@@ -165,7 +150,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
         <Tooltip title={text}>
           <span>{text}</span>
         </Tooltip>
-      ),
+      )
     },
     {
       title: '状态码',
@@ -179,13 +164,13 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
         if (status >= 300 && status < 400) color = 'warning';
         if (status >= 400) color = 'error';
         return <Tag color={color}>{status}</Tag>;
-      },
+      }
     },
     {
       title: '创建时间',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (text: string) => dayjs(text).format('YYYY-MM-DD HH:mm:ss'),
+      render: (text: string) => dayjs(text).format('YYYY-MM-DD HH:mm:ss')
     },
     {
       title: '操作',
@@ -193,35 +178,18 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
       width: 160,
       render: (_: any, record: ApiTestHistory) => (
         <Space>
-          <Button 
-            type="link" 
-            size="small" 
-            icon={<EyeOutlined />}
-            onClick={() => handleView(record)}
-          >
+          <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => handleView(record)}>
             查看
           </Button>
-          <Button 
-            type="link" 
-            size="small" 
-            onClick={() => onLoadHistory(record)}
-          >
+          <Button type="link" size="small" onClick={() => onLoadHistory(record)}>
             加载
           </Button>
-          <Popconfirm
-            title="确定要删除这条历史记录吗？"
-            onConfirm={() => handleDelete(record.id)}
-          >
-            <Button 
-              type="link" 
-              size="small" 
-              danger 
-              icon={<DeleteOutlined />}
-            />
+          <Popconfirm title="确定要删除这条历史记录吗？" onConfirm={() => handleDelete(record.id)}>
+            <Button type="link" size="small" danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
-      ),
-    },
+      )
+    }
   ];
 
   return (
@@ -232,48 +200,46 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
             <Input
               placeholder="请求名称"
               value={queryParams.name}
-              onChange={(e) => setQueryParams({ ...queryParams, name: e.target.value })}
+              onChange={e => setQueryParams({ ...queryParams, name: e.target.value })}
               style={{ width: 200 }}
             />
             <Select
               placeholder="请求方法"
               value={queryParams.method}
-              onChange={(value) => setQueryParams({ ...queryParams, method: value })}
+              onChange={value => setQueryParams({ ...queryParams, method: value })}
               allowClear
               style={{ width: 120 }}
             >
               {Object.values(HttpMethod).map(method => (
-                <Option key={method} value={method}>{method}</Option>
+                <Option key={method} value={method}>
+                  {method}
+                </Option>
               ))}
             </Select>
             <Input
               placeholder="请求URL"
               value={queryParams.url}
-              onChange={(e) => setQueryParams({ ...queryParams, url: e.target.value })}
+              onChange={e => setQueryParams({ ...queryParams, url: e.target.value })}
               style={{ width: 200 }}
             />
             <RangePicker
-              onChange={(dates) => {
+              onChange={dates => {
                 if (dates) {
                   setQueryParams({
                     ...queryParams,
                     startTime: dates[0]?.format('YYYY-MM-DD') || '',
-                    endTime: dates[1]?.format('YYYY-MM-DD') || '',
+                    endTime: dates[1]?.format('YYYY-MM-DD') || ''
                   });
                 } else {
                   setQueryParams({
                     ...queryParams,
                     startTime: '',
-                    endTime: '',
+                    endTime: ''
                   });
                 }
               }}
             />
-            <Button 
-              type="primary" 
-              icon={<SearchOutlined />} 
-              onClick={handleSearch}
-            >
+            <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
               查询
             </Button>
             <Button icon={<ReloadOutlined />} onClick={handleReset}>
@@ -284,18 +250,10 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
 
         <div className="table-operations" style={{ marginBottom: 16 }}>
           <Space>
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              disabled={selectedRowKeys.length === 0}
-              onClick={handleBatchDelete}
-            >
+            <Button danger icon={<DeleteOutlined />} disabled={selectedRowKeys.length === 0} onClick={handleBatchDelete}>
               批量删除
             </Button>
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={loadHistoryList}
-            >
+            <Button icon={<ReloadOutlined />} onClick={loadHistoryList}>
               刷新
             </Button>
           </Space>
@@ -304,20 +262,20 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
         <Table
           rowSelection={{
             selectedRowKeys,
-            onChange: setSelectedRowKeys,
+            onChange: setSelectedRowKeys
           }}
           columns={columns}
           dataSource={list}
           rowKey="id"
           pagination={{
-            current: page,
+            current,
             pageSize,
             total,
-            onChange: (p) => setPage(p),
+            onChange: p => setPage(p),
             onShowSizeChange: (_, size) => setPageSize(size),
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (t) => `共 ${t} 条`,
+            showTotal: t => `共 ${t} 条`
           }}
           loading={loading}
           size="small"
@@ -329,12 +287,10 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
         title={`历史记录详情: ${currentHistory?.name || ''}`}
         open={viewModalVisible}
         footer={[
-          <Button key="close" onClick={() => setViewModalVisible(false)}>关闭</Button>,
-          <Button
-            key="switch"
-            type="primary"
-            onClick={() => setViewMode(viewMode === 'request' ? 'response' : 'request')}
-          >
+          <Button key="close" onClick={() => setViewModalVisible(false)}>
+            关闭
+          </Button>,
+          <Button key="switch" type="primary" onClick={() => setViewMode(viewMode === 'request' ? 'response' : 'request')}>
             查看{viewMode === 'request' ? '响应' : '请求'}
           </Button>,
           <Button
@@ -355,27 +311,13 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onLoadHistory }) => {
         destroyOnClose
       >
         <div style={{ marginBottom: '10px' }}>
-          <Tag color={currentHistory?.method ? getMethodColor(currentHistory.method) : 'default'}>
-            {currentHistory?.method}
-          </Tag>
+          <Tag color={currentHistory?.method ? getMethodColor(currentHistory.method) : 'default'}>{currentHistory?.method}</Tag>
           <span style={{ marginLeft: '8px', wordBreak: 'break-all' }}>{currentHistory?.url}</span>
         </div>
-        
-        {viewMode === 'request' && currentHistory?.request && (
-          <JsonEditor 
-            value={currentHistory.request}
-            readOnly
-            height="400px"
-          />
-        )}
-        
-        {viewMode === 'response' && currentHistory?.response && (
-          <JsonEditor 
-            value={currentHistory.response}
-            readOnly
-            height="400px"
-          />
-        )}
+
+        {viewMode === 'request' && currentHistory?.request && <JsonEditor value={currentHistory.request} readOnly height="400px" />}
+
+        {viewMode === 'response' && currentHistory?.response && <JsonEditor value={currentHistory.response} readOnly height="400px" />}
       </Modal>
     </div>
   );

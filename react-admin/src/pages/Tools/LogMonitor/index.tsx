@@ -20,29 +20,29 @@ const LogMonitor: React.FC = () => {
   const [logAnalysis, setLogAnalysis] = useState<LogAnalysis | null>(null);
   const [logDistribution, setLogDistribution] = useState<LogDistribution[]>([]);
   const [errorLogs, setErrorLogs] = useState<ErrorLog[]>([]);
-  
+
   const [loading, setLoading] = useState<boolean>(true);
   const [analyzingLogs, setAnalyzingLogs] = useState<boolean>(false);
   const [refreshInterval, setRefreshInterval] = useState<number>(300000); // 默认5分钟
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
   const [activeTab, setActiveTab] = useState<string>('1');
-  
+
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const [statsResult, trendsResult, distributionResult, errorsResult] = await Promise.all([
         logStatsApi.getStats({
           startDate: dateRange ? dateRange[0].format('YYYY-MM-DD') : undefined,
-          endDate: dateRange ? dateRange[1].format('YYYY-MM-DD') : undefined,
+          endDate: dateRange ? dateRange[1].format('YYYY-MM-DD') : undefined
         }),
         logStatsApi.getTrends(7), // 默认获取过去7天的日志趋势
         logStatsApi.getDistribution(),
         logStatsApi.getErrorLogs(10) // 获取最近10条错误日志
       ]);
-      
+
       setLogStats(statsResult);
       setLogTrends(trendsResult);
       setLogDistribution(distributionResult);
@@ -96,12 +96,7 @@ const LogMonitor: React.FC = () => {
           <LogDistributionChart logDistribution={logDistribution} />
         </div>
 
-        <LogStatsTable 
-          loading={loading} 
-          logStats={logStats} 
-          dateRange={dateRange}
-          onDateRangeChange={setDateRange}
-        />
+        <LogStatsTable loading={loading} logStats={logStats} dateRange={dateRange} onDateRangeChange={setDateRange} />
       </div>
     );
   };
@@ -110,11 +105,7 @@ const LogMonitor: React.FC = () => {
   const renderErrorLogs = () => {
     return (
       <div className="grid grid-cols-1 gap-6">
-        <ErrorLogsTable 
-          loading={loading} 
-          errorLogs={errorLogs}
-          onRefresh={fetchData}
-        />
+        <ErrorLogsTable loading={loading} errorLogs={errorLogs} onRefresh={fetchData} />
       </div>
     );
   };
@@ -159,8 +150,8 @@ const LogMonitor: React.FC = () => {
 
       <Spin spinning={loading && !logStats.length} className="w-full p-4">
         <div className="p-4">
-          <Tabs 
-            activeKey={activeTab} 
+          <Tabs
+            activeKey={activeTab}
             onChange={setActiveTab}
             className="mt-2"
             items={[

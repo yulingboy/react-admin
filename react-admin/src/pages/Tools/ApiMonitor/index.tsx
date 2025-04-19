@@ -33,7 +33,7 @@ const ApiMonitor: React.FC = () => {
   const [apiStats, setApiStats] = useState<ApiStatistics | null>(null);
   const [apiPerformance, setApiPerformance] = useState<ApiPerformanceMetrics | null>(null);
   const [realtimeData, setRealtimeData] = useState<RealtimeApiData | null>(null);
-  
+
   // 从apiStats中提取的表格数据
   const [topPathsData, setTopPathsData] = useState<ApiPathItem[]>([]);
   const [topErrorPathsData, setTopErrorPathsData] = useState<ApiPathItem[]>([]);
@@ -46,17 +46,17 @@ const ApiMonitor: React.FC = () => {
       setError(null);
       const data = await apiMonitorApi.getStatistics();
       setApiStats(data);
-      
+
       // 处理topPaths数据
       if (data.topPaths && Array.isArray(data.topPaths)) {
         const pathsData = data.topPaths.map((item, index) => ({
           key: `path-${index}`,
           path: item.path,
-          count: item._sum.requestCount,
+          count: item._sum.requestCount
         }));
         setTopPathsData(pathsData);
       }
-      
+
       // 处理topErrorPaths数据
       if (data.topErrorPaths && Array.isArray(data.topErrorPaths)) {
         const errorPathsData = data.topErrorPaths.map((item, index) => ({
@@ -65,7 +65,7 @@ const ApiMonitor: React.FC = () => {
           method: item.method,
           count: item.requestCount,
           error: item.errorCount,
-          errorRate: item.errorRate,
+          errorRate: item.errorRate
         }));
         setTopErrorPathsData(errorPathsData);
       }
@@ -83,7 +83,7 @@ const ApiMonitor: React.FC = () => {
       setPerformanceLoading(true);
       const data = await apiMonitorApi.getPerformance();
       setApiPerformance(data);
-      
+
       if (data.apiPerformance && Array.isArray(data.apiPerformance)) {
         const performanceData = data.apiPerformance.map((item, index) => ({
           key: `perf-${index}`,
@@ -126,7 +126,7 @@ const ApiMonitor: React.FC = () => {
   // 首次加载和定时刷新
   useEffect(() => {
     handleRefresh();
-    
+
     const timer = setInterval(handleRefresh, refreshInterval);
 
     return () => clearInterval(timer);
@@ -164,8 +164,8 @@ const ApiMonitor: React.FC = () => {
 
       <div className="p-4">
         <Spin spinning={loading && !apiStats && !apiPerformance && !realtimeData}>
-          <Tabs 
-            activeKey={activeTab} 
+          <Tabs
+            activeKey={activeTab}
             onChange={setActiveTab}
             className="mt-2"
             items={[
@@ -177,14 +177,7 @@ const ApiMonitor: React.FC = () => {
                     概览
                   </span>
                 ),
-                children: (
-                  <ApiOverviewPanel
-                    apiStats={apiStats}
-                    topPathsData={topPathsData}
-                    topErrorPathsData={topErrorPathsData}
-                    loading={loading}
-                  />
-                )
+                children: <ApiOverviewPanel apiStats={apiStats} topPathsData={topPathsData} topErrorPathsData={topErrorPathsData} loading={loading} />
               },
               {
                 key: '2',
@@ -194,13 +187,7 @@ const ApiMonitor: React.FC = () => {
                     性能分析
                   </span>
                 ),
-                children: (
-                  <ApiPerformancePanel
-                    apiPerformance={apiPerformance}
-                    apiPerformanceData={apiPerformanceData}
-                    loading={performanceLoading}
-                  />
-                )
+                children: <ApiPerformancePanel apiPerformance={apiPerformance} apiPerformanceData={apiPerformanceData} loading={performanceLoading} />
               },
               {
                 key: '3',
@@ -210,12 +197,7 @@ const ApiMonitor: React.FC = () => {
                     实时监控
                   </span>
                 ),
-                children: (
-                  <ApiRealtimePanel
-                    realtimeData={realtimeData}
-                    loading={realtimeLoading}
-                  />
-                )
+                children: <ApiRealtimePanel realtimeData={realtimeData} loading={realtimeLoading} />
               }
             ]}
           />

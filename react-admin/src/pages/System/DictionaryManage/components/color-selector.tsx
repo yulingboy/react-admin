@@ -34,17 +34,17 @@ const ColorSelector: React.FC<ColorSelectorProps> = ({ value, onChange }) => {
       style={{ width: '100%' }}
       dropdownStyle={{ padding: '4px' }}
       options={COLOR_OPTIONS}
-      optionRender={(option) => (
+      optionRender={option => (
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div 
-            style={{ 
-              width: '16px', 
-              height: '16px', 
-              backgroundColor: option.value as string, 
+          <div
+            style={{
+              width: '16px',
+              height: '16px',
+              backgroundColor: option.value as string,
               marginRight: '8px',
               borderRadius: '2px',
               border: '1px solid #f0f0f0'
-            }} 
+            }}
           />
           {option.label}
         </div>

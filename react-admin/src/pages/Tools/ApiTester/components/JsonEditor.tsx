@@ -16,7 +16,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({ value, onChange, height = '300p
     if (editorRef.current) {
       // 格式化JSON字符串
       const formattedJson = JSON.stringify(value, null, 2);
-      
+
       // 创建编辑器
       monacoEditorRef.current = monaco.editor.create(editorRef.current, {
         value: formattedJson,
@@ -27,7 +27,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({ value, onChange, height = '300p
         lineNumbers: 'on',
         scrollBeyondLastLine: false,
         readOnly,
-        fontSize: 14,
+        fontSize: 14
       });
 
       // 监听编辑器内容变化
@@ -55,7 +55,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({ value, onChange, height = '300p
     if (monacoEditorRef.current) {
       const currentValue = monacoEditorRef.current.getValue();
       const newValue = JSON.stringify(value, null, 2);
-      
+
       // 避免内容无变化时触发不必要的更新
       if (currentValue !== newValue) {
         monacoEditorRef.current.setValue(newValue);
@@ -63,9 +63,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({ value, onChange, height = '300p
     }
   }, [value]);
 
-  return (
-    <div ref={editorRef} style={{ height, width: '100%', border: '1px solid #d9d9d9', borderRadius: '2px' }}></div>
-  );
+  return <div ref={editorRef} style={{ height, width: '100%', border: '1px solid #d9d9d9', borderRadius: '2px' }}></div>;
 };
 
 export default JsonEditor;

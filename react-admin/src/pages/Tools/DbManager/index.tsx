@@ -4,9 +4,9 @@ import { PlusOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
 import { DatabaseConnection } from '@/types/db-manager';
 import { useDbManager } from './hooks/useDbManager';
-import { getConnectionColumns } from './components/ConnectionColumns';
-import ConnectionFormModal from './components/ConnectionFormModal';
-import ConnectionDetailPanel from './components/ConnectionDetailPanel';
+import getConnectionColumns from './components/connection-columns';
+import ConnectionFormModal from './components/connection-form-modal';
+import ConnectionDetailPanel from './components/connection-detail-panel';
 
 const DbManager: React.FC = () => {
   const {
@@ -23,52 +23,52 @@ const DbManager: React.FC = () => {
     handleConnect,
     handleFormSuccess,
     closeDrawer,
-    loadConnectionList,
+    loadConnectionList
   } = useDbManager();
 
   // 获取表格列配置
   const columns = getConnectionColumns({
     handleEditConnection,
     handleDeleteConnection,
-    handleConnect,
+    handleConnect
   });
 
   return (
     <div className="db-manager-container">
       <ProTable<DatabaseConnection>
         headerTitle={
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <DatabaseOutlined style={{ marginRight: 8, fontSize: 18 }} />
+          <div className="flex items-center">
+            <DatabaseOutlined className="mr-2 text-lg" />
             数据库连接管理
           </div>
         }
         actionRef={tableRef}
         rowKey="id"
         search={{
-          labelWidth: 'auto',
+          labelWidth: 'auto'
         }}
         cardBordered
         toolBarRender={() => [
-          <Button 
-            key="add" 
-            type="primary" 
-            icon={<PlusOutlined />}
-            onClick={handleAddConnection}
-          >
+          <Button key="add" type="primary" icon={<PlusOutlined />} onClick={handleAddConnection}>
             新增数据库连接
-          </Button>,
+          </Button>
         ]}
         request={loadConnectionList}
         pagination={{
           showSizeChanger: true,
-          defaultPageSize: 10,
+          pageSizeOptions: [10, 20, 50, 100],
+          showQuickJumper: true,
+          defaultCurrent: 1,
+          defaultPageSize: 10
         }}
         columns={columns}
+        scroll={{ x: 'max-content' }}
+        className="w-full"
       />
 
       {/* 数据库连接表单 */}
       <ConnectionFormModal
-        title={isEdit ? "编辑数据库连接" : "新增数据库连接"}
+        title={isEdit ? '编辑数据库连接' : '新增数据库连接'}
         visible={formModalVisible}
         onCancel={() => setFormModalVisible(false)}
         onSubmit={handleFormSuccess}
@@ -76,11 +76,7 @@ const DbManager: React.FC = () => {
       />
 
       {/* 数据库连接详情抽屉 */}
-      <ConnectionDetailPanel
-        visible={drawerVisible}
-        connection={selectedConnection}
-        onClose={closeDrawer}
-      />
+      <ConnectionDetailPanel visible={drawerVisible} connection={selectedConnection} onClose={closeDrawer} />
     </div>
   );
 };

@@ -1,10 +1,5 @@
 import { request as http } from '@/utils/http';
-import { 
-  ApiTestRequest, 
-  ApiTestResponse, 
-  ApiTestHistory,
-  ApiTestHistoryQueryParams 
-} from '@/types/api-tester';
+import { ApiTestRequest, ApiTestResponse, ApiTestHistory, ApiTestHistoryQueryParams } from '@/types/api-tester';
 
 /**
  * 发送接口测试请求

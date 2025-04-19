@@ -28,20 +28,18 @@ export function useDictionary(code?: string) {
 
     // 定义一个异步函数来加载数据
     const loadData = async () => {
-
-        // 调用 API 获取字典数据
-        const data = await getDictionaryItemsByCode(code);
-        // 处理数据，转换为需要的格式
-        const processedOptions = data.map((item) => ({
-          label: item.label,
-          value: item.code,
-          color: item.color,
-        }));
-        // 将处理后的数据存入缓存
-        DICT_MAP.set(code, processedOptions);
-        // 更新状态
-        setOptions(processedOptions);
-      
+      // 调用 API 获取字典数据
+      const data = await getDictionaryItemsByCode(code);
+      // 处理数据，转换为需要的格式
+      const processedOptions = data.map(item => ({
+        label: item.label,
+        value: item.code,
+        color: item.color
+      }));
+      // 将处理后的数据存入缓存
+      DICT_MAP.set(code, processedOptions);
+      // 更新状态
+      setOptions(processedOptions);
     };
 
     // 调用加载数据的函数
@@ -81,11 +79,11 @@ export function useDictionary(code?: string) {
 
   // 返回三种不同格式的数据
   return {
-    options,        // 原始数据
-    valueEnum,      // 表格搜索枚举
-    selectOptions,  // 表单选择器选项
-    labelMap        // 值到标签的映射
+    options, // 原始数据
+    valueEnum, // 表格搜索枚举
+    selectOptions, // 表单选择器选项
+    labelMap // 值到标签的映射
   };
 }
 
-export default useDictionary;    
+export default useDictionary;

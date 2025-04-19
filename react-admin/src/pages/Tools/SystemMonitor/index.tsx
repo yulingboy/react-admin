@@ -8,7 +8,7 @@ import './index.css';
 
 const SystemMonitor: React.FC = () => {
   const { healthStatus, loading, refreshHealth } = useSystemHealth();
-  
+
   // 模块卡片配置
   const monitorModules = [
     {
@@ -45,27 +45,20 @@ const SystemMonitor: React.FC = () => {
             showIcon
             style={{ marginBottom: 24 }}
           />
-          
-          <SystemHealthCard 
-            healthStatus={healthStatus} 
-            loading={loading} 
-            onRefresh={refreshHealth}
-          />
+
+          <SystemHealthCard healthStatus={healthStatus} loading={loading} onRefresh={refreshHealth} />
         </Col>
-        
+
         {monitorModules.map((module, index) => (
           <Col xs={24} sm={24} md={8} key={index}>
             <Link to={module.path} style={{ textDecoration: 'none' }}>
-              <Card 
-                hoverable 
-                className={`monitor-module-card status-${module.status}`}
-                bordered={false}
-              >
+              <Card hoverable className={`monitor-module-card status-${module.status}`} bordered={false}>
                 <div className="module-header">
-                  <div className="module-icon-wrapper">
-                    {module.icon}
-                  </div>
-                  <div className="module-status-indicator" title={`状态: ${module.status === 'healthy' ? '正常' : module.status === 'warning' ? '警告' : '异常'}`} />
+                  <div className="module-icon-wrapper">{module.icon}</div>
+                  <div
+                    className="module-status-indicator"
+                    title={`状态: ${module.status === 'healthy' ? '正常' : module.status === 'warning' ? '警告' : '异常'}`}
+                  />
                 </div>
                 <h2 className="module-title">{module.title}</h2>
                 <p className="module-description">{module.description}</p>

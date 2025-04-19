@@ -40,9 +40,7 @@ const ApiPathsTable: React.FC<ApiPathsTableProps> = ({
       key: 'path',
       render: (text: string) => (
         <Tooltip title={text}>
-          <span className="max-w-xs md:max-w-sm truncate inline-block">
-            {text}
-          </span>
+          <span className="max-w-xs md:max-w-sm truncate inline-block">{text}</span>
         </Tooltip>
       ),
       ellipsis: true
@@ -52,13 +50,13 @@ const ApiPathsTable: React.FC<ApiPathsTableProps> = ({
       dataIndex: 'count',
       key: 'count',
       sorter: (a: ApiPathItem, b: ApiPathItem) => a.count - b.count,
-      width: 120,
+      width: 120
     }
   ];
 
   // 根据需要添加其他列
   const columns = [...baseColumns];
-  
+
   // 添加方法列
   if (showMethod) {
     columns.splice(1, 0, {
@@ -74,7 +72,7 @@ const ApiPathsTable: React.FC<ApiPathsTableProps> = ({
           DELETE: 'red'
         };
         return text ? <Badge color={colors[text] || 'default'} text={text} /> : '-';
-      },
+      }
     });
   }
 
@@ -85,7 +83,7 @@ const ApiPathsTable: React.FC<ApiPathsTableProps> = ({
       dataIndex: 'error',
       key: 'error',
       width: 120,
-      render: (text: number) => text > 0 ? <span className="text-red-500">{text}</span> : text,
+      render: (text: number) => (text > 0 ? <span className="text-red-500">{text}</span> : text)
     });
 
     columns.push({
@@ -97,9 +95,9 @@ const ApiPathsTable: React.FC<ApiPathsTableProps> = ({
         let color = 'green';
         if (value > 0.5) color = 'red';
         else if (value > 0.2) color = 'orange';
-        
+
         return <span style={{ color }}>{formatPercent(value / 100, 1)}</span>;
-      },
+      }
     });
   }
 
@@ -114,32 +112,26 @@ const ApiPathsTable: React.FC<ApiPathsTableProps> = ({
         let color = 'green';
         if (value > 1000) color = 'red';
         else if (value > 500) color = 'orange';
-        
+
         return <span style={{ color }}>{value?.toFixed(2)}</span>;
       },
-      sorter: (a: ApiPathItem, b: ApiPathItem) => (a.responseTime || 0) - (b.responseTime || 0),
+      sorter: (a: ApiPathItem, b: ApiPathItem) => (a.responseTime || 0) - (b.responseTime || 0)
     });
   }
 
   return (
-    <Card 
-      title={title} 
+    <Card
+      title={title}
       className="w-full bg-white rounded-lg shadow-sm"
-      extra={tooltipText && (
-        <Tooltip title={tooltipText}>
-          <InfoCircleOutlined className="text-gray-400" />
-        </Tooltip>
-      )}
+      extra={
+        tooltipText && (
+          <Tooltip title={tooltipText}>
+            <InfoCircleOutlined className="text-gray-400" />
+          </Tooltip>
+        )
+      }
     >
-      <Table 
-        dataSource={data}
-        columns={columns} 
-        rowKey="key"
-        size="small"
-        pagination={false}
-        className="w-full"
-        loading={loading}
-      />
+      <Table dataSource={data} columns={columns} rowKey="key" size="small" pagination={false} className="w-full" loading={loading} />
     </Card>
   );
 };

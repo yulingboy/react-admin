@@ -33,25 +33,25 @@ service.interceptors.response.use(
   (response: AxiosResponse): Promise<any> => {
     const res = response.data as BaseResponse;
     const config = response.config as CustomRequestConfig;
-    
+
     // 自定义配置选项
     const showErrorMessage = config.showErrorMessage !== false;
-    
+
     // 处理成功响应
     const isSuccess = !res.code || res.code === ResponseCode.SUCCESS;
-    
+
     if (isSuccess) {
       // 统一返回数据部分，不再根据withFullResponse区分
       return Promise.resolve(res.data);
     }
     console.error('请求失败:', res.message || '未知错误');
     console.log('请求失败的响应:', res);
-    console.log('showErrorMessage', showErrorMessage)
-    
+    console.log('showErrorMessage', showErrorMessage);
+
     // 处理业务错误，当code不等于200时，直接提示message信息
     if (showErrorMessage && res.message) {
       message.error(res.message);
-      
+
       // 特殊处理401状态码（未授权）
       if (res.code === ResponseCode.UNAUTHORIZED) {
         const currentPath = window.location.pathname;
@@ -62,18 +62,18 @@ service.interceptors.response.use(
         }
       }
     }
-    
+
     return Promise.reject(res);
   },
   error => {
     console.error('响应错误:', error);
     const config = error.config as CustomRequestConfig;
     const showErrorMessage = config?.showErrorMessage !== false;
-    
+
     if (showErrorMessage) {
       handleHttpError(error, true);
     }
-    
+
     return Promise.reject(error);
   }
 );

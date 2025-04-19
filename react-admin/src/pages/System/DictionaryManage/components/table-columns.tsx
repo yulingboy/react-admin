@@ -22,11 +22,7 @@ export const getDictionaryColumns = ({ handleEdit, handleDelete, handleSelect }:
     if (record.isSystem === '1') {
       return (
         <Tooltip key="systemDict" title="系统内置字典不可删除">
-          <Button 
-            type="link" 
-            icon={<LockOutlined />}
-            disabled
-          >
+          <Button type="link" icon={<LockOutlined />} disabled>
             删除
           </Button>
         </Tooltip>
@@ -35,12 +31,12 @@ export const getDictionaryColumns = ({ handleEdit, handleDelete, handleSelect }:
 
     // 普通字典可以删除
     return (
-      <Button 
-        key="delete" 
-        type="link" 
-        danger 
+      <Button
+        key="delete"
+        type="link"
+        danger
         icon={<DeleteOutlined />}
-        onClick={(e) => {
+        onClick={e => {
           e.stopPropagation();
           modal.confirm({
             title: '删除确认',
@@ -53,20 +49,20 @@ export const getDictionaryColumns = ({ handleEdit, handleDelete, handleSelect }:
       </Button>
     );
   };
-  
+
   return [
-  //  关键字
-  {
+    //  关键字
+    {
       title: '关键字',
       dataIndex: 'keyword',
-      hideInTable: true,
+      hideInTable: true
     },
     {
       title: '字典名称',
       dataIndex: 'name',
       ellipsis: true,
       width: 180,
-      hideInSearch: true,
+      hideInSearch: true
     },
     {
       title: '字典编码',
@@ -74,7 +70,7 @@ export const getDictionaryColumns = ({ handleEdit, handleDelete, handleSelect }:
       ellipsis: true,
       copyable: true,
       width: 200,
-      hideInSearch: true,
+      hideInSearch: true
     },
     {
       title: '系统内置',
@@ -96,7 +92,7 @@ export const getDictionaryColumns = ({ handleEdit, handleDelete, handleSelect }:
       valueType: 'select',
       width: 120,
       align: 'center',
-      valueEnum:statusEnum,
+      valueEnum: statusEnum,
       render: (_, record) => {
         const status = record.status;
         const label = statusLabelMap[status].label || '未知状态';
@@ -108,7 +104,7 @@ export const getDictionaryColumns = ({ handleEdit, handleDelete, handleSelect }:
       title: '描述',
       dataIndex: 'description',
       ellipsis: true,
-      search: false,
+      search: false
       // width: 250,
     },
 
@@ -118,10 +114,10 @@ export const getDictionaryColumns = ({ handleEdit, handleDelete, handleSelect }:
       width: 300,
       render: (_, record) => [
         <Tooltip key="view" title="查看字典项">
-          <Button 
-            type="link" 
+          <Button
+            type="link"
             icon={<EyeOutlined />}
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               handleSelect(record);
             }}
@@ -129,11 +125,11 @@ export const getDictionaryColumns = ({ handleEdit, handleDelete, handleSelect }:
             查看
           </Button>
         </Tooltip>,
-        <Button 
-          key="edit" 
-          type="link" 
+        <Button
+          key="edit"
+          type="link"
           icon={<EditOutlined />}
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation();
             handleEdit(record);
           }}
@@ -141,7 +137,7 @@ export const getDictionaryColumns = ({ handleEdit, handleDelete, handleSelect }:
           编辑
         </Button>,
         getDeleteButton(record)
-      ],
-    },
+      ]
+    }
   ];
 };

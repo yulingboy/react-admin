@@ -1,11 +1,6 @@
 import React from 'react';
 import { Card, Typography, Badge, Space, Spin, Tooltip, Button } from 'antd';
-import { 
-  CheckCircleOutlined, 
-  ExclamationCircleOutlined, 
-  CloseCircleOutlined,
-  SyncOutlined 
-} from '@ant-design/icons';
+import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined, SyncOutlined } from '@ant-design/icons';
 import { SystemHealth } from '@/types/system-monitor';
 import { formatDateTime } from '@/utils/formatters';
 
@@ -17,11 +12,7 @@ interface SystemHealthCardProps {
   onRefresh?: () => void;
 }
 
-const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ 
-  healthStatus, 
-  loading,
-  onRefresh 
-}) => {
+const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ healthStatus, loading, onRefresh }) => {
   if (!healthStatus && !loading) {
     return (
       <Card className="health-card">
@@ -38,7 +29,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({
   }
 
   const getStatusIcon = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'healthy':
         return <CheckCircleOutlined className="health-icon health-icon-healthy" />;
       case 'warning':
@@ -51,7 +42,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({
   };
 
   const getStatusText = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'healthy':
         return '正常';
       case 'warning':
@@ -64,7 +55,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({
   };
 
   const getStatusColor = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'healthy':
         return 'success';
       case 'warning':
@@ -78,9 +69,9 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({
 
   const renderHealthChecks = () => {
     if (!healthStatus || !healthStatus.checks) return null;
-    
+
     const { checks } = healthStatus;
-    
+
     return (
       <div className="health-checks">
         <Tooltip title="CPU使用率状态">
@@ -89,21 +80,21 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({
             <span>CPU: {getStatusText(checks.cpu.status)}</span>
           </span>
         </Tooltip>
-        
+
         <Tooltip title="内存使用率状态">
           <span className={`health-check-item bg-${getStatusColor(checks.memory.status)}`}>
             {getStatusIcon(checks.memory.status)}
             <span>内存: {getStatusText(checks.memory.status)}</span>
           </span>
         </Tooltip>
-        
+
         <Tooltip title="API调用状态">
           <span className={`health-check-item bg-${getStatusColor(checks.api.status)}`}>
             {getStatusIcon(checks.api.status)}
             <span>API: {getStatusText(checks.api.status)}</span>
           </span>
         </Tooltip>
-        
+
         <Tooltip title="系统日志状态">
           <span className={`health-check-item bg-${getStatusColor(checks.logs.status)}`}>
             {getStatusIcon(checks.logs.status)}
@@ -115,17 +106,13 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({
   };
 
   return (
-    <Card 
+    <Card
       className="health-card"
       title={
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Text strong>系统健康状态</Text>
           {onRefresh && (
-            <Button 
-              type="text" 
-              icon={<SyncOutlined spin={loading} />} 
-              onClick={onRefresh}
-            >
+            <Button type="text" icon={<SyncOutlined spin={loading} />} onClick={onRefresh}>
               刷新
             </Button>
           )}
@@ -139,14 +126,9 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({
               {getStatusIcon(healthStatus.status)}
               <Space direction="vertical" size={0}>
                 <Title level={4} style={{ margin: 0 }}>
-                  <Badge 
-                    status={getStatusColor(healthStatus.status) as any} 
-                    text={`系统状态: ${getStatusText(healthStatus.status)}`}
-                  />
+                  <Badge status={getStatusColor(healthStatus.status) as any} text={`系统状态: ${getStatusText(healthStatus.status)}`} />
                 </Title>
-                <Text type="secondary">
-                  最后更新: {formatDateTime(healthStatus.timestamp)}
-                </Text>
+                <Text type="secondary">最后更新: {formatDateTime(healthStatus.timestamp)}</Text>
               </Space>
             </div>
             {renderHealthChecks()}

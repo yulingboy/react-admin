@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Layout,  Breadcrumb, Button } from 'antd';
+import { Layout, Breadcrumb, Button } from 'antd';
 import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons';
 import { AppRouteObject, routes } from '@/router';
 import UserInfoDropdown from './user-info';

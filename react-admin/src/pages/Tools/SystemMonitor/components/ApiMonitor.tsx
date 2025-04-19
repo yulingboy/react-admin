@@ -25,7 +25,7 @@ const ApiMonitor: React.FC<ApiMonitorProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [apiStats, setApiStats] = useState<ApiStatistics | null>(null);
-  
+
   // 从apiStats中提取的表格数据
   const [topPathsData, setTopPathsData] = useState<ApiPathItem[]>([]);
   const [topErrorPathsData, setTopErrorPathsData] = useState<ApiPathItem[]>([]);
@@ -36,17 +36,17 @@ const ApiMonitor: React.FC<ApiMonitorProps> = ({
       setError(null);
       const data = await getApiStatistics();
       setApiStats(data);
-      
+
       // 处理topPaths数据
       if (data.topPaths && Array.isArray(data.topPaths)) {
         const pathsData = data.topPaths.map((item, index) => ({
           key: `path-${index}`,
           path: item.path,
-          count: item.count || (item._sum?.requestCount ?? 0), // 兼容两种可能的数据格式
+          count: item.count || (item._sum?.requestCount ?? 0) // 兼容两种可能的数据格式
         }));
         setTopPathsData(pathsData);
       }
-      
+
       // 处理topErrorPaths数据
       if (data.topErrorPaths && Array.isArray(data.topErrorPaths)) {
         const errorPathsData = data.topErrorPaths.map((item, index) => ({
@@ -55,7 +55,7 @@ const ApiMonitor: React.FC<ApiMonitorProps> = ({
           method: item.method,
           count: item.count || item.requestCount || 0, // 兼容不同的数据格式
           error: item.error || item.errorCount || 0,
-          errorRate: item.errorRate || 0,
+          errorRate: item.errorRate || 0
         }));
         setTopErrorPathsData(errorPathsData);
       }
@@ -70,7 +70,7 @@ const ApiMonitor: React.FC<ApiMonitorProps> = ({
   // 首次加载和定时刷新
   useEffect(() => {
     fetchApiStats();
-    
+
     const timer = setInterval(() => {
       fetchApiStats();
     }, refreshInterval);
@@ -90,14 +90,14 @@ const ApiMonitor: React.FC<ApiMonitorProps> = ({
             {text}
           </span>
         </Tooltip>
-      ),
+      )
     },
     {
       title: '调用次数',
       dataIndex: 'count',
       key: 'count',
       sorter: (a: ApiPathItem, b: ApiPathItem) => a.count - b.count,
-      width: 120,
+      width: 120
     }
   ];
 
@@ -109,17 +109,22 @@ const ApiMonitor: React.FC<ApiMonitorProps> = ({
       key: 'path',
       render: (text: string, record: ApiPathItem) => (
         <Tooltip title={`${record.method || ''} ${text}`}>
-          <Badge 
+          <Badge
             color={
-              record.method === 'GET' ? 'green' :
-              record.method === 'POST' ? 'blue' :
-              record.method === 'PUT' ? 'orange' :
-              record.method === 'DELETE' ? 'red' : 'default'
+              record.method === 'GET'
+                ? 'green'
+                : record.method === 'POST'
+                  ? 'blue'
+                  : record.method === 'PUT'
+                    ? 'orange'
+                    : record.method === 'DELETE'
+                      ? 'red'
+                      : 'default'
             }
-            text={<span style={{fontWeight: (record.error || 0) > 0 ? 'bold' : 'normal'}}>{text}</span>}
+            text={<span style={{ fontWeight: (record.error || 0) > 0 ? 'bold' : 'normal' }}>{text}</span>}
           />
         </Tooltip>
-      ),
+      )
     },
     {
       title: '方法',
@@ -134,14 +139,14 @@ const ApiMonitor: React.FC<ApiMonitorProps> = ({
           DELETE: 'red'
         };
         return text ? <Badge color={colors[text] || 'default'} text={text} /> : '-';
-      },
+      }
     },
     {
       title: '错误次数',
       dataIndex: 'error',
       key: 'error',
       width: 120,
-      render: (text: number) => text > 0 ? <span style={{ color: 'red' }}>{text}</span> : text,
+      render: (text: number) => (text > 0 ? <span style={{ color: 'red' }}>{text}</span> : text)
     },
     {
       title: '错误率',
@@ -152,16 +157,16 @@ const ApiMonitor: React.FC<ApiMonitorProps> = ({
         let color = 'green';
         if (value > 50) color = 'red';
         else if (value > 20) color = 'orange';
-        
+
         return <span style={{ color }}>{formatPercent(value / 100, 1)}</span>;
-      },
+      }
     },
     {
       title: '调用次数',
       dataIndex: 'count',
       key: 'count',
-      width: 120,
-    },
+      width: 120
+    }
   ];
 
   if (error) {
@@ -169,18 +174,12 @@ const ApiMonitor: React.FC<ApiMonitorProps> = ({
   }
 
   return (
-    <Card 
+    <Card
       title={
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <ApiOutlined style={{ marginRight: 8 }} />
           <span>API调用监控</span>
-          <Button 
-            type="link" 
-            icon={<ReloadOutlined />} 
-            onClick={fetchApiStats} 
-            style={{ marginLeft: 8 }}
-            size="small"
-          >
+          <Button type="link" icon={<ReloadOutlined />} onClick={fetchApiStats} style={{ marginLeft: 8 }} size="small">
             刷新
           </Button>
         </div>
@@ -196,57 +195,40 @@ const ApiMonitor: React.FC<ApiMonitorProps> = ({
           <>
             <Row gutter={16} className="mb-6">
               <Col span={6}>
-                <Statistic 
-                  title="总请求数" 
-                  value={apiStats.totalRequests} 
-                  prefix={<ApiOutlined />}
-                />
+                <Statistic title="总请求数" value={apiStats.totalRequests} prefix={<ApiOutlined />} />
               </Col>
               <Col span={6}>
-                <Statistic 
-                  title="错误请求数" 
-                  value={apiStats.totalErrors} 
+                <Statistic
+                  title="错误请求数"
+                  value={apiStats.totalErrors}
                   prefix={<WarningOutlined />}
                   valueStyle={{ color: apiStats.totalErrors > 0 ? '#ff4d4f' : undefined }}
                 />
               </Col>
               <Col span={6}>
-                <Statistic 
-                  title="错误率" 
-                  value={formatPercent(apiStats.errorRate / 100, 1)} 
+                <Statistic
+                  title="错误率"
+                  value={formatPercent(apiStats.errorRate / 100, 1)}
                   valueStyle={{ color: apiStats.errorRate > 10 ? '#ff4d4f' : apiStats.errorRate > 5 ? '#faad14' : '#3f8600' }}
                 />
               </Col>
               <Col span={6}>
-                <Statistic 
-                  title="平均响应时间" 
-                  value={formatMilliseconds(apiStats.avgResponseTime)} 
-                  valueStyle={{ 
-                    color: apiStats.avgResponseTime > 1000 ? '#ff4d4f' : 
-                            apiStats.avgResponseTime > 500 ? '#faad14' : '#3f8600' 
+                <Statistic
+                  title="平均响应时间"
+                  value={formatMilliseconds(apiStats.avgResponseTime)}
+                  valueStyle={{
+                    color: apiStats.avgResponseTime > 1000 ? '#ff4d4f' : apiStats.avgResponseTime > 500 ? '#faad14' : '#3f8600'
                   }}
                 />
               </Col>
             </Row>
 
             <Card title="请求量最多的API" size="small" className="mb-6">
-              <Table 
-                dataSource={topPathsData}
-                columns={topPathsColumns} 
-                rowKey="key"
-                size="small"
-                pagination={false}
-              />
+              <Table dataSource={topPathsData} columns={topPathsColumns} rowKey="key" size="small" pagination={false} />
             </Card>
 
             <Card title="错误率最高的API" size="small">
-              <Table 
-                dataSource={topErrorPathsData}
-                columns={topErrorPathsColumns} 
-                rowKey="key"
-                size="small"
-                pagination={false}
-              />
+              <Table dataSource={topErrorPathsData} columns={topErrorPathsColumns} rowKey="key" size="small" pagination={false} />
             </Card>
           </>
         )}

@@ -8,31 +8,18 @@ import FormModal from './components/form-modal';
 import type { User, ListParams } from '@/types/user'; // 导入正确的类型
 
 const ListPage: React.FC = () => {
-  const {
-    tableRef,
-    formModalProps,
-    loadData,
-    handleAdd,
-    handleEdit,
-    handleDelete,
-    roleOptions,
-  } = useDataList();
+  const { tableRef, formModalProps, loadData, handleAdd, handleEdit, handleDelete, roleOptions } = useDataList();
 
   // 获取表格列配置
   const columns = getTableColumns({
     handleEdit,
     handleDelete,
-    roleOptions,
+    roleOptions
   });
 
   // 表格工具栏按钮
   const toolBarRender = () => [
-    <Button
-      key="add"
-      type="primary"
-      icon={<PlusOutlined />}
-      onClick={handleAdd}
-    >
+    <Button key="add" type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
       新增
     </Button>
   ];
@@ -44,22 +31,19 @@ const ListPage: React.FC = () => {
         actionRef={tableRef}
         rowKey="id"
         search={{
-          labelWidth: 'auto',
+          labelWidth: 'auto'
         }}
         toolBarRender={toolBarRender}
         request={loadData}
         pagination={{
           showSizeChanger: true,
-          defaultPageSize: 10,
+          defaultPageSize: 10
         }}
         columns={columns}
         cardBordered
       />
 
-      <FormModal
-        {...formModalProps}
-        roleOptions={roleOptions}
-      />
+      <FormModal {...formModalProps} roleOptions={roleOptions} />
     </div>
   );
 };

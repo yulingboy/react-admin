@@ -14,13 +14,7 @@ interface ColumnConfigPanelProps {
   onSync: () => void;
 }
 
-const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
-  visible,
-  generatorId,
-  columns,
-  onClose,
-  onSync,
-}) => {
+const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({ visible, generatorId, columns, onClose, onSync }) => {
   const [editingKey, setEditingKey] = useState<number | null>(null);
   const [form] = Form.useForm();
   const [data, setData] = useState<CodeGeneratorColumn[]>([]);
@@ -35,7 +29,7 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
   // 同步表结构
   const handleSync = async () => {
     if (!generatorId) return;
-    
+
     setLoading(true);
     try {
       await syncTableColumns(generatorId);
@@ -64,21 +58,17 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
-      
+
       if (editingKey === null || !generatorId) {
         message.error('生成器ID不能为空');
         return;
       }
-      
+
       setLoading(true);
       await updateCodeGeneratorColumn(editingKey, values, generatorId);
-      
-      setData(prev => 
-        prev.map(item => 
-          item.id === editingKey ? { ...item, ...values } : item
-        )
-      );
-      
+
+      setData(prev => prev.map(item => (item.id === editingKey ? { ...item, ...values } : item)));
+
       setEditingKey(null);
       message.success('保存成功');
       onSync(); // 通知父组件刷新
@@ -98,16 +88,13 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       render: (_: any, record: CodeGeneratorColumn) => {
         if (record.id === editingKey) {
           return (
-            <Form.Item
-              name="columnName"
-              style={{ margin: 0 }}
-            >
+            <Form.Item name="columnName" style={{ margin: 0 }}>
               <Input disabled />
             </Form.Item>
           );
         }
         return record.columnName;
-      },
+      }
     },
     {
       title: '列注释',
@@ -116,16 +103,13 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       render: (_: any, record: CodeGeneratorColumn) => {
         if (record.id === editingKey) {
           return (
-            <Form.Item
-              name="columnComment"
-              style={{ margin: 0 }}
-            >
+            <Form.Item name="columnComment" style={{ margin: 0 }}>
               <Input placeholder="请输入列注释" />
             </Form.Item>
           );
         }
         return record.columnComment || '-';
-      },
+      }
     },
     {
       title: '列类型',
@@ -134,17 +118,13 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       render: (_: any, record: CodeGeneratorColumn) => {
         if (record.id === editingKey) {
           return (
-            <Form.Item
-              name="columnType"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: '列类型不能为空' }]}
-            >
+            <Form.Item name="columnType" style={{ margin: 0 }} rules={[{ required: true, message: '列类型不能为空' }]}>
               <Input disabled />
             </Form.Item>
           );
         }
         return record.columnType;
-      },
+      }
     },
     {
       title: 'TypeScript类型',
@@ -153,11 +133,7 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       render: (_: any, record: CodeGeneratorColumn) => {
         if (record.id === editingKey) {
           return (
-            <Form.Item
-              name="tsType"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: '请选择TypeScript类型' }]}
-            >
+            <Form.Item name="tsType" style={{ margin: 0 }} rules={[{ required: true, message: '请选择TypeScript类型' }]}>
               <Select placeholder="请选择类型">
                 <Select.Option value="string">string</Select.Option>
                 <Select.Option value="number">number</Select.Option>
@@ -169,7 +145,7 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
           );
         }
         return record.tsType;
-      },
+      }
     },
     {
       title: '主键',
@@ -178,17 +154,13 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       render: (_: any, record: CodeGeneratorColumn) => {
         if (record.id === editingKey) {
           return (
-            <Form.Item
-              name="isPk"
-              style={{ margin: 0 }}
-              valuePropName="checked"
-            >
+            <Form.Item name="isPk" style={{ margin: 0 }} valuePropName="checked">
               <Switch disabled />
             </Form.Item>
           );
         }
         return <Switch checked={record.isPk} disabled />;
-      },
+      }
     },
     {
       title: '必填',
@@ -197,17 +169,13 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       render: (_: any, record: CodeGeneratorColumn) => {
         if (record.id === editingKey) {
           return (
-            <Form.Item
-              name="isRequired"
-              style={{ margin: 0 }}
-              valuePropName="checked"
-            >
+            <Form.Item name="isRequired" style={{ margin: 0 }} valuePropName="checked">
               <Switch />
             </Form.Item>
           );
         }
         return <Switch checked={record.isRequired} disabled />;
-      },
+      }
     },
     {
       title: '插入',
@@ -216,17 +184,13 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       render: (_: any, record: CodeGeneratorColumn) => {
         if (record.id === editingKey) {
           return (
-            <Form.Item
-              name="isInsert"
-              style={{ margin: 0 }}
-              valuePropName="checked"
-            >
+            <Form.Item name="isInsert" style={{ margin: 0 }} valuePropName="checked">
               <Switch />
             </Form.Item>
           );
         }
         return <Switch checked={record.isInsert} disabled />;
-      },
+      }
     },
     {
       title: '编辑',
@@ -235,17 +199,13 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       render: (_: any, record: CodeGeneratorColumn) => {
         if (record.id === editingKey) {
           return (
-            <Form.Item
-              name="isEdit"
-              style={{ margin: 0 }}
-              valuePropName="checked"
-            >
+            <Form.Item name="isEdit" style={{ margin: 0 }} valuePropName="checked">
               <Switch />
             </Form.Item>
           );
         }
         return <Switch checked={record.isEdit} disabled />;
-      },
+      }
     },
     {
       title: '列表',
@@ -254,17 +214,13 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       render: (_: any, record: CodeGeneratorColumn) => {
         if (record.id === editingKey) {
           return (
-            <Form.Item
-              name="isList"
-              style={{ margin: 0 }}
-              valuePropName="checked"
-            >
+            <Form.Item name="isList" style={{ margin: 0 }} valuePropName="checked">
               <Switch />
             </Form.Item>
           );
         }
         return <Switch checked={record.isList} disabled />;
-      },
+      }
     },
     {
       title: '查询',
@@ -273,17 +229,13 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       render: (_: any, record: CodeGeneratorColumn) => {
         if (record.id === editingKey) {
           return (
-            <Form.Item
-              name="isQuery"
-              style={{ margin: 0 }}
-              valuePropName="checked"
-            >
+            <Form.Item name="isQuery" style={{ margin: 0 }} valuePropName="checked">
               <Switch />
             </Form.Item>
           );
         }
         return <Switch checked={record.isQuery} disabled />;
-      },
+      }
     },
     {
       title: '查询方式',
@@ -292,10 +244,7 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       render: (_: any, record: CodeGeneratorColumn) => {
         if (record.id === editingKey) {
           return (
-            <Form.Item
-              name="queryType"
-              style={{ margin: 0 }}
-            >
+            <Form.Item name="queryType" style={{ margin: 0 }}>
               <Select placeholder="请选择查询方式">
                 {Object.entries(QueryType).map(([key, value]) => (
                   <Select.Option key={key} value={value}>
@@ -307,7 +256,7 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
           );
         }
         return record.queryType || '-';
-      },
+      }
     },
     {
       title: 'HTML类型',
@@ -316,10 +265,7 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       render: (_: any, record: CodeGeneratorColumn) => {
         if (record.id === editingKey) {
           return (
-            <Form.Item
-              name="htmlType"
-              style={{ margin: 0 }}
-            >
+            <Form.Item name="htmlType" style={{ margin: 0 }}>
               <Select placeholder="请选择HTML类型">
                 {Object.entries(HtmlType).map(([key, value]) => (
                   <Select.Option key={key} value={value}>
@@ -331,7 +277,7 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
           );
         }
         return record.htmlType || '-';
-      },
+      }
     },
     {
       title: '字典类型',
@@ -340,20 +286,13 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       render: (_: any, record: CodeGeneratorColumn) => {
         if (record.id === editingKey) {
           return (
-            <Form.Item
-              name="dictType"
-              style={{ margin: 0 }}
-            >
-              <DictionaryTypeSelect 
-                placeholder="请选择字典类型" 
-                allowClear
-                style={{ width: '100%' }}
-              />
+            <Form.Item name="dictType" style={{ margin: 0 }}>
+              <DictionaryTypeSelect placeholder="请选择字典类型" allowClear style={{ width: '100%' }} />
             </Form.Item>
           );
         }
         return record.dictType || '-';
-      },
+      }
     },
     {
       title: '操作',
@@ -364,16 +303,20 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
         const isEditing = record.id === editingKey;
         return isEditing ? (
           <Space size="small">
-            <Button type="link" onClick={handleSave}>保存</Button>
-            <Button type="link" onClick={handleCancel}>取消</Button>
+            <Button type="link" onClick={handleSave}>
+              保存
+            </Button>
+            <Button type="link" onClick={handleCancel}>
+              取消
+            </Button>
           </Space>
         ) : (
           <Button type="link" disabled={editingKey !== null} onClick={() => handleEdit(record)}>
             编辑
           </Button>
         );
-      },
-    },
+      }
+    }
   ];
 
   return (
@@ -386,12 +329,7 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
       destroyOnClose
       extra={
         <Space>
-          <Button 
-            type="primary" 
-            icon={<SyncOutlined />} 
-            onClick={handleSync}
-            loading={loading}
-          >
+          <Button type="primary" icon={<SyncOutlined />} onClick={handleSync} loading={loading}>
             同步表结构
           </Button>
         </Space>
@@ -404,16 +342,9 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({
           <p>2. 编辑各个字段的生成规则，可以选择是否在表单、列表、查询等场景下展示。</p>
           <p>3. 可以为字段指定查询方式、HTML类型和字典类型，影响代码生成的结果。</p>
         </div>
-        
+
         <Form form={form} component={false}>
-          <Table
-            rowKey="id"
-            columns={tableColumns}
-            dataSource={data}
-            pagination={false}
-            scroll={{ x: 1500, y: 500 }}
-            bordered
-          />
+          <Table rowKey="id" columns={tableColumns} dataSource={data} pagination={false} scroll={{ x: 1500, y: 500 }} bordered />
         </Form>
       </Spin>
     </Drawer>

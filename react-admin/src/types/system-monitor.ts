@@ -1,10 +1,10 @@
 // 系统资源使用情况
 export interface SystemResource {
   id?: number;
-  cpuUsage: number;  // CPU使用率
-  memUsage: number;  // 内存使用率
+  cpuUsage: number; // CPU使用率
+  memUsage: number; // 内存使用率
   diskUsage: number; // 磁盘使用率
-  uptime: number;    // 系统运行时间(秒)
+  uptime: number; // 系统运行时间(秒)
   timestamp: string; // 记录时间
 }
 
@@ -41,13 +41,13 @@ export interface SystemResourceInfo extends SystemResourceRealtime {
 // API监控记录
 export interface ApiMonitor {
   id?: number;
-  path: string;        // API路径
-  method: string;      // 请求方法
-  statusCode: number;  // 状态码
+  path: string; // API路径
+  method: string; // 请求方法
+  statusCode: number; // 状态码
   responseTime: number; // 响应时间(ms)
   requestCount: number; // 请求计数
-  errorCount: number;   // 错误计数
-  date: string;         // 日期(按天统计)
+  errorCount: number; // 错误计数
+  date: string; // 日期(按天统计)
 }
 
 // 实时API监控数据
@@ -112,9 +112,9 @@ export interface ApiPerformanceMetrics {
 // 日志统计
 export interface LogStat {
   id?: number;
-  level: string;    // 日志级别: error, warn, info
-  count: number;    // 计数
-  date: string;     // 日期(按天统计)
+  level: string; // 日志级别: error, warn, info
+  count: number; // 计数
+  date: string; // 日期(按天统计)
 }
 
 // 日志分析结果

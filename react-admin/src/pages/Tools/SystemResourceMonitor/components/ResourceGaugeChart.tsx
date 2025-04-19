@@ -11,16 +11,10 @@ interface ResourceGaugeChartProps {
   extraContent?: React.ReactNode;
 }
 
-const ResourceGaugeChart: React.FC<ResourceGaugeChartProps> = ({
-  title,
-  value,
-  status = 'normal',
-  description,
-  extraContent
-}) => {
+const ResourceGaugeChart: React.FC<ResourceGaugeChartProps> = ({ title, value, status = 'normal', description, extraContent }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
-  
+
   // 根据状态确定颜色
   const getColor = () => {
     if (status === 'exception') return '#ff4d4f';
@@ -52,9 +46,9 @@ const ResourceGaugeChart: React.FC<ResourceGaugeChartProps> = ({
         chartInstance.current.resize();
       }
     };
-    
+
     window.addEventListener('resize', handleResize);
-    
+
     return () => {
       window.removeEventListener('resize', handleResize);
     };
@@ -142,16 +136,8 @@ const ResourceGaugeChart: React.FC<ResourceGaugeChartProps> = ({
     <Card title={title} className="w-full h-full bg-white rounded-lg shadow-sm">
       <div className="flex flex-col items-center">
         <div ref={chartRef} className="h-[180px] w-full" />
-        {description && (
-          <div className="mt-2 text-center">
-            {description}
-          </div>
-        )}
-        {extraContent && (
-          <div className="mt-2">
-            {extraContent}
-          </div>
-        )}
+        {description && <div className="mt-2 text-center">{description}</div>}
+        {extraContent && <div className="mt-2">{extraContent}</div>}
       </div>
     </Card>
   );

@@ -20,9 +20,9 @@ const DictionaryItemsPanel: React.FC<DictionaryItemsPanelProps> = ({ dictionaryI
   const [formTitle, setFormTitle] = useState('添加字典项');
   const [loading, setLoading] = useState(false);
   const actionRef = useRef<ActionType | null>(null);
-    // 使用改进的 hook，获取字典数据
-    const { valueEnum: statusEnum, labelMap: statusLabelMap } = useDictionary('sys_common_status');
-    const { valueEnum: isSystemEnum, labelMap: isSystemLabelMap } = useDictionary('sys_is_system');
+  // 使用改进的 hook，获取字典数据
+  const { valueEnum: statusEnum, labelMap: statusLabelMap } = useDictionary('sys_common_status');
+  const { valueEnum: isSystemEnum, labelMap: isSystemLabelMap } = useDictionary('sys_is_system');
 
   // 当dictionaryId变化时，重新加载数据
   useEffect(() => {
@@ -37,34 +37,34 @@ const DictionaryItemsPanel: React.FC<DictionaryItemsPanelProps> = ({ dictionaryI
       title: '标签',
       dataIndex: 'label',
       ellipsis: true,
-      width: 160,
+      width: 160
     },
     {
       title: '值',
       dataIndex: 'value',
       ellipsis: true,
       copyable: true,
-      width: 120,
+      width: 120
     },
     {
       title: '编码',
       dataIndex: 'code',
       ellipsis: true,
       copyable: true,
-      width: 160,
+      width: 160
     },
     {
       title: '颜色',
       dataIndex: 'color',
       width: 100,
       search: false,
-      render: (_, record) => record.color ? <ColorDisplay color={record.color} /> : '-',
+      render: (_, record) => (record.color ? <ColorDisplay color={record.color} /> : '-')
     },
     {
       title: '排序',
       dataIndex: 'sort',
       width: 80,
-      search: false,
+      search: false
     },
     {
       title: '状态',
@@ -99,7 +99,7 @@ const DictionaryItemsPanel: React.FC<DictionaryItemsPanelProps> = ({ dictionaryI
       valueType: 'dateTime',
       width: 170,
       search: false,
-      sorter: true,
+      sorter: true
     },
     {
       title: '操作',
@@ -107,25 +107,14 @@ const DictionaryItemsPanel: React.FC<DictionaryItemsPanelProps> = ({ dictionaryI
       fixed: 'right',
       width: 120,
       render: (_, record) => [
-        <Button 
-          key="edit" 
-          type="link" 
-          icon={<EditOutlined />}
-          onClick={() => handleEdit(record)}
-        >
+        <Button key="edit" type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
           编辑
         </Button>,
-        <Button 
-          key="delete" 
-          type="link" 
-          danger 
-          icon={<DeleteOutlined />}
-          onClick={() => handleDelete(record)}
-        >
+        <Button key="delete" type="link" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)}>
           删除
         </Button>
-      ],
-    },
+      ]
+    }
   ];
 
   // 添加字典项
@@ -164,12 +153,12 @@ const DictionaryItemsPanel: React.FC<DictionaryItemsPanelProps> = ({ dictionaryI
   const handleFormSubmit = async (values: any) => {
     try {
       setLoading(true);
-      
+
       if (currentItem) {
         // 更新
         await updateDictionaryItem({
           ...values,
-          id: currentItem.id,
+          id: currentItem.id
         });
         message.success('更新成功');
       } else {
@@ -177,7 +166,7 @@ const DictionaryItemsPanel: React.FC<DictionaryItemsPanelProps> = ({ dictionaryI
         await addDictionaryItem(values);
         message.success('添加成功');
       }
-      
+
       setLoading(false);
       setFormVisible(false);
       actionRef.current?.reload();
@@ -189,11 +178,12 @@ const DictionaryItemsPanel: React.FC<DictionaryItemsPanelProps> = ({ dictionaryI
 
   // 请求数据接口
   const request = async () => {
-    if (!dictionaryId) return { 
-      data: [],
-      success: true,
-      total: 0
-    };
+    if (!dictionaryId)
+      return {
+        data: [],
+        success: true,
+        total: 0
+      };
 
     try {
       const data = await getDictionaryItems(dictionaryId);
@@ -222,12 +212,7 @@ const DictionaryItemsPanel: React.FC<DictionaryItemsPanelProps> = ({ dictionaryI
         options={{ search: false, density: false }}
         search={false}
         toolBarRender={() => [
-          <Button 
-            key="add" 
-            type="primary" 
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-          >
+          <Button key="add" type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
             添加字典项
           </Button>
         ]}
@@ -236,17 +221,10 @@ const DictionaryItemsPanel: React.FC<DictionaryItemsPanelProps> = ({ dictionaryI
         pagination={false}
       />
 
-      <Modal
-        title={formTitle}
-        open={formVisible}
-        onCancel={() => setFormVisible(false)}
-        footer={null}
-        destroyOnClose
-        maskClosable={false}
-      >
-        <DictionaryItemForm 
+      <Modal title={formTitle} open={formVisible} onCancel={() => setFormVisible(false)} footer={null} destroyOnClose maskClosable={false}>
+        <DictionaryItemForm
           dictionaryId={dictionaryId}
-          initialValues={currentItem} 
+          initialValues={currentItem}
           onSubmit={handleFormSubmit}
           onCancel={() => setFormVisible(false)}
           loading={loading}

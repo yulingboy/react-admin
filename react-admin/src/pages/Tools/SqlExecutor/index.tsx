@@ -43,12 +43,12 @@ const SqlExecutorPage: React.FC = () => {
       const response = await executeSql(sql);
       const endTime = performance.now();
       setExecutionTime(endTime - startTime);
-      
+
       // 判断响应是否包含查询结果集或影响的行数
       if (Array.isArray(response)) {
         // 查询操作，返回结果集
         setResult(response);
-        
+
         // 如果有结果，生成表格列
         if (response.length > 0) {
           const firstRow = response[0];
@@ -88,14 +88,7 @@ const SqlExecutorPage: React.FC = () => {
     }
 
     if (affectedRows !== null) {
-      return (
-        <Alert
-          message="操作成功"
-          description={`影响了 ${affectedRows} 行数据`}
-          type="success"
-          showIcon
-        />
-      );
+      return <Alert message="操作成功" description={`影响了 ${affectedRows} 行数据`} type="success" showIcon />;
     }
 
     if (result && result.length > 0) {
@@ -103,11 +96,7 @@ const SqlExecutorPage: React.FC = () => {
         <div className={styles.resultContainer}>
           <div className={styles.resultMeta}>
             查询返回 {result.length} 条记录
-            {executionTime !== null && (
-              <span className={styles.executionTime}>
-                执行时间: {executionTime.toFixed(2)} ms
-              </span>
-            )}
+            {executionTime !== null && <span className={styles.executionTime}>执行时间: {executionTime.toFixed(2)} ms</span>}
           </div>
           <Table
             dataSource={result}
@@ -118,7 +107,7 @@ const SqlExecutorPage: React.FC = () => {
               showSizeChanger: true,
               showQuickJumper: true,
               pageSizeOptions: ['10', '20', '50', '100'],
-              showTotal: (total) => `共 ${total} 条记录`,
+              showTotal: total => `共 ${total} 条记录`
             }}
             rowKey={(record, index) => index.toString()}
           />
@@ -153,12 +142,7 @@ const SqlExecutorPage: React.FC = () => {
             className={styles.sqlTextarea}
           />
           <div className={styles.actionBar}>
-            <Button
-              type="primary"
-              onClick={handleExecute}
-              loading={loading}
-              icon={<DatabaseOutlined />}
-            >
+            <Button type="primary" onClick={handleExecute} loading={loading} icon={<DatabaseOutlined />}>
               执行
             </Button>
           </div>
@@ -167,9 +151,7 @@ const SqlExecutorPage: React.FC = () => {
         <Divider orientation="left">执行结果</Divider>
 
         <Spin spinning={loading} tip="执行中...">
-          <div className={styles.resultSection}>
-            {renderResult()}
-          </div>
+          <div className={styles.resultSection}>{renderResult()}</div>
         </Spin>
       </Card>
     </div>

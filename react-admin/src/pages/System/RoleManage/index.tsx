@@ -8,14 +8,7 @@ import { getRoleColumns } from './components/table-columns';
 import FormModal from './components/form-modal';
 
 const RoleManage: React.FC = () => {
-  const {
-    tableRef,
-    formModalProps,
-    loadRoleList,
-    handleAddRole,
-    handleEditRole,
-    handleDeleteRole,
-  } = useRoleManage();
+  const { tableRef, formModalProps, loadRoleList, handleAddRole, handleEditRole, handleDeleteRole } = useRoleManage();
 
   // 获取表格列配置
   const columns = getRoleColumns({
@@ -25,12 +18,7 @@ const RoleManage: React.FC = () => {
 
   // 表格工具栏按钮
   const toolBarRender = () => [
-    <Button 
-      key="add" 
-      type="primary" 
-      icon={<PlusOutlined />}
-      onClick={handleAddRole}
-    >
+    <Button key="add" type="primary" icon={<PlusOutlined />} onClick={handleAddRole}>
       新增角色
     </Button>
   ];
@@ -42,21 +30,19 @@ const RoleManage: React.FC = () => {
         actionRef={tableRef}
         rowKey="id"
         search={{
-          labelWidth: 'auto',
+          labelWidth: 'auto'
         }}
         cardBordered
         toolBarRender={toolBarRender}
         request={loadRoleList}
         pagination={{
           showSizeChanger: true,
-          defaultPageSize: 10,
+          defaultPageSize: 10
         }}
         columns={columns}
       />
-      
-      <FormModal
-        {...formModalProps}
-      />
+
+      <FormModal {...formModalProps} />
     </div>
   );
 };

@@ -41,11 +41,7 @@ const ResourceUsagePanel: React.FC<ResourceUsagePanelProps> = ({ resources }) =>
             status={getCpuStatus(resources.cpuUsage)}
             description={<span className="text-base font-medium">{`${resources.cpuCores}核处理器`}</span>}
             extraContent={
-              resources.systemInfo?.cpuModel && (
-                <div className="text-xs text-gray-500 text-center mt-1 max-w-xs truncate">
-                  {resources.systemInfo.cpuModel}
-                </div>
-              )
+              resources.systemInfo?.cpuModel && <div className="text-xs text-gray-500 text-center mt-1 max-w-xs truncate">{resources.systemInfo.cpuModel}</div>
             }
           />
         </Col>
@@ -54,11 +50,7 @@ const ResourceUsagePanel: React.FC<ResourceUsagePanelProps> = ({ resources }) =>
             title="内存使用率"
             value={resources.memUsage}
             status={getMemStatus(resources.memUsage)}
-            description={
-              <span className="text-base font-medium">
-                {`${formatBytes(resources.memoryUsed)} / ${formatBytes(resources.totalMemory)}`}
-              </span>
-            }
+            description={<span className="text-base font-medium">{`${formatBytes(resources.memoryUsed)} / ${formatBytes(resources.totalMemory)}`}</span>}
           />
         </Col>
         <Col xs={24} sm={8}>
@@ -68,21 +60,13 @@ const ResourceUsagePanel: React.FC<ResourceUsagePanelProps> = ({ resources }) =>
             status={getDiskStatus(resources.diskUsage)}
             description={<span className="text-base font-medium">{`可用: ${formatBytes(resources.diskFree || 0)}`}</span>}
             extraContent={
-              resources.systemInfo?.diskSize && (
-                <div className="text-xs text-gray-500 mt-1">
-                  {`总容量: ${formatBytes(resources.systemInfo.diskSize)}`}
-                </div>
-              )
+              resources.systemInfo?.diskSize && <div className="text-xs text-gray-500 mt-1">{`总容量: ${formatBytes(resources.systemInfo.diskSize)}`}</div>
             }
           />
         </Col>
       </Row>
 
-      <SystemLoadCard
-        loadAvg={resources.loadAvg}
-        uptime={resources.uptime}
-        cpuCores={resources.cpuCores}
-      />
+      <SystemLoadCard loadAvg={resources.loadAvg} uptime={resources.uptime} cpuCores={resources.cpuCores} />
     </div>
   );
 };

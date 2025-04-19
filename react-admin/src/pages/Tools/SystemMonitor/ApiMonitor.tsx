@@ -33,7 +33,7 @@ const ApiMonitor: React.FC = () => {
   const [apiStats, setApiStats] = useState<ApiStatistics | null>(null);
   const [apiPerformance, setApiPerformance] = useState<ApiPerformanceMetrics | null>(null);
   const [realtimeData, setRealtimeData] = useState<RealtimeApiData | null>(null);
-  
+
   // 从apiStats中提取的表格数据
   const [topPathsData, setTopPathsData] = useState<ApiPathItem[]>([]);
   const [topErrorPathsData, setTopErrorPathsData] = useState<ApiPathItem[]>([]);
@@ -46,13 +46,13 @@ const ApiMonitor: React.FC = () => {
       setError(null);
       const data = await apiMonitorApi.getStatistics();
       setApiStats(data);
-      
+
       // 处理topPaths数据
       if (data.topPaths && Array.isArray(data.topPaths)) {
         // 直接使用后端返回的topPaths数据，已经包含key、path和count属性
         setTopPathsData(data.topPaths);
       }
-      
+
       // 处理topErrorPaths数据
       if (data.topErrorPaths && Array.isArray(data.topErrorPaths)) {
         const errorPathsData = data.topErrorPaths.map((item, index) => {
@@ -66,7 +66,7 @@ const ApiMonitor: React.FC = () => {
             method: item.method || '-',
             count: item.requestCount || 0,
             error: item.errorCount || 0,
-            errorRate: item.errorRate || 0,
+            errorRate: item.errorRate || 0
           };
         });
         setTopErrorPathsData(errorPathsData);
@@ -85,7 +85,7 @@ const ApiMonitor: React.FC = () => {
       setPerformanceLoading(true);
       const data = await apiMonitorApi.getPerformance();
       setApiPerformance(data);
-      
+
       if (data.apiPerformance && Array.isArray(data.apiPerformance)) {
         const performanceData = data.apiPerformance.map((item, index) => ({
           key: `perf-${index}`,
@@ -125,9 +125,9 @@ const ApiMonitor: React.FC = () => {
       fetchApiPerformance();
       fetchRealtimeData();
     };
-    
+
     fetchAllData();
-    
+
     const timer = setInterval(fetchAllData, refreshInterval);
 
     return () => clearInterval(timer);
@@ -158,7 +158,7 @@ const ApiMonitor: React.FC = () => {
       dataIndex: 'count',
       key: 'count',
       sorter: (a: ApiPathItem, b: ApiPathItem) => a.count - b.count,
-      width: 120,
+      width: 120
     }
   ];
 
@@ -190,14 +190,14 @@ const ApiMonitor: React.FC = () => {
           DELETE: 'red'
         };
         return text ? <Badge color={colors[text] || 'default'} text={text} /> : '-';
-      },
+      }
     },
     {
       title: '错误次数',
       dataIndex: 'error',
       key: 'error',
       width: 120,
-      render: (text: number) => text > 0 ? <span style={{ color: 'red' }}>{text}</span> : text,
+      render: (text: number) => (text > 0 ? <span style={{ color: 'red' }}>{text}</span> : text)
     },
     {
       title: '错误率',
@@ -208,16 +208,16 @@ const ApiMonitor: React.FC = () => {
         let color = 'green';
         if (value > 0.5) color = 'red';
         else if (value > 0.2) color = 'orange';
-        
+
         return <span style={{ color }}>{formatPercent(value / 100, 1)}</span>;
-      },
+      }
     },
     {
       title: '调用次数',
       dataIndex: 'count',
       key: 'count',
-      width: 120,
-    },
+      width: 120
+    }
   ];
 
   // API性能表格列定义
@@ -248,7 +248,7 @@ const ApiMonitor: React.FC = () => {
           DELETE: 'red'
         };
         return text ? <Badge color={colors[text] || 'default'} text={text} /> : '-';
-      },
+      }
     },
     {
       title: '响应时间(ms)',
@@ -259,16 +259,16 @@ const ApiMonitor: React.FC = () => {
         let color = 'green';
         if (value > 1000) color = 'red';
         else if (value > 500) color = 'orange';
-        
+
         return <span style={{ color }}>{value.toFixed(2)}</span>;
       },
-      sorter: (a: ApiPathItem, b: ApiPathItem) => (a.responseTime || 0) - (b.responseTime || 0),
+      sorter: (a: ApiPathItem, b: ApiPathItem) => (a.responseTime || 0) - (b.responseTime || 0)
     },
     {
       title: '调用次数',
       dataIndex: 'count',
       key: 'count',
-      width: 120,
+      width: 120
     },
     {
       title: '错误率',
@@ -279,10 +279,10 @@ const ApiMonitor: React.FC = () => {
         let color = 'green';
         if (value > 0.5) color = 'red';
         else if (value > 0.2) color = 'orange';
-        
+
         return <span style={{ color }}>{formatPercent(value / 100, 1)}</span>;
-      },
-    },
+      }
+    }
   ];
 
   // 实时调用记录表格列定义
@@ -313,7 +313,7 @@ const ApiMonitor: React.FC = () => {
           DELETE: 'red'
         };
         return text ? <Badge color={colors[text] || 'default'} text={text} /> : '-';
-      },
+      }
     },
     {
       title: '状态码',
@@ -325,9 +325,9 @@ const ApiMonitor: React.FC = () => {
         if (code >= 500) color = 'red';
         else if (code >= 400) color = 'orange';
         else if (code >= 300) color = 'blue';
-        
+
         return <span style={{ color }}>{code}</span>;
-      },
+      }
     },
     {
       title: '响应时间(ms)',
@@ -338,10 +338,10 @@ const ApiMonitor: React.FC = () => {
         let color = 'green';
         if (value > 1000) color = 'red';
         else if (value > 500) color = 'orange';
-        
+
         return <span style={{ color }}>{value.toFixed(2)}</span>;
-      },
-    },
+      }
+    }
   ];
 
   if (error) {
@@ -369,18 +369,14 @@ const ApiMonitor: React.FC = () => {
           <>
             <Col xs={24} sm={12} md={6}>
               <Card className="dashboard-card">
-                <Statistic 
-                  title="总请求数" 
-                  value={apiStats.totalRequests} 
-                  prefix={<ApiOutlined style={{ color: '#1890ff' }} />}
-                />
+                <Statistic title="总请求数" value={apiStats.totalRequests} prefix={<ApiOutlined style={{ color: '#1890ff' }} />} />
               </Card>
             </Col>
             <Col xs={24} sm={12} md={6}>
               <Card className="dashboard-card">
-                <Statistic 
-                  title="错误请求数" 
-                  value={apiStats.totalErrors} 
+                <Statistic
+                  title="错误请求数"
+                  value={apiStats.totalErrors}
                   prefix={<WarningOutlined style={{ color: apiStats.totalErrors > 0 ? '#ff4d4f' : undefined }} />}
                   valueStyle={{ color: apiStats.totalErrors > 0 ? '#ff4d4f' : undefined }}
                 />
@@ -388,40 +384,40 @@ const ApiMonitor: React.FC = () => {
             </Col>
             <Col xs={24} sm={12} md={6}>
               <Card className="dashboard-card">
-                <Statistic 
-                  title="错误率" 
-                  value={formatPercent(apiStats.errorRate / 100, 1)} 
-                  valueStyle={{ 
-                    color: apiStats.errorRate > 10 ? '#ff4d4f' : 
-                            apiStats.errorRate > 5 ? '#faad14' : '#3f8600' 
+                <Statistic
+                  title="错误率"
+                  value={formatPercent(apiStats.errorRate / 100, 1)}
+                  valueStyle={{
+                    color: apiStats.errorRate > 10 ? '#ff4d4f' : apiStats.errorRate > 5 ? '#faad14' : '#3f8600'
                   }}
                 />
               </Card>
             </Col>
             <Col xs={24} sm={12} md={6}>
               <Card className="dashboard-card">
-                <Statistic 
-                  title="平均响应时间" 
-                  value={formatMilliseconds(apiStats.avgResponseTime)} 
-                  valueStyle={{ 
-                    color: apiStats.avgResponseTime > 1000 ? '#ff4d4f' : 
-                            apiStats.avgResponseTime > 500 ? '#faad14' : '#3f8600' 
+                <Statistic
+                  title="平均响应时间"
+                  value={formatMilliseconds(apiStats.avgResponseTime)}
+                  valueStyle={{
+                    color: apiStats.avgResponseTime > 1000 ? '#ff4d4f' : apiStats.avgResponseTime > 500 ? '#faad14' : '#3f8600'
                   }}
                 />
               </Card>
             </Col>
 
             <Col xs={24} lg={12}>
-              <Card 
-                title="请求量最多的API" 
+              <Card
+                title="请求量最多的API"
                 className="dashboard-card"
-                extra={<Tooltip title="总调用次数排名前10的API接口">
-                  <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
-                </Tooltip>}
+                extra={
+                  <Tooltip title="总调用次数排名前10的API接口">
+                    <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
+                  </Tooltip>
+                }
               >
-                <Table 
+                <Table
                   dataSource={topPathsData}
-                  columns={topPathsColumns} 
+                  columns={topPathsColumns}
                   rowKey="key"
                   size="small"
                   pagination={false}
@@ -432,16 +428,18 @@ const ApiMonitor: React.FC = () => {
             </Col>
 
             <Col xs={24} lg={12}>
-              <Card 
-                title="错误率最高的API" 
+              <Card
+                title="错误率最高的API"
                 className="dashboard-card"
-                extra={<Tooltip title="错误率排名前10的API接口">
-                  <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
-                </Tooltip>}
+                extra={
+                  <Tooltip title="错误率排名前10的API接口">
+                    <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
+                  </Tooltip>
+                }
               >
-                <Table 
+                <Table
                   dataSource={topErrorPathsData}
-                  columns={topErrorPathsColumns} 
+                  columns={topErrorPathsColumns}
                   rowKey="key"
                   size="small"
                   pagination={false}
@@ -469,14 +467,14 @@ const ApiMonitor: React.FC = () => {
       color: '#1890ff',
       meta: {
         avgResponseTime: {
-          alias: '平均响应时间(ms)',
+          alias: '平均响应时间(ms)'
         },
         date: {
           alias: '日期',
           formatter: (value: string) => {
             return value.split('T')[0];
           }
-        },
+        }
       },
       xAxis: {
         tickCount: 5,
@@ -485,7 +483,7 @@ const ApiMonitor: React.FC = () => {
             return value.split('T')[0];
           }
         }
-      },
+      }
     };
 
     // 请求量趋势图表配置
@@ -498,19 +496,19 @@ const ApiMonitor: React.FC = () => {
       label: {
         position: 'middle',
         style: {
-          fill: '#FFFFFF',
-        },
+          fill: '#FFFFFF'
+        }
       },
       meta: {
         requestCount: {
-          alias: '请求数量',
+          alias: '请求数量'
         },
         date: {
           alias: '日期',
           formatter: (value: string) => {
             return value.split('T')[0];
           }
-        },
+        }
       },
       xAxis: {
         label: {
@@ -518,7 +516,7 @@ const ApiMonitor: React.FC = () => {
             return value.split('T')[0];
           }
         }
-      },
+      }
     };
 
     // 错误率趋势图表配置
@@ -527,7 +525,7 @@ const ApiMonitor: React.FC = () => {
       xField: 'date',
       yField: 'errorRate',
       seriesField: 'date',
-      color: function(errorRate: number) {
+      color: function (errorRate: number) {
         if (errorRate > 0.2) return '#ff4d4f';
         if (errorRate > 0.05) return '#faad14';
         return '#52c41a';
@@ -535,26 +533,23 @@ const ApiMonitor: React.FC = () => {
       meta: {
         errorRate: {
           alias: '错误率',
-          formatter: (value: number) => formatPercent(value / 100, 1),
+          formatter: (value: number) => formatPercent(value / 100, 1)
         },
         date: {
-          alias: '日期',
-        },
+          alias: '日期'
+        }
       },
       yAxis: {
         label: {
-          formatter: (value: string) => formatPercent(parseFloat(value) / 100, 1),
-        },
-      },
+          formatter: (value: string) => formatPercent(parseFloat(value) / 100, 1)
+        }
+      }
     };
 
     return (
       <Row gutter={[24, 24]}>
         <Col span={24}>
-          <Card 
-            title="API响应时间趋势" 
-            className="dashboard-card"
-          >
+          <Card title="API响应时间趋势" className="dashboard-card">
             <div className="chart-container">
               <Area {...trendConfig} />
             </div>
@@ -578,13 +573,10 @@ const ApiMonitor: React.FC = () => {
         </Col>
 
         <Col span={24}>
-          <Card 
-            title="API性能详情" 
-            className="dashboard-card"
-          >
-            <Table 
+          <Card title="API性能详情" className="dashboard-card">
+            <Table
               dataSource={apiPerformanceData}
-              columns={apiPerformanceColumns} 
+              columns={apiPerformanceColumns}
               rowKey="key"
               size="small"
               pagination={{ pageSize: 10 }}
@@ -614,8 +606,8 @@ const ApiMonitor: React.FC = () => {
         content: '{value}',
         style: {
           textAlign: 'center',
-          fontSize: 14,
-        },
+          fontSize: 14
+        }
       },
       interactions: [{ type: 'element-selected' }, { type: 'element-active' }],
       statistic: {
@@ -624,10 +616,10 @@ const ApiMonitor: React.FC = () => {
           style: {
             whiteSpace: 'pre-wrap',
             overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            textOverflow: 'ellipsis'
           },
-          formatter: () => '状态码\n分布',
-        },
+          formatter: () => '状态码\n分布'
+        }
       },
       legend: {
         itemName: {
@@ -646,20 +638,20 @@ const ApiMonitor: React.FC = () => {
     return (
       <Row gutter={[24, 24]}>
         <Col span={24}>
-          <Card 
+          <Card
             title={
               <span>
-                实时API调用 
+                实时API调用
                 <small style={{ fontSize: '12px', color: 'rgba(0,0,0,.45)', marginLeft: '8px' }}>
                   最后更新: {realtimeData.timestamp ? formatDateTime(realtimeData.timestamp) : '未知'}
                 </small>
               </span>
-            } 
+            }
             className="dashboard-card"
           >
-            <Table 
+            <Table
               dataSource={realtimeData.recentCalls}
-              columns={recentCallsColumns} 
+              columns={recentCallsColumns}
               rowKey="id"
               size="small"
               pagination={{ pageSize: 5 }}
@@ -670,10 +662,7 @@ const ApiMonitor: React.FC = () => {
         </Col>
 
         <Col xs={24} md={12}>
-          <Card 
-            title="状态码分布" 
-            className="dashboard-card"
-          >
+          <Card title="状态码分布" className="dashboard-card">
             <div className="chart-container" style={{ height: 350 }}>
               {/* @ts-ignore - 这里类型定义可能有问题，但实际效果是正确的 */}
               {realtimeData.statusCodeDistribution && realtimeData.statusCodeDistribution.length > 0 ? (
@@ -686,24 +675,31 @@ const ApiMonitor: React.FC = () => {
         </Col>
 
         <Col xs={24} md={12}>
-          <Card 
-            title="最慢的API" 
+          <Card
+            title="最慢的API"
             className="dashboard-card"
-            extra={<Tooltip title="按响应时间排序的最慢API调用">
-              <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
-            </Tooltip>}
+            extra={
+              <Tooltip title="按响应时间排序的最慢API调用">
+                <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
+              </Tooltip>
+            }
           >
             {realtimeData.slowestApis && realtimeData.slowestApis.length > 0 ? (
               <ul className="slowest-api-list">
                 {realtimeData.slowestApis.map((api, index) => (
                   <li key={index} className="slowest-api-item">
                     <div className="api-info">
-                      <Badge 
+                      <Badge
                         color={
-                          api.method === 'GET' ? 'green' :
-                          api.method === 'POST' ? 'blue' :
-                          api.method === 'PUT' ? 'orange' :
-                          api.method === 'DELETE' ? 'red' : 'default'
+                          api.method === 'GET'
+                            ? 'green'
+                            : api.method === 'POST'
+                              ? 'blue'
+                              : api.method === 'PUT'
+                                ? 'orange'
+                                : api.method === 'DELETE'
+                                  ? 'red'
+                                  : 'default'
                         }
                         text={<span>{api.method}</span>}
                       />
@@ -712,12 +708,8 @@ const ApiMonitor: React.FC = () => {
                       </Tooltip>
                     </div>
                     <div className="api-metrics">
-                      <span className="metric-badge response-time">
-                        {formatMilliseconds(api.responseTime)}
-                      </span>
-                      <span className="metric-badge request-count">
-                        {api.requestCount}次调用
-                      </span>
+                      <span className="metric-badge response-time">{formatMilliseconds(api.responseTime)}</span>
+                      <span className="metric-badge request-count">{api.requestCount}次调用</span>
                     </div>
                   </li>
                 ))}
@@ -743,28 +735,19 @@ const ApiMonitor: React.FC = () => {
         </div>
         <div>
           <Button.Group style={{ marginRight: 16 }}>
-            <Button 
-              type={refreshInterval === 30000 ? 'primary' : 'default'} 
-              onClick={() => handleIntervalChange(30000)}
-            >
+            <Button type={refreshInterval === 30000 ? 'primary' : 'default'} onClick={() => handleIntervalChange(30000)}>
               30秒
             </Button>
-            <Button 
-              type={refreshInterval === 60000 ? 'primary' : 'default'} 
-              onClick={() => handleIntervalChange(60000)}
-            >
+            <Button type={refreshInterval === 60000 ? 'primary' : 'default'} onClick={() => handleIntervalChange(60000)}>
               1分钟
             </Button>
-            <Button 
-              type={refreshInterval === 300000 ? 'primary' : 'default'} 
-              onClick={() => handleIntervalChange(300000)}
-            >
+            <Button type={refreshInterval === 300000 ? 'primary' : 'default'} onClick={() => handleIntervalChange(300000)}>
               5分钟
             </Button>
           </Button.Group>
-          <Button 
-            type="primary" 
-            icon={<ReloadOutlined />} 
+          <Button
+            type="primary"
+            icon={<ReloadOutlined />}
             onClick={() => {
               fetchApiStats();
               fetchApiPerformance();
@@ -777,8 +760,8 @@ const ApiMonitor: React.FC = () => {
         </div>
       </div>
 
-      <Tabs 
-        activeKey={activeTab} 
+      <Tabs
+        activeKey={activeTab}
         onChange={setActiveTab}
         className="api-monitor-tabs"
         items={[

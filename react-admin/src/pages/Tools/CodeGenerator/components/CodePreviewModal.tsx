@@ -12,11 +12,7 @@ interface CodePreviewModalProps {
   onCancel: () => void;
 }
 
-const CodePreviewModal: React.FC<CodePreviewModalProps> = ({
-  visible,
-  generatorId,
-  onCancel,
-}) => {
+const CodePreviewModal: React.FC<CodePreviewModalProps> = ({ visible, generatorId, onCancel }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [previewData, setPreviewData] = useState<CodePreview[]>([]);
   const [activeKey, setActiveKey] = useState<string>('');
@@ -35,7 +31,7 @@ const CodePreviewModal: React.FC<CodePreviewModalProps> = ({
       message.error('生成器ID不能为空');
       return;
     }
-    
+
     setLoading(true);
     try {
       const data = await previewCode(id);
@@ -80,36 +76,19 @@ const CodePreviewModal: React.FC<CodePreviewModalProps> = ({
       label: item.path.split('/').pop() || item.path,
       children: (
         <div style={{ height: '500px', overflow: 'auto' }}>
-          <SyntaxHighlighter
-            language={getFileType(item.path)}
-            style={vs2015}
-            showLineNumbers
-          >
+          <SyntaxHighlighter language={getFileType(item.path)} style={vs2015} showLineNumbers>
             {item.content}
           </SyntaxHighlighter>
         </div>
-      ),
+      )
     }));
   };
 
   return (
-    <Modal
-      title="代码预览"
-      open={visible}
-      onCancel={onCancel}
-      width={1000}
-      footer={null}
-      destroyOnClose
-    >
+    <Modal title="代码预览" open={visible} onCancel={onCancel} width={1000} footer={null} destroyOnClose>
       <Spin spinning={loading}>
         {previewData.length > 0 ? (
-          <Tabs
-            activeKey={activeKey}
-            onChange={setActiveKey}
-            items={getTabItems()}
-            tabPosition="left"
-            style={{ height: 500 }}
-          />
+          <Tabs activeKey={activeKey} onChange={setActiveKey} items={getTabItems()} tabPosition="left" style={{ height: 500 }} />
         ) : (
           <Empty description="暂无代码预览" />
         )}

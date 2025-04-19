@@ -25,12 +25,12 @@ const SystemResourceMonitor: React.FC = () => {
       const processedData = {
         ...data,
         cpuCores: data.systemInfo?.cpus || 0,
-        memoryUsed: data.systemInfo?.usedMemory || (data.systemInfo?.totalMemory - data.systemInfo?.freeMemory) || 0,
+        memoryUsed: data.systemInfo?.usedMemory || data.systemInfo?.totalMemory - data.systemInfo?.freeMemory || 0,
         totalMemory: data.systemInfo?.totalMemory || 0,
         diskFree: data.systemInfo?.diskFree || 0,
-        loadAvg: data.systemInfo?.loadavg || [0, 0, 0],
+        loadAvg: data.systemInfo?.loadavg || [0, 0, 0]
       };
-      
+
       setResources(processedData);
     } catch (err) {
       setError('获取系统资源数据失败，请稍后重试');
@@ -43,7 +43,7 @@ const SystemResourceMonitor: React.FC = () => {
   // 首次加载和定时刷新
   useEffect(() => {
     fetchResourceData();
-    
+
     const timer = setInterval(() => {
       fetchResourceData();
     }, refreshInterval);
@@ -58,12 +58,7 @@ const SystemResourceMonitor: React.FC = () => {
   if (error) {
     return (
       <div className="rounded-lg bg-white shadow">
-        <ResourceMonitorHeader 
-          refreshInterval={refreshInterval}
-          onIntervalChange={handleIntervalChange}
-          onRefresh={fetchResourceData}
-          loading={loading}
-        />
+        <ResourceMonitorHeader refreshInterval={refreshInterval} onIntervalChange={handleIntervalChange} onRefresh={fetchResourceData} loading={loading} />
         <div className="p-4">
           <Alert message="错误" description={error} type="error" showIcon />
         </div>
@@ -73,17 +68,12 @@ const SystemResourceMonitor: React.FC = () => {
 
   return (
     <div className="rounded-lg bg-white shadow">
-      <ResourceMonitorHeader 
-        refreshInterval={refreshInterval}
-        onIntervalChange={handleIntervalChange}
-        onRefresh={fetchResourceData}
-        loading={loading}
-      />
+      <ResourceMonitorHeader refreshInterval={refreshInterval} onIntervalChange={handleIntervalChange} onRefresh={fetchResourceData} loading={loading} />
 
       <div className="p-4">
         <Spin spinning={loading && !resources}>
-          <Tabs 
-            activeKey={activeTab} 
+          <Tabs
+            activeKey={activeTab}
             onChange={setActiveTab}
             className="mt-2"
             items={[

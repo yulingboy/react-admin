@@ -17,14 +17,7 @@ const DictionaryManage: React.FC = () => {
   const [drawerVisible, setDrawerVisible] = useState<boolean>(false);
 
   // 使用自定义Hook处理逻辑
-  const {
-    tableRef,
-    formModalProps,
-    loadDictionaryList,
-    handleAddDictionary,
-    handleEditDictionary,
-    handleDeleteDictionary,
-  } = useDictionaryManage();
+  const { tableRef, formModalProps, loadDictionaryList, handleAddDictionary, handleEditDictionary, handleDeleteDictionary } = useDictionaryManage();
 
   // 处理查看字典项
   const handleViewDictionaryItems = (record: Dictionary) => {
@@ -47,12 +40,7 @@ const DictionaryManage: React.FC = () => {
 
   // 表格工具栏按钮
   const toolBarRender = () => [
-    <Button 
-      key="add" 
-      type="primary" 
-      icon={<PlusOutlined />}
-      onClick={handleAddDictionary}
-    >
+    <Button key="add" type="primary" icon={<PlusOutlined />} onClick={handleAddDictionary}>
       新增字典
     </Button>
   ];
@@ -64,35 +52,25 @@ const DictionaryManage: React.FC = () => {
         actionRef={tableRef}
         rowKey="id"
         search={{
-          labelWidth: 'auto',
+          labelWidth: 'auto'
         }}
         cardBordered
         toolBarRender={toolBarRender}
         request={loadDictionaryList}
         pagination={{
           showSizeChanger: true,
-          defaultPageSize: 10,
+          defaultPageSize: 10
         }}
         columns={columns}
       />
 
       {/* 字典项抽屉 */}
-      <Drawer
-        title={`字典项管理 - ${selectedDictionaryName}`}
-        width={1600}
-        open={drawerVisible}
-        onClose={closeDrawer}
-        destroyOnClose
-      >
-        {selectedDictionary && (
-          <DictionaryItemsPanel dictionaryId={selectedDictionary} />
-        )}
+      <Drawer title={`字典项管理 - ${selectedDictionaryName}`} width={1600} open={drawerVisible} onClose={closeDrawer} destroyOnClose>
+        {selectedDictionary && <DictionaryItemsPanel dictionaryId={selectedDictionary} />}
       </Drawer>
 
       {/* 字典添加/编辑表单弹窗 */}
-      <FormModal
-        {...formModalProps}
-      />
+      <FormModal {...formModalProps} />
     </div>
   );
 };

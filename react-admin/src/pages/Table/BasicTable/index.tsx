@@ -5,5 +5,5 @@ const TablePage = () => {
       <p>This is a basic table page.</p>
     </div>
   );
-}
+};
 export default TablePage;

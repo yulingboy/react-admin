@@ -20,26 +20,16 @@ interface ApiOverviewPanelProps {
   loading: boolean;
 }
 
-const ApiOverviewPanel: React.FC<ApiOverviewPanelProps> = ({
-  apiStats,
-  topPathsData,
-  topErrorPathsData,
-  loading
-}) => {
+const ApiOverviewPanel: React.FC<ApiOverviewPanelProps> = ({ apiStats, topPathsData, topErrorPathsData, loading }) => {
   return (
     <div className="space-y-6">
       <ApiStatsOverview apiStats={apiStats} loading={loading} />
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={12}>
-          <ApiPathsTable
-            title="请求量最多的API"
-            data={topPathsData}
-            loading={loading}
-            tooltipText="总调用次数排名前10的API接口"
-          />
+          <ApiPathsTable title="请求量最多的API" data={topPathsData} loading={loading} tooltipText="总调用次数排名前10的API接口" />
         </Col>
-        
+
         <Col xs={24} lg={12}>
           <ApiPathsTable
             title="错误率最高的API"

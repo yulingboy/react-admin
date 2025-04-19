@@ -8,10 +8,10 @@ import { ApiError, ResponseCode } from './types';
  */
 export const handleBusinessError = (code: number, errorMessage: string, showMessage: boolean = true): ApiError => {
   const msg = errorMessage || '未知错误';
-  
+
   if (showMessage) {
     message.error(msg);
-    
+
     // 处理特定的错误码
     if (code === ResponseCode.UNAUTHORIZED) {
       redirectToLogin();
@@ -27,7 +27,7 @@ export const handleBusinessError = (code: number, errorMessage: string, showMess
  */
 export const handleHttpError = (error: AxiosError, showMessage: boolean = true): AxiosError => {
   if (!showMessage) return error;
-  
+
   if (error.response) {
     const status = error.response.status;
     const errorMessage = (error.response.data as { message?: string })?.message || '未知错误';

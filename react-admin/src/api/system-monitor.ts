@@ -1,8 +1,8 @@
 import request from '@/utils/http';
-import { 
+import {
   SystemResourceRealtime,
   SystemResource,
-  ApiMonitor, 
+  ApiMonitor,
   ApiStatistics,
   LogStat,
   LogAnalysis,
@@ -23,12 +23,12 @@ export const systemResourceApi = {
   getRealtime: () => {
     return request.get<SystemResourceRealtime>('/api/system-monitor/resources/realtime');
   },
-  
+
   // 获取历史系统资源使用记录
   getHistory: (params: SystemResourcesQueryParams) => {
     return request.get<SystemResource[]>('/api/system-monitor/resources/history', { params });
   },
-  
+
   // 获取系统资源概览
   getOverview: () => {
     return request.get<SystemResourceRealtime>('/api/system-monitor/resources/overview');
@@ -41,17 +41,17 @@ export const apiMonitorApi = {
   getData: (params: ApiMonitorQueryParams) => {
     return request.get<ApiMonitor[]>('/api/system-monitor/api', { params });
   },
-  
+
   // 获取API统计数据
   getStatistics: (days?: number) => {
     return request.get<ApiStatistics>('/api/system-monitor/api/statistics', { params: { days } });
   },
-  
+
   // 获取实时API监控数据
   getRealtime: () => {
     return request.get<RealtimeApiData>('/api/system-monitor/api/realtime');
   },
-  
+
   // 获取API性能指标
   getPerformance: () => {
     return request.get<ApiPerformanceMetrics>('/api/system-monitor/api/performance');
@@ -64,22 +64,22 @@ export const logStatsApi = {
   getStats: (params: LogStatsQueryParams) => {
     return request.get<LogStat[]>('/api/system-monitor/logs/stats', { params });
   },
-  
+
   // 分析最新日志文件
   analyzeRecent: () => {
     return request.get<LogAnalysis>('/api/system-monitor/logs/analyze');
   },
-  
+
   // 获取日志趋势
   getTrends: (days?: number) => {
     return request.get<LogTrend[]>('/api/system-monitor/logs/trends', { params: { days } });
   },
-  
+
   // 获取日志级别分布
   getDistribution: () => {
     return request.get<LogDistribution[]>('/api/system-monitor/logs/distribution');
   },
-  
+
   // 获取详细的错误日志信息
   getErrorLogs: (limit: number = 10) => {
     return request.get<any[]>('/api/system-monitor/logs/errors', { params: { limit } });
@@ -92,7 +92,7 @@ export const systemMonitorApi = {
   getOverview: () => {
     return request.get<SystemMonitorOverview>('/api/system-monitor/overview');
   },
-  
+
   // 获取系统健康状态
   getHealth: () => {
     return request.get<SystemHealth>('/api/system-monitor/health');

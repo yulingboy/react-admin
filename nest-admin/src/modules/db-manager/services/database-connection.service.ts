@@ -1,7 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../../shared/prisma/prisma.service';
-import { CreateDatabaseConnectionDto, UpdateDatabaseConnectionDto, QueryDatabaseConnectionDto, DatabaseType } from '../dto/database-connection.dto';
+import { CreateDatabaseConnectionDto, UpdateDatabaseConnectionDto, QueryDatabaseConnectionDto } from '../dto/database-connection.dto';
 
+/**
+ * 数据库连接服务
+ * 负责管理数据库连接的增删改查
+ */
 @Injectable()
 export class DatabaseConnectionService {
   constructor(private prisma: PrismaService) {}
@@ -9,6 +13,7 @@ export class DatabaseConnectionService {
   /**
    * 创建数据库连接
    * @param data 连接数据
+   * @returns 创建的数据库连接
    */
   async create(data: CreateDatabaseConnectionDto) {
     return await this.prisma.databaseConnection.create({
@@ -22,6 +27,7 @@ export class DatabaseConnectionService {
   /**
    * 获取数据库连接列表
    * @param query 查询参数
+   * @returns 分页后的数据库连接列表
    */
   async findAll(query: QueryDatabaseConnectionDto) {
     const { current = 1, pageSize = 10, ...filters } = query;
@@ -60,6 +66,7 @@ export class DatabaseConnectionService {
   /**
    * 获取数据库连接详情
    * @param id 连接ID
+   * @returns 数据库连接详情
    */
   async findOne(id: number) {
     const connection = await this.prisma.databaseConnection.findUnique({
@@ -76,11 +83,17 @@ export class DatabaseConnectionService {
   /**
    * 更新数据库连接
    * @param id 连接ID
-   * @param data 连接数据
+   * @param data 更新数据
+   * @returns 更新后的数据库连接
    */
   async update(id: number, data: UpdateDatabaseConnectionDto) {
     // 检查连接是否存在
-    await this.findOne(id);
+    const connection = await this.findOne(id);
+    
+    // 系统内置连接有些字段不允许修改
+    if (connection.isSystem === '1') {
+      // 可以自行扩展限制修改的字段
+    }
 
     return await this.prisma.databaseConnection.update({
       where: { id },
@@ -91,6 +104,7 @@ export class DatabaseConnectionService {
   /**
    * 删除数据库连接
    * @param id 连接ID
+   * @returns 删除结果
    */
   async remove(id: number) {
     // 检查连接是否存在
@@ -98,7 +112,7 @@ export class DatabaseConnectionService {
     
     // 系统内置连接不允许删除
     if (connection.isSystem === '1') {
-      throw new Error('系统内置连接不允许删除');
+      throw new ForbiddenException('系统内置连接不允许删除');
     }
     
     return await this.prisma.databaseConnection.delete({

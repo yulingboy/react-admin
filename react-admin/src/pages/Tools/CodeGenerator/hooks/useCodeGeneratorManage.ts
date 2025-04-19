@@ -1,19 +1,8 @@
 import { useState, useRef } from 'react';
 import { message } from '@/hooks/useMessage';
 import type { ActionType } from '@ant-design/pro-components';
-import { 
-  CodeGenerator, 
-  CodeGeneratorQueryParams,
-  TableInfo
-} from '@/types/code-generator';
-import { 
-  getCodeGeneratorList, 
-  createCodeGenerator, 
-  updateCodeGenerator, 
-  deleteCodeGenerator,
-  getTableList,
-  generateCode
-} from '@/api/code-generator';
+import { CodeGenerator, CodeGeneratorQueryParams, TableInfo } from '@/types/code-generator';
+import { getCodeGeneratorList, createCodeGenerator, updateCodeGenerator, deleteCodeGenerator, getTableList, generateCode } from '@/api/code-generator';
 import { formatTableData } from '@/utils/tableHelper';
 
 export function useCodeGeneratorManage() {
@@ -106,22 +95,22 @@ export function useCodeGeneratorManage() {
   const handleGenerateCode = async (id: number) => {
     try {
       const response = await generateCode(id);
-      
+
       // 创建Blob URL
       const blob = new Blob([response], { type: 'application/zip' });
       const url = window.URL.createObjectURL(blob);
-      
+
       // 创建临时下载链接
       const link = document.createElement('a');
       link.href = url;
       link.download = 'generated-code.zip';
       document.body.appendChild(link);
       link.click();
-      
+
       // 清理
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       message.success('代码生成成功');
     } catch (error) {
       console.error('代码生成失败:', error);
@@ -137,7 +126,7 @@ export function useCodeGeneratorManage() {
       pageSize: pageSize || 10,
       ...rest
     };
-    
+
     const response = await getCodeGeneratorList(queryParams);
     return formatTableData<CodeGenerator>(response);
   };

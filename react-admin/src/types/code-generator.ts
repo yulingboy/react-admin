@@ -79,7 +79,7 @@ export enum QueryType {
   LT = 'LT', // 小于
   LTE = 'LTE', // 小于等于
   LIKE = 'LIKE', // 模糊匹配
-  BETWEEN = 'BETWEEN', // 范围
+  BETWEEN = 'BETWEEN' // 范围
 }
 
 /**
@@ -93,7 +93,7 @@ export enum HtmlType {
   RADIO = 'radio',
   DATETIME = 'datetime',
   UPLOAD = 'upload',
-  IMAGE = 'image',
+  IMAGE = 'image'
 }
 
 /**

@@ -46,8 +46,6 @@ export function useDictionaryManage() {
       });
   };
 
-
-
   // 处理表单取消
   const handleFormModalCancel = () => {
     setFormModalOpen(false);
@@ -55,7 +53,6 @@ export function useDictionaryManage() {
 
   // 加载字典列表数据
   const loadDictionaryList = async (params: DictionaryQueryParams) => {
-    
     const response = await getDictionaryList(params);
     return formatTableData<Dictionary>(response);
   };
@@ -79,6 +76,6 @@ export function useDictionaryManage() {
     loadDictionaryList,
     handleAddDictionary,
     handleEditDictionary,
-    handleDeleteDictionary,
+    handleDeleteDictionary
   };
 }

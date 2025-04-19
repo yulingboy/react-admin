@@ -1,11 +1,5 @@
 import { request as http } from '@/utils/http';
-import { 
-  CodeGenerator, 
-  CodeGeneratorColumn, 
-  CodeGeneratorQueryParams, 
-  TableInfo,
-  CodePreview
-} from '@/types/code-generator';
+import { CodeGenerator, CodeGeneratorColumn, CodeGeneratorQueryParams, TableInfo, CodePreview } from '@/types/code-generator';
 
 /**
  * 获取代码生成器列表
@@ -88,10 +82,10 @@ export function createCodeGeneratorColumn(data: Partial<CodeGeneratorColumn>) {
  */
 export function updateCodeGeneratorColumn(id: number, data: Partial<CodeGeneratorColumn>, generatorId: number) {
   // 将id和generatorId一起添加到请求体中
-  return http.put<CodeGeneratorColumn>('/api/code-generator/column', { 
-    ...data, 
+  return http.put<CodeGeneratorColumn>('/api/code-generator/column', {
+    ...data,
     id,
-    generatorId   // 确保包含生成器ID
+    generatorId // 确保包含生成器ID
   });
 }
 
@@ -116,9 +110,13 @@ export function previewCode(id: number) {
  * @param id 代码生成器ID
  */
 export function generateCode(id: number) {
-  return http.post<Blob>('/api/code-generator/generate', { id }, {
-    responseType: 'blob'
-  });
+  return http.post<Blob>(
+    '/api/code-generator/generate',
+    { id },
+    {
+      responseType: 'blob'
+    }
+  );
 }
 
 /**

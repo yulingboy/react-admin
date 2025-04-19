@@ -59,7 +59,7 @@ export const useRoleManage = () => {
       name: currentRole.name,
       key: currentRole.key,
       description: currentRole.description,
-      status: currentRole.status,
+      status: currentRole.status
     },
     isEdit: isEdit
   };
@@ -70,6 +70,6 @@ export const useRoleManage = () => {
     loadRoleList,
     handleAddRole,
     handleEditRole,
-    handleDeleteRole,
+    handleDeleteRole
   };
 };
