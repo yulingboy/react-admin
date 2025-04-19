@@ -15,6 +15,18 @@ export class RolesService {
    * @returns 创建的角色对象
    */
   async create(createRoleDto: CreateRoleDto) {
+    // 检查角色标识是否已存在
+    const existingKeyRole = await this.findByKey(createRoleDto.key);
+    if (existingKeyRole) {
+      throw new ConflictException(`角色标识 ${createRoleDto.key} 已存在`);
+    }
+    
+    // 检查角色名称是否已存在
+    const existingNameRole = await this.findByName(createRoleDto.name);
+    if (existingNameRole) {
+      throw new ConflictException(`角色名称 ${createRoleDto.name} 已存在`);
+    }
+    
     const role = await this.prisma.role.create({
       data: createRoleDto,
     });
@@ -26,19 +38,22 @@ export class RolesService {
    * @param queryRoleDto 查询参数
    * @returns 分页角色列表
    */
-  async findPagationList(queryRoleDto: QueryRoleDto) {
-    const { key, name, status } = queryRoleDto;
+  async findAll(queryRoleDto: QueryRoleDto) {
+    const { keyword, isSystem, status } = queryRoleDto;
     const { skip, take } = queryRoleDto;
 
     // 构建查询条件
     const where: any = {};
 
-    if (key) {
-      where.key = { contains: key };
+    if (keyword) {
+      where.OR = [
+        { key: { contains: keyword } },
+        { name: { contains: keyword } },
+      ];
     }
 
-    if (name) {
-      where.name = { contains: name };
+    if (isSystem !== undefined) {
+      where.isSystem = isSystem;
     }
 
     if (status !== undefined) {

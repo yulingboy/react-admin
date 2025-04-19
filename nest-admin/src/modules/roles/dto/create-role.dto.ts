@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsEnum, MinLength, MaxLength } from 'class-validator';
-import { StatusEnum } from 'src/common/enums/common.enum';
+import { StatusEnum, IsSystemEnum } from 'src/common/enums/common.enum';
 
 /**
  * 创建角色DTO
@@ -36,4 +36,11 @@ export class CreateRoleDto {
   @IsOptional()
   @IsEnum(StatusEnum, { message: '状态值必须是有效的枚举值' })
   status?: string = StatusEnum.ENABLED;
+  
+  /**
+   * 是否系统内置角色，默认为否
+   */
+  @IsOptional()
+  @IsEnum(IsSystemEnum, { message: '系统内置角色值必须是有效的枚举值' })
+  isSystem?: string = IsSystemEnum.NO;
 }

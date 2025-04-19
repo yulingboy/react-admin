@@ -1,6 +1,6 @@
-import { IsString, IsOptional, IsInt, Min, Max, MinLength, MaxLength, IsIn, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsInt, Min, Max, MinLength, MaxLength, IsEnum } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { StatusEnum } from 'src/common/enums/common.enum';
+import { StatusEnum, IsSystemEnum } from 'src/common/enums/common.enum';
 
 /**
  * 更新角色DTO
@@ -47,4 +47,11 @@ export class UpdateRoleDto {
   @IsOptional()
   @IsEnum(StatusEnum, { message: '状态值必须是有效的枚举值' })
   status?: string;
+
+  /**
+   * 是否系统内置角色
+   */
+  @IsOptional()
+  @IsEnum(IsSystemEnum, { message: '系统内置角色值必须是有效的枚举值' })
+  isSystem?: string;
 }

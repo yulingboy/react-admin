@@ -4,16 +4,16 @@ import { RoleFormData } from '@/types/role';
 import { createRole, updateRole } from '@/api/role';
 import DictionarySelect from '@/components/Dictionary/DictionarySelect';
 
-interface RoleFormModalProps {
-  visible: boolean;
+interface FormModalProps {
+  open: boolean;
   onCancel: () => void;
   onSuccess: () => void;
   initialValues?: RoleFormData;
   isEdit?: boolean;
 }
 
-const RoleFormModal: React.FC<RoleFormModalProps> = ({
-  visible,
+const FormModal: React.FC<FormModalProps> = ({
+  open,
   onCancel,
   onSuccess,
   initialValues,
@@ -24,15 +24,15 @@ const RoleFormModal: React.FC<RoleFormModalProps> = ({
 
   // 设置表单初始值
   useEffect(() => {
-    if (visible) {
+    if (open) {
       if (initialValues) {
         form.setFieldsValue(initialValues);
       } else {
         form.resetFields();
-        form.setFieldsValue({ status: 1 });
+        form.setFieldsValue({ status: '1' });
       }
     }
-  }, [form, initialValues, visible]);
+  }, [form, initialValues, open]);
 
   // 提交表单
   const handleSubmit = async () => {
@@ -115,7 +115,7 @@ const RoleFormModal: React.FC<RoleFormModalProps> = ({
   return (
     <Modal
       title={isEdit ? '编辑角色' : '新增角色'}
-      open={visible}
+      open={open}
       onCancel={onCancel}
       onOk={handleSubmit}
       okButtonProps={{ loading }}
@@ -142,4 +142,4 @@ const RoleFormModal: React.FC<RoleFormModalProps> = ({
   );
 };
 
-export default RoleFormModal;
+export default FormModal;

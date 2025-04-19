@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsEnum } from 'class-validator';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { StatusEnum } from 'src/common/enums/common.enum';
+import { StatusEnum, IsSystemEnum } from 'src/common/enums/common.enum';
 
 /**
  * 查询角色DTO
@@ -8,21 +8,21 @@ import { StatusEnum } from 'src/common/enums/common.enum';
  */
 export class QueryRoleDto extends PaginationDto {
   /**
-   * 角色标识关键字搜索
+   * 关键字搜索(可搜索角色名称和标识)
    */
   @IsOptional()
-  @IsString({ message: '角色标识必须是字符串' })
-  key?: string;
+  @IsString({ message: '关键字必须是字符串' })
+  keyword?: string;
 
   /**
-   * 角色名称关键字搜索
+   * 是否系统内置角色筛选
    */
   @IsOptional()
-  @IsString({ message: '角色名必须是字符串' })
-  name?: string;
+  @IsEnum(IsSystemEnum, { message: '是否系统内置角色值必须是有效的枚举值' })
+  isSystem?: string;
 
   /**
-   * 角色状态
+   * 角色状态筛选
    */
   @IsOptional()
   @IsEnum(StatusEnum, { message: '状态值必须是有效的枚举值' })

@@ -4,21 +4,17 @@ import { PlusOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
 import { Role, RoleListParams } from '@/types/role';
 import { useRoleManage } from './hooks/useRoleManage';
-import { getRoleColumns } from './components/RoleColumns';
-import RoleFormModal from './components/RoleFormModal';
+import { getRoleColumns } from './components/table-columns';
+import FormModal from './components/form-modal';
 
 const RoleManage: React.FC = () => {
   const {
-    formModalVisible,
-    setFormModalVisible,
-    currentRole,
-    isEdit,
     tableRef,
+    formModalProps,
+    loadRoleList,
     handleAddRole,
     handleEditRole,
     handleDeleteRole,
-    handleFormSuccess,
-    loadRoleList
   } = useRoleManage();
 
   // 获取表格列配置
@@ -27,8 +23,20 @@ const RoleManage: React.FC = () => {
     handleDeleteRole
   });
 
+  // 表格工具栏按钮
+  const toolBarRender = () => [
+    <Button 
+      key="add" 
+      type="primary" 
+      icon={<PlusOutlined />}
+      onClick={handleAddRole}
+    >
+      新增角色
+    </Button>
+  ];
+
   return (
-    <div>
+    <div className="page-container">
       <ProTable<Role, RoleListParams>
         headerTitle="角色列表"
         actionRef={tableRef}
@@ -37,16 +45,7 @@ const RoleManage: React.FC = () => {
           labelWidth: 'auto',
         }}
         cardBordered
-        toolBarRender={() => [
-          <Button 
-            key="add" 
-            type="primary" 
-            icon={<PlusOutlined />}
-            onClick={handleAddRole}
-          >
-            新增角色
-          </Button>,
-        ]}
+        toolBarRender={toolBarRender}
         request={loadRoleList}
         pagination={{
           showSizeChanger: true,
@@ -55,18 +54,8 @@ const RoleManage: React.FC = () => {
         columns={columns}
       />
       
-      <RoleFormModal
-        visible={formModalVisible}
-        onCancel={() => setFormModalVisible(false)}
-        onSuccess={handleFormSuccess}
-        initialValues={currentRole ? {
-          id: currentRole.id,
-          name: currentRole.name,
-          key: currentRole.key,
-          description: currentRole.description,
-          status: currentRole.status,
-        } : undefined}
-        isEdit={isEdit}
+      <FormModal
+        {...formModalProps}
       />
     </div>
   );
