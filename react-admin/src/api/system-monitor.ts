@@ -17,6 +17,172 @@ import {
   LogStatsQueryParams
 } from '@/types/system-monitor';
 
+// API监控查询参数接口
+export interface ApiMonitorQueryParams {
+  startDate?: string;
+  endDate?: string;
+  path?: string;
+  method?: string;
+  limit?: number;
+  page?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  minResponseTime?: number;
+  onlyErrors?: boolean;
+  userAgent?: string;
+  ip?: string;
+}
+
+// API监控记录接口
+export interface ApiMonitor {
+  id: number;
+  path: string;
+  method: string;
+  statusCode: number;
+  responseTime: number;
+  requestCount: number;
+  errorCount: number;
+  contentLength?: number;
+  responseSize?: number;
+  userAgent?: string;
+  ip?: string;
+  userId?: number;
+  date: string;
+}
+
+// API监控分页响应接口
+export interface ApiMonitorResponse {
+  data: ApiMonitor[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+// API统计数据接口
+export interface ApiStatistics {
+  totalRequests: number;
+  totalErrors: number;
+  errorRate: number;
+  avgResponseTime: number;
+  avgResponseSize: number;
+  topPaths: {
+    key: string;
+    path: string;
+    method: string;
+    count: number;
+  }[];
+  topErrorPaths: {
+    key: string;
+    path: string;
+    method: string;
+    count: number;
+    error: number;
+    errorRate: number;
+  }[];
+  uniqueIPs: number;
+  uniqueUserAgents: number;
+}
+
+// 实时API数据接口
+export interface RealtimeApiData {
+  recentCalls: {
+    id: number;
+    path: string;
+    method: string;
+    statusCode: number;
+    responseTime: number;
+    contentLength: number;
+    responseSize: number;
+    ip?: string;
+    timestamp: string;
+    errorMessage?: string;
+  }[];
+  statusCodeDistribution: {
+    statusCode: number;
+    count: number;
+    category: string;
+  }[];
+  slowestApis: {
+    path: string;
+    method: string;
+    responseTime: number;
+    statusCode: number;
+    createdAt: string;
+  }[];
+  callTrend: {
+    time: string;
+    count: number;
+  }[];
+  timestamp: string;
+}
+
+// API性能查询参数接口
+export interface ApiPerformanceQueryParams {
+  days?: number;
+  detailed?: boolean;
+  paths?: string[];
+  format?: 'hourly' | 'daily';
+}
+
+// API性能指标接口
+export interface ApiPerformanceMetrics {
+  performanceTrends: {
+    date: string;
+    avgResponseTime: number;
+    requestCount: number;
+    errorCount: number;
+    errorRate: number;
+  }[];
+  apiPerformance: {
+    key: string;
+    path: string;
+    method: string;
+    responseTime: number;
+    count: number;
+    error: number;
+    errorRate: number;
+    avgContentSize?: number;
+    avgResponseSize?: number;
+  }[];
+  detailedStats?: {
+    statusDistribution: {
+      statusCode: number;
+      count: number;
+      category: string;
+    }[];
+    methodDistribution: {
+      method: string;
+      count: number;
+    }[];
+    pathPrefixDistribution: {
+      prefix: string;
+      count: number;
+    }[];
+  };
+}
+
+// API导出查询参数接口
+export interface ApiExportQueryParams {
+  startDate?: string;
+  endDate?: string;
+  format?: 'csv' | 'json' | 'excel';
+  includeDetails?: boolean;
+}
+
+// API告警配置接口
+export interface ApiAlertConfig {
+  id?: number;
+  path?: string;
+  responseTimeThreshold: number;
+  errorRateThreshold: number;
+  enabled: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // 系统资源监控API
 export const systemResourceApi = {
   // 获取实时系统资源使用情况
@@ -99,11 +265,103 @@ export const systemMonitorApi = {
   }
 };
 
+/**
+ * 获取API监控数据
+ * @param params 查询参数
+ * @returns API监控数据（分页）
+ */
+export function getApiMonitorData(params: ApiMonitorQueryParams) {
+  return request.get<ApiMonitorResponse>('/api/system-monitor/api', { params });
+}
+
+/**
+ * 获取API统计数据
+ * @param days 统计天数（默认7天）
+ * @returns API统计数据
+ */
+export function getApiStatistics(days?: number) {
+  return request.get<ApiStatistics>('/api/system-monitor/api/statistics', { 
+    params: days ? { days } : undefined 
+  });
+}
+
+/**
+ * 获取实时API监控数据
+ * @returns 实时API监控数据
+ */
+export function getApiRealtimeData() {
+  return request.get<RealtimeApiData>('/api/system-monitor/api/realtime');
+}
+
+/**
+ * 获取API性能指标
+ * @param params 查询参数
+ * @returns API性能指标数据
+ */
+export function getApiPerformance(params?: ApiPerformanceQueryParams) {
+  return request.get<ApiPerformanceMetrics>('/api/system-monitor/api/performance', { params });
+}
+
+/**
+ * 导出API监控数据
+ * @param params 导出参数
+ * @returns API导出数据
+ */
+export function exportApiMonitorData(params: ApiExportQueryParams) {
+  return request.get('/api/system-monitor/api/export', { 
+    params,
+    responseType: 'blob' // 使用blob响应类型处理文件下载
+  });
+}
+
+/**
+ * 获取API告警配置
+ * @returns API告警配置列表
+ */
+export function getApiAlertConfigs() {
+  return request.get<ApiAlertConfig[]>('/api/system-monitor/api/alerts');
+}
+
+/**
+ * 保存API告警配置
+ * @param config 告警配置
+ * @returns 保存后的告警配置
+ */
+export function saveApiAlertConfig(config: ApiAlertConfig) {
+  return request.post<ApiAlertConfig>('/api/system-monitor/api/alerts', config);
+}
+
+/**
+ * 删除API告警配置
+ * @param id 配置ID
+ * @returns 操作结果
+ */
+export function deleteApiAlertConfig(id: number) {
+  return request.delete<{success: boolean}>(`/api/system-monitor/api/alerts/${id}`);
+}
+
+/**
+ * 清理旧的监控数据
+ * @param daysToKeep 保留天数（默认30天）
+ * @returns 操作结果
+ */
+export function cleanupOldData(daysToKeep: number = 30) {
+  return request.post<{success: boolean}>('/api/system-monitor/api/cleanup', { daysToKeep });
+}
+
+/**
+ * 生成测试数据
+ * @returns 操作结果
+ */
+export function generateTestData() {
+  return request.post<{success: boolean}>('/api/system-monitor/api/generate-test-data');
+}
+
 // 为了向后兼容，保留原有导出
 export const getSystemResourcesRealtime = systemResourceApi.getRealtime;
 export const getSystemResourcesHistory = systemResourceApi.getHistory;
-export const getApiMonitorData = apiMonitorApi.getData;
-export const getApiStatistics = apiMonitorApi.getStatistics;
+export const getApiMonitorDataLegacy = apiMonitorApi.getData;
+export const getApiStatisticsLegacy = apiMonitorApi.getStatistics;
 export const getLogStats = logStatsApi.getStats;
 export const analyzeRecentLogs = logStatsApi.analyzeRecent;
 export const getLogTrends = logStatsApi.getTrends;

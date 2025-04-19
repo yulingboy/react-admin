@@ -4,7 +4,7 @@ import { SyncOutlined, SaveOutlined } from '@ant-design/icons';
 import { CodeGeneratorColumn, QueryType, HtmlType } from '@/types/code-generator';
 import { message } from '@/hooks/useMessage';
 import { syncTableColumns, updateCodeGeneratorColumn } from '@/api/code-generator';
-import { DictionaryTypeSelect } from '@/components/Dictionary';
+import { useDictionary } from '@/hooks/useDictionaryBack';
 
 interface ColumnConfigPanelProps {
   visible: boolean;
@@ -19,6 +19,9 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({ visible, generato
   const [form] = Form.useForm();
   const [data, setData] = useState<CodeGeneratorColumn[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  
+  // 获取字典类型数据
+  const { options: dictTypeOptions } = useDictionary('sys_dict_type');
 
   useEffect(() => {
     if (visible && columns) {
@@ -287,7 +290,13 @@ const ColumnConfigPanel: React.FC<ColumnConfigPanelProps> = ({ visible, generato
         if (record.id === editingKey) {
           return (
             <Form.Item name="dictType" style={{ margin: 0 }}>
-              <DictionaryTypeSelect placeholder="请选择字典类型" allowClear style={{ width: '100%' }} />
+              <Select placeholder="请选择字典类型" allowClear style={{ width: '100%' }}>
+                {dictTypeOptions.map(option => (
+                  <Select.Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Select.Option>
+                ))}
+              </Select>
             </Form.Item>
           );
         }

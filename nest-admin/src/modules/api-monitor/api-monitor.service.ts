@@ -1,17 +1,40 @@
 import { PrismaService } from '@/shared/prisma/prisma.service';
-import { Injectable } from '@nestjs/common';
-import { startOfDay, endOfDay, subHours, subDays, format } from 'date-fns';
-import { ApiMonitorQueryDto } from './dto/api-monitor.dto';
+import { Injectable, Logger } from '@nestjs/common';
+import { startOfDay, endOfDay } from 'date-fns';
+import { ApiMonitorQueryDto, ApiRecordDto } from './dto/api-monitor.dto';
+import { ApiMonitorCacheService } from './api-monitor-cache.service';
+import { ApiMonitorStatsService } from './api-monitor-stats.service';
+import { ApiMonitorPerformanceService } from './api-monitor-performance.service';
+import { ApiMonitorRealtimeService } from './api-monitor-realtime.service';
+import { ApiMonitorAlertsService } from './api-monitor-alerts.service';
+import { ApiMonitorExportService } from './api-monitor-export.service';
+import { ApiMonitorDataService } from './api-monitor-data.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ApiMonitorService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(ApiMonitorService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private cacheService: ApiMonitorCacheService,
+    private statsService: ApiMonitorStatsService,
+    private performanceService: ApiMonitorPerformanceService,
+    private realtimeService: ApiMonitorRealtimeService,
+    private alertsService: ApiMonitorAlertsService,
+    private exportService: ApiMonitorExportService,
+    private dataService: ApiMonitorDataService
+  ) {}
 
   /**
    * 获取API监控数据
    */
   async getApiMonitorData(query: ApiMonitorQueryDto) {
-    const { startDate, endDate, path, method, limit = 20 } = query;
+    const { 
+      startDate, endDate, path, method, limit = 20, page = 0, 
+      sortBy = 'date', sortOrder = 'desc', minResponseTime,
+      onlyErrors, userAgent, ip
+    } = query;
     
     const where: any = {};
     
@@ -39,499 +62,249 @@ export class ApiMonitorService {
     if (method) {
       where.method = method;
     }
+    
+    if (minResponseTime) {
+      where.responseTime = {
+        gte: minResponseTime,
+      };
+    }
+    
+    if (onlyErrors) {
+      where.errorCount = {
+        gt: 0,
+      };
+    }
+    
+    if (userAgent) {
+      where.userAgent = {
+        contains: userAgent,
+      };
+    }
+    
+    if (ip) {
+      where.ip = {
+        contains: ip,
+      };
+    }
 
+    // 计算总记录数
+    const total = await this.prisma.apiMonitor.count({ where });
+    
+    // 排序和分页
     const monitorData = await this.prisma.apiMonitor.findMany({
       where,
-      orderBy: [
-        { date: 'desc' },
-        { requestCount: 'desc' },
-      ],
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+      skip: page * limit,
       take: limit,
     });
 
-    return monitorData;
-  }
-
-  /**
-   * 获取API统计数据
-   */
-  async getApiStatistics(days: number = 7) {
-    try {
-      // 使用更安全的日期计算方式
-      const now = new Date();
-      const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - days);
-      
-      if (isNaN(startDate.getTime())) {
-        console.error('Invalid date calculation, using fallback of 7 days');
-        // 使用备选方案 - 7天前
-        const fallbackDate = new Date();
-        fallbackDate.setDate(fallbackDate.getDate() - 7);
-        fallbackDate.setHours(0, 0, 0, 0);
-        
-        if (isNaN(fallbackDate.getTime())) {
-          throw new Error('Unable to create a valid date for query');
-        }
-        
-        return this.getApiStatisticsWithDate(fallbackDate);
-      }
-      
-      return this.getApiStatisticsWithDate(startDate);
-    } catch (error) {
-      console.error('Error in getApiStatistics:', error);
-      // 返回空结果，防止整个API崩溃
-      return {
-        totalRequests: 0,
-        totalErrors: 0,
-        errorRate: 0,
-        avgResponseTime: 0,
-        topPaths: [],
-        topErrorPaths: [],
-      };
-    }
-  }
-
-  /**
-   * 获取实时API监控数据（最近一小时）
-   * 方法名改为与控制器调用一致
-   */
-  async getApiRealtimeData() {
-    try {
-      const oneHourAgo = subHours(new Date(), 1);
-      
-      // 获取最近一小时的API调用分布
-      const recentCalls = await this.prisma.apiMonitor.findMany({
-        where: {
-          date: {
-            gte: oneHourAgo,
-          },
-        },
-        orderBy: {
-          date: 'desc',
-        },
-        take: 20, // 限制返回的记录数
-      });
-      
-      // 格式化为前端期望的格式
-      const formattedRecentCalls = recentCalls.map(call => ({
-        id: call.id,
-        path: call.path,
-        method: call.method,
-        statusCode: call.statusCode,
-        responseTime: call.responseTime,
-        timestamp: call.date.toISOString()
-      }));
-      
-      // 统计各状态码的请求数量
-      const statusCodeDistribution = await this.prisma.apiMonitor.groupBy({
-        by: ['statusCode'],
-        _sum: {
-          requestCount: true,
-        },
-        where: {
-          date: {
-            gte: oneHourAgo,
-          },
-        },
-      });
-      
-      // 获取响应时间最长的几个API
-      const slowestApis = await this.prisma.apiMonitor.findMany({
-        select: {
-          path: true,
-          method: true,
-          responseTime: true,
-          requestCount: true,
-        },
-        where: {
-          date: {
-            gte: oneHourAgo,
-          },
-        },
-        orderBy: {
-          responseTime: 'desc',
-        },
-        take: 5,
-      });
-
-      return {
-        recentCalls: formattedRecentCalls,
-        statusCodeDistribution,
-        slowestApis,
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      console.error('Error in getApiRealtimeData:', error);
-      return {
-        recentCalls: [],
-        statusCodeDistribution: [],
-        slowestApis: [],
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
-
-  /**
-   * 获取API性能指标
-   * 方法名改为与控制器调用一致
-   */
-  async getApiPerformance() {
-    try {
-      const threeDaysAgo = subHours(new Date(), 72);
-      
-      // 获取近3天的API性能趋势
-      const performanceTrends = await this.prisma.apiMonitor.groupBy({
-        by: ['date'],
-        _avg: {
-          responseTime: true,
-        },
-        _sum: {
-          requestCount: true,
-          errorCount: true,
-        },
-        where: {
-          date: {
-            gte: threeDaysAgo,
-          },
-        },
-        orderBy: {
-          date: 'asc',
-        },
-      });
-
-      // 计算各时段的错误率
-      const trendsWithErrorRate = performanceTrends.map(item => ({
-        date: item.date.toISOString(),
-        avgResponseTime: item._avg.responseTime || 0,
-        requestCount: item._sum.requestCount || 0,
-        errorCount: item._sum.errorCount || 0,
-        errorRate: item._sum.requestCount > 0 
-          ? (item._sum.errorCount / item._sum.requestCount) * 100 
-          : 0,
-      }));
-
-      // 获取按响应时间排序的API性能列表
-      const apiPerformanceList = await this.prisma.apiMonitor.findMany({
-        select: {
-          path: true,
-          method: true,
-          responseTime: true,
-          requestCount: true,
-          errorCount: true,
-        },
-        where: {
-          date: {
-            gte: threeDaysAgo,
-          },
-        },
-        orderBy: {
-          responseTime: 'desc',
-        },
-        take: 20,
-      });
-
-      // 添加错误率
-      const apiPerformanceWithErrorRate = apiPerformanceList.map((api, index) => ({
-        key: `perf-${index}`, // 为前端提供唯一key
-        path: api.path,
-        method: api.method,
-        responseTime: api.responseTime,
-        count: api.requestCount,
-        error: api.errorCount,
-        errorRate: api.requestCount > 0 
-          ? (api.errorCount / api.requestCount) * 100 
-          : 0,
-      }));
-
-      return {
-        performanceTrends: trendsWithErrorRate,
-        apiPerformance: apiPerformanceWithErrorRate,
-      };
-    } catch (error) {
-      console.error('Error in getApiPerformance:', error);
-      return {
-        performanceTrends: [],
-        apiPerformance: [],
-      };
-    }
-  }
-
-  /**
-   * 使用指定日期获取API统计数据
-   * 将查询逻辑分离，便于错误处理
-   */
-  private async getApiStatisticsWithDate(startDate: Date) {
-    // 获取API请求总量
-    const totalRequests = await this.prisma.apiMonitor.aggregate({
-      _sum: {
-        requestCount: true,
-      },
-      where: {
-        date: {
-          gte: startDate,
-        },
-      },
-    });
-
-    // 获取API错误总量
-    const totalErrors = await this.prisma.apiMonitor.aggregate({
-      _sum: {
-        errorCount: true,
-      },
-      where: {
-        date: {
-          gte: startDate,
-        },
-      },
-    });
-
-    // 获取平均响应时间
-    const avgResponseTime = await this.prisma.apiMonitor.aggregate({
-      _avg: {
-        responseTime: true,
-      },
-      where: {
-        date: {
-          gte: startDate,
-        },
-      },
-    });
-
-    // 获取请求量最多的API路径
-    const topPaths = await this.prisma.apiMonitor.groupBy({
-      by: ['path'],
-      _sum: {
-        requestCount: true,
-      },
-      orderBy: {
-        _sum: {
-          requestCount: 'desc',
-        },
-      },
-      take: 10, // 增加返回数量以适应前端需求
-      where: {
-        date: {
-          gte: startDate,
-        },
-      },
-    });
-
-    // 获取错误率最高的API路径
-    const topErrorPaths = await this.prisma.apiMonitor.findMany({
-      select: {
-        path: true,
-        method: true,
-        requestCount: true,
-        errorCount: true,
-      },
-      where: {
-        date: {
-          gte: startDate,
-        },
-        errorCount: {
-          gt: 0,
-        },
-      },
-      orderBy: [
-        {
-          errorCount: 'desc',
-        },
-      ],
-      take: 10, // 增加返回数量以适应前端需求
-    });
-
-    // 计算每个API路径的错误率并添加key
-    const pathsWithErrorRate = topErrorPaths.map((item, index) => ({
-      key: `error-${index}`, // 为前端提供唯一key
-      path: item.path,
-      method: item.method,
-      count: item.requestCount,
-      error: item.errorCount,
-      errorRate: item.requestCount > 0 ? (item.errorCount / item.requestCount) * 100 : 0,
-    }));
-
-    // 为topPaths添加key
-    const pathsWithKey = topPaths.map((item, index) => ({
-      key: `path-${index}`, // 为前端提供唯一key
-      path: item.path,
-      count: item._sum.requestCount || 0,
-    }));
-
     return {
-      totalRequests: totalRequests._sum.requestCount || 0,
-      totalErrors: totalErrors._sum.errorCount || 0,
-      errorRate: totalRequests._sum.requestCount > 0
-        ? (totalErrors._sum.errorCount / totalRequests._sum.requestCount) * 100
-        : 0,
-      avgResponseTime: avgResponseTime._avg.responseTime || 0,
-      topPaths: pathsWithKey,
-      topErrorPaths: pathsWithErrorRate,
+      data: monitorData,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      }
     };
   }
 
   /**
-   * 记录API请求
-   * 由拦截器调用，记录API请求信息
+   * 获取API统计数据
+   * 委托给统计服务处理
    */
-  async recordApiRequest(data: {
-    path: string;
-    method: string;
-    statusCode: number;
-    responseTime: number;
-  }) {
+  async getApiStatistics(days: number = 7) {
+    return this.statsService.getApiStatistics(days);
+  }
+
+  /**
+   * 获取实时API监控数据
+   * 委托给实时监控服务处理
+   */
+  async getApiRealtimeData() {
+    return this.realtimeService.getApiRealtimeData();
+  }
+
+  /**
+   * 获取API性能指标
+   * 委托给性能监控服务处理
+   */
+  async getApiPerformance(query: any = {}) {
+    return this.performanceService.getApiPerformance(query);
+  }
+
+  /**
+   * 记录API请求详情
+   */
+  async recordApiRequestDetail(data: ApiRecordDto) {
     try {
-      const { path, method, statusCode, responseTime } = data;
-      const today = startOfDay(new Date());
+      const { 
+        path, method, statusCode, responseTime,
+        contentLength, responseSize, userId,
+        userAgent, ip, errorMessage
+      } = data;
       
-      // 检查是否存在当天该API路径和方法的记录
-      const existing = await this.prisma.apiMonitor.findFirst({
-        where: {
+      // 创建详细记录
+      await this.prisma.apiMonitorDetail.create({
+        data: {
           path,
           method,
-          date: today,
+          statusCode,
+          responseTime,
+          contentLength,
+          responseSize,
+          userId,
+          userAgent,
+          ip,
+          errorMessage,
+          // 不保存请求和响应体的详细内容，以免数据库过大
         },
       });
-
-      if (existing) {
-        // 更新现有记录
-        await this.prisma.apiMonitor.update({
-          where: {
-            id: existing.id,
-          },
-          data: {
-            requestCount: { increment: 1 },
-            responseTime: Math.floor((existing.responseTime * existing.requestCount + responseTime) / (existing.requestCount + 1)),
-            errorCount: statusCode >= 400 ? { increment: 1 } : undefined,
-          },
-        });
-      } else {
-        // 创建新记录
-        await this.prisma.apiMonitor.create({
-          data: {
-            path,
-            method,
-            statusCode,
-            responseTime,
-            requestCount: 1,
-            errorCount: statusCode >= 400 ? 1 : 0,
-            date: today,
-          },
-        });
-      }
     } catch (error) {
-      // 仅记录错误，不中断请求处理
-      console.error('Error recording API request:', error);
+      this.logger.error('Error recording API request detail:', error);
     }
   }
 
   /**
-   * 生成测试API监控数据
-   * 用于初始化或测试阶段
+   * 记录API请求到聚合表
+   * 同时缓存到Redis以提高实时数据查询性能
    */
-  async generateTestData() {
+  async recordApiRequest(data: ApiRecordDto) {
     try {
-      const today = startOfDay(new Date());
-      const apiPaths = [
-        '/users',
-        '/roles',
-        '/auth/login',
-        '/dictionaries',
-        '/configs',
-        '/code-generator/templates',
-        '/sql-executor/execute',
-        '/api-tester/collections',
-        '/db-manager/connections',
-      ];
+      const { 
+        path, method, statusCode, responseTime,
+        contentLength, responseSize, userId,
+        userAgent, ip, errorMessage
+      } = data;
       
-      const methods = ['GET', 'POST', 'PUT', 'DELETE'];
-      const statusCodes = [200, 201, 400, 401, 403, 404, 500];
+      // 将数据记录到Redis缓存
+      await this.cacheService.recordApiCall({
+        path,
+        method,
+        statusCode,
+        responseTime,
+        contentLength: contentLength || 0,
+        responseSize: responseSize || 0,
+        ip,
+        userAgent,
+        errorMessage,
+        userId
+      });
       
-      // 清除现有测试数据
-      await this.prisma.apiMonitor.deleteMany({});
-      
-      // 生成过去7天的测试数据
-      const createdRecords = [];
-      for (let i = 0; i < 7; i++) {
-        const date = subDays(today, i);
-        
-        // 为每个API路径生成记录
-        for (const path of apiPaths) {
-          // 为每个API生成不同的HTTP方法记录
-          for (const method of methods) {
-            // 只为部分组合生成记录，使数据更真实
-            if (Math.random() > 0.3) {
-              const responseTime = Math.floor(Math.random() * 500) + 10; // 10ms到510ms之间
-              const requestCount = Math.floor(Math.random() * 100) + 1; // 1到100之间的请求数
-              
-              // 大部分是成功的请求，少部分是错误请求
-              const statusCode = Math.random() > 0.9 
-                ? statusCodes[Math.floor(Math.random() * statusCodes.length)]
-                : 200;
-              
-              // 计算错误请求数量
-              const errorCount = statusCode >= 400 
-                ? Math.floor(Math.random() * requestCount * 0.2)  // 最多20%的请求出错
-                : 0;
-              
-              // 创建API监控记录
-              const record = await this.prisma.apiMonitor.create({
-                data: {
-                  path,
-                  method,
-                  statusCode,
-                  responseTime,
-                  requestCount,
-                  errorCount,
-                  date,
-                },
-              });
-              
-              createdRecords.push(record);
-            }
-          }
-        }
+      // 首先记录详细信息（如果是错误或随机采样）
+      if (statusCode >= 400 || Math.random() < 0.1) { // 10%的请求记录详情
+        await this.recordApiRequestDetail(data);
       }
       
-      // 生成实时数据 - 最近一小时的记录
-      const realtimeRecords = [];
-      for (let i = 0; i < 20; i++) {
-        const minutesAgo = Math.floor(Math.random() * 60); // 0到59分钟前
-        const timestamp = subHours(new Date(), 0); // 当前时间
-        timestamp.setMinutes(timestamp.getMinutes() - minutesAgo);
-        
-        const path = apiPaths[Math.floor(Math.random() * apiPaths.length)];
-        const method = methods[Math.floor(Math.random() * methods.length)];
-        const statusCode = Math.random() > 0.9 
-          ? statusCodes[Math.floor(Math.random() * statusCodes.length)]
-          : 200;
-        const responseTime = Math.floor(Math.random() * 500) + 10;
-        
-        const record = await this.prisma.apiMonitor.create({
-          data: {
+      const today = startOfDay(new Date());
+      
+      // 是否为错误请求
+      const isError = statusCode >= 400;
+
+      // 使用upsert操作替代findFirst+create/update模式，避免并发冲突
+      await this.prisma.apiMonitor.upsert({
+        where: {
+          // 使用联合唯一约束字段作为查询条件
+          path_method_date: {
             path,
             method,
-            statusCode,
-            responseTime,
-            requestCount: 1, // 实时数据单次请求
-            errorCount: statusCode >= 400 ? 1 : 0,
-            date: timestamp,
+            date: today,
           },
-        });
-        
-        realtimeRecords.push(record);
-      }
+        },
+        update: {
+          // 更新已存在的记录
+          requestCount: { increment: 1 },
+          // 更新响应时间为加权平均值
+          responseTime: responseTime,
+          // 只有当状态码>=400时才增加错误计数
+          errorCount: isError ? { increment: 1 } : undefined,
+          // 更新内容长度和响应大小
+          contentLength: contentLength,
+          responseSize: responseSize,
+          // 更新用户代理和IP
+          userAgent: userAgent || undefined,
+          ip: ip || undefined,
+        },
+        create: {
+          // 创建新记录
+          path,
+          method,
+          statusCode,
+          responseTime,
+          contentLength,
+          responseSize,
+          requestCount: 1,
+          errorCount: isError ? 1 : 0,
+          date: today,
+          userAgent,
+          ip,
+          userId,
+        },
+      });
       
-      return {
-        success: true,
-        message: '测试数据生成成功',
-        count: createdRecords.length + realtimeRecords.length,
-      };
+      // 检查是否需要触发警报
+      await this.alertsService.checkAlerts(path, method, responseTime, isError);
+
+      // 清除相关缓存，确保下次获取的是最新数据
+      await this.invalidateRealtimeCache();
     } catch (error) {
-      console.error('生成测试数据失败:', error);
-      return { 
-        success: false,
-        message: '生成测试数据失败',
-        error: error.message 
-      };
+      // 仅记录错误，不中断请求处理
+      this.logger.error('Error recording API request:', error);
     }
+  }
+  
+  /**
+   * 获取API警报配置
+   * 委托给告警服务处理
+   */
+  async getAlertConfigs() {
+    return this.alertsService.getAlertConfigs();
+  }
+  
+  /**
+   * 创建或更新API警报配置
+   * 委托给告警服务处理
+   */
+  async saveAlertConfig(config: any) {
+    return this.alertsService.saveAlertConfig(config);
+  }
+  
+  /**
+   * 删除API警报配置
+   * 委托给告警服务处理
+   */
+  async deleteAlertConfig(id: number) {
+    return this.alertsService.deleteAlertConfig(id);
+  }
+  
+  /**
+   * 导出API监控数据
+   * 委托给导出服务处理
+   */
+  async exportApiMonitorData(query: any) {
+    return this.exportService.exportApiMonitorData(query);
+  }
+
+  /**
+   * 生成测试API监控数据
+   * 委托给数据服务处理
+   */
+  async generateTestData() {
+    return this.dataService.generateTestData();
+  }
+  
+  /**
+   * 清理旧监控数据
+   * 委托给数据服务处理
+   */
+  async cleanupOldData(daysToKeep: number = 30) {
+    return this.dataService.cleanupOldData(daysToKeep);
+  }
+
+  // ===== 缓存相关方法 =====
+  private async invalidateRealtimeCache(): Promise<void> {
+    await this.cacheService.invalidateCache('realtime');
   }
 }

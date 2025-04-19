@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Tabs, Spin, Alert } from 'antd';
+import { Tabs, Spin, Alert, message } from 'antd';
 import { ApiOutlined, LineChartOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { apiMonitorApi } from '@/api/system-monitor';
 import { ApiStatistics, ApiPerformanceMetrics, RealtimeApiData } from '@/types/system-monitor';
@@ -9,6 +9,7 @@ import ApiMonitorHeader from './components/ApiMonitorHeader';
 import ApiOverviewPanel from './components/ApiOverviewPanel';
 import ApiPerformancePanel from './components/ApiPerformancePanel';
 import ApiRealtimePanel from './components/ApiRealtimePanel';
+import ApiAlertsConfig from './components/ApiAlertsConfig';
 
 // 为表格定义的类型
 interface ApiPathItem {
@@ -28,6 +29,7 @@ const ApiMonitor: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('1');
   const [refreshInterval, setRefreshInterval] = useState<number>(60000); // 默认1分钟刷新一次
+  const [alertsVisible, setAlertsVisible] = useState(false);
 
   // 存储各类监控数据
   const [apiStats, setApiStats] = useState<ApiStatistics | null>(null);
@@ -52,7 +54,8 @@ const ApiMonitor: React.FC = () => {
         const pathsData = data.topPaths.map((item, index) => ({
           key: `path-${index}`,
           path: item.path,
-          count: item._sum.requestCount
+          method: item.method || '', // 使用可选链和默认值
+          count: item.count || 0,
         }));
         setTopPathsData(pathsData);
       }
@@ -63,15 +66,16 @@ const ApiMonitor: React.FC = () => {
           key: `error-${index}`,
           path: item.path,
           method: item.method,
-          count: item.requestCount,
-          error: item.errorCount,
+          count: item.count,
+          error: item.error,
           errorRate: item.errorRate
         }));
         setTopErrorPathsData(errorPathsData);
       }
     } catch (err) {
-      setError('获取API统计数据失败，请稍后重试');
       console.error('获取API统计数据错误:', err);
+      setError('获取API统计数据失败，请稍后重试');
+      message.error('获取API统计数据失败');
     } finally {
       setLoading(false);
     }
@@ -89,15 +93,16 @@ const ApiMonitor: React.FC = () => {
           key: `perf-${index}`,
           path: item.path,
           method: item.method,
-          count: item.requestCount,
+          count: item.count,
           responseTime: item.responseTime,
-          error: item.errorCount,
+          error: item.error,
           errorRate: item.errorRate
         }));
         setApiPerformanceData(performanceData);
       }
     } catch (err) {
       console.error('获取API性能数据错误:', err);
+      message.error('获取API性能数据失败');
     } finally {
       setPerformanceLoading(false);
     }
@@ -111,6 +116,7 @@ const ApiMonitor: React.FC = () => {
       setRealtimeData(data);
     } catch (err) {
       console.error('获取API实时数据错误:', err);
+      message.error('获取API实时数据失败');
     } finally {
       setRealtimeLoading(false);
     }
@@ -119,8 +125,21 @@ const ApiMonitor: React.FC = () => {
   // 刷新所有数据
   const handleRefresh = () => {
     fetchApiStats();
-    fetchApiPerformance();
-    fetchRealtimeData();
+    
+    // 如果在性能分析选项卡上，刷新性能数据
+    if (activeTab === '2') {
+      fetchApiPerformance();
+    }
+    
+    // 如果在实时监控选项卡上，刷新实时数据
+    if (activeTab === '3') {
+      fetchRealtimeData();
+    }
+  };
+
+  // 显示告警配置模态框
+  const showAlertsModal = () => {
+    setAlertsVisible(true);
   };
 
   // 首次加载和定时刷新
@@ -130,7 +149,16 @@ const ApiMonitor: React.FC = () => {
     const timer = setInterval(handleRefresh, refreshInterval);
 
     return () => clearInterval(timer);
-  }, [refreshInterval]);
+  }, [refreshInterval, activeTab]);
+
+  // 当选项卡变更时，加载对应数据
+  useEffect(() => {
+    if (activeTab === '2' && !apiPerformance) {
+      fetchApiPerformance();
+    } else if (activeTab === '3' && !realtimeData) {
+      fetchRealtimeData();
+    }
+  }, [activeTab]);
 
   // 刷新间隔变更
   const handleIntervalChange = (interval: number) => {
@@ -145,6 +173,7 @@ const ApiMonitor: React.FC = () => {
           onIntervalChange={handleIntervalChange}
           onRefresh={handleRefresh}
           loading={loading || performanceLoading || realtimeLoading}
+          showAlertsModal={showAlertsModal}
         />
         <div className="p-4">
           <Alert message="错误" description={error} type="error" showIcon />
@@ -160,6 +189,7 @@ const ApiMonitor: React.FC = () => {
         onIntervalChange={handleIntervalChange}
         onRefresh={handleRefresh}
         loading={loading || performanceLoading || realtimeLoading}
+        showAlertsModal={showAlertsModal}
       />
 
       <div className="p-4">
@@ -203,6 +233,12 @@ const ApiMonitor: React.FC = () => {
           />
         </Spin>
       </div>
+
+      {/* API告警配置模态框 */}
+      <ApiAlertsConfig
+        visible={alertsVisible}
+        onClose={() => setAlertsVisible(false)}
+      />
     </div>
   );
 };

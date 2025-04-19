@@ -200,10 +200,48 @@ model ApiMonitor {
   responseTime  Int      // 响应时间(ms)
   requestCount  Int      // 请求计数
   errorCount    Int      // 错误计数
+  contentLength Int?     // 请求内容大小(bytes)
+  responseSize  Int?     // 响应内容大小(bytes)
+  userAgent     String?  // 用户代理
+  ip            String?  // 客户端IP
+  userId        Int?     // 用户ID(如果已登录)
   date          DateTime @default(now()) // 日期(按天统计)
   
   @@unique([path, method, date])
   @@map("api_monitors")
+}
+
+// API请求详细记录 - 用于保存单个请求的详细信息
+model ApiMonitorDetail {
+  id            Int       @id @default(autoincrement())
+  path          String    // API路径
+  method        String    // 请求方法
+  statusCode    Int       // 状态码
+  responseTime  Int       // 响应时间(ms)
+  contentLength Int?      // 请求内容大小(bytes)
+  responseSize  Int?      // 响应内容大小(bytes)
+  userAgent     String?   // 用户代理
+  ip            String?   // 客户端IP
+  userId        Int?      // 用户ID(如果已登录)
+  errorMessage  String?   // 错误信息(如果有)
+  requestBody   String?   @db.Text // 请求体(截取部分)
+  responseBody  String?   @db.Text // 响应体(截取部分)
+  createdAt     DateTime  @default(now()) // 创建时间
+  
+  @@map("api_monitor_details")
+}
+
+// API警报配置
+model ApiAlertConfig {
+  id                    Int       @id @default(autoincrement())
+  path                  String?   // 特定API路径(可选)
+  responseTimeThreshold Int       // 响应时间阈值(ms)
+  errorRateThreshold    Int       // 错误率阈值(%)
+  enabled               Boolean   @default(true) // 是否启用
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime? @updatedAt
+  
+  @@map("api_alert_configs")
 }
 
 // 系统日志统计
