@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../../../shared/prisma/prisma.service';
 import { SystemResourcesQueryDto } from '../../dto/system-monitor.dto';
 import * as os from 'os';
@@ -6,26 +6,136 @@ import * as si from 'systeminformation';
 import { Cron } from '@nestjs/schedule';
 
 @Injectable()
-export class SystemResourceService {
+export class SystemResourceService implements OnModuleInit {
+  // 添加缓存变量
+  private cachedSystemInfo: any = null;
+  private cachedCpuUsage: number = 0;
+  private cachedMemUsage: number = 0;
+  private cachedDiskUsage: number = 0;
+  private lastRefreshTime: Date = new Date(0);
+  private cacheValidityPeriod: number = 30 * 1000; // 30秒缓存有效期
+
   constructor(private prisma: PrismaService) {}
+
+  // 模块初始化时预加载数据
+  async onModuleInit() {
+    await this.refreshCachedData();
+    console.log('系统资源监控服务已初始化，预加载了系统信息');
+  }
 
   /**
    * 获取实时系统资源使用情况
    */
   async getSystemResourcesRealtime() {
-    const cpuUsage = await this.getCpuUsage();
-    const memUsage = await this.getMemoryUsage();
-    const diskUsage = await this.getDiskUsage();
-    const uptime = os.uptime();
-    const systemInfo = await this.getSystemInfo();
+    // 检查缓存是否过期
+    const now = new Date();
+    if (now.getTime() - this.lastRefreshTime.getTime() > this.cacheValidityPeriod) {
+      // 如果过期了，异步更新缓存，但不阻塞当前请求
+      this.refreshCachedData().catch(err => 
+        console.error('刷新系统资源缓存数据失败:', err)
+      );
+    }
 
     return {
-      cpuUsage,
-      memUsage,
-      diskUsage,
-      uptime,
-      systemInfo,
+      cpuUsage: this.cachedCpuUsage,
+      memUsage: this.cachedMemUsage,
+      diskUsage: this.cachedDiskUsage,
+      uptime: os.uptime(),
+      systemInfo: this.cachedSystemInfo,
       timestamp: new Date(),
+      cachedAt: this.lastRefreshTime,
+    };
+  }
+
+  /**
+   * 更新缓存数据的方法
+   * 集中处理所有耗时的系统调用
+   */
+  private async refreshCachedData() {
+    try {
+      // 并行执行所有系统信息查询
+      const [cpuData, memData, diskData, systemInfoData] = await Promise.all([
+        this.fetchCpuUsage(),
+        this.fetchMemoryUsage(),
+        this.fetchDiskUsage(),
+        this.fetchSystemInfo()
+      ]);
+
+      // 更新缓存
+      this.cachedCpuUsage = cpuData;
+      this.cachedMemUsage = memData;
+      this.cachedDiskUsage = diskData;
+      this.cachedSystemInfo = systemInfoData;
+      this.lastRefreshTime = new Date();
+
+      return true;
+    } catch (error) {
+      console.error('更新系统资源缓存失败:', error);
+      return false;
+    }
+  }
+
+  /**
+   * 获取系统资源概览数据
+   * 包含实时数据和历史趋势
+   */
+  async getSystemResourcesOverview() {
+    // 获取实时数据 - 直接使用缓存
+    const realtimeData = await this.getSystemResourcesRealtime();
+    
+    // 获取最近24小时的资源使用趋势
+    const oneDayAgo = new Date();
+    oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+
+    const trends = await this.prisma.systemResource.findMany({
+      where: {
+        timestamp: {
+          gte: oneDayAgo,
+        },
+      },
+      orderBy: {
+        timestamp: 'asc',
+      },
+      select: {
+        cpuUsage: true,
+        memUsage: true,
+        diskUsage: true,
+        uptime: true,
+        timestamp: true,
+      },
+    });
+
+    // 计算CPU、内存、磁盘使用率的24小时平均值
+    let avgCpuUsage = 0;
+    let avgMemUsage = 0;
+    let avgDiskUsage = 0;
+    
+    if (trends.length > 0) {
+      avgCpuUsage = trends.reduce((sum, item) => sum + item.cpuUsage, 0) / trends.length;
+      avgMemUsage = trends.reduce((sum, item) => sum + item.memUsage, 0) / trends.length;
+      avgDiskUsage = trends.reduce((sum, item) => sum + item.diskUsage, 0) / trends.length;
+    }
+
+    // 格式化趋势数据为前端需要的格式
+    const formattedTrends = trends.map(item => ({
+      cpuUsage: item.cpuUsage,
+      memUsage: item.memUsage,
+      diskUsage: item.diskUsage,
+      uptime: item.uptime,
+      timestamp: item.timestamp.toISOString(),
+    }));
+
+    // 返回组合数据
+    return {
+      ...realtimeData,
+      trends: formattedTrends,
+      stats: {
+        avgCpuUsage,
+        avgMemUsage,
+        avgDiskUsage,
+        samplesCount: trends.length,
+        period: '24h',
+      },
     };
   }
 
@@ -65,21 +175,21 @@ export class SystemResourceService {
 
   /**
    * 定时收集系统资源使用情况 - 每5分钟执行一次
+   * 同时也更新缓存
    */
   @Cron('0 */5 * * * *')
   async collectSystemResources() {
     try {
-      const cpuUsage = await this.getCpuUsage();
-      const memUsage = await this.getMemoryUsage();
-      const diskUsage = await this.getDiskUsage();
-      const uptime = os.uptime();
-
+      // 先更新缓存
+      await this.refreshCachedData();
+      
+      // 然后保存到数据库
       await this.prisma.systemResource.create({
         data: {
-          cpuUsage,
-          memUsage,
-          diskUsage,
-          uptime,
+          cpuUsage: this.cachedCpuUsage,
+          memUsage: this.cachedMemUsage,
+          diskUsage: this.cachedDiskUsage,
+          uptime: os.uptime(),
         },
       });
       
@@ -90,9 +200,18 @@ export class SystemResourceService {
   }
 
   /**
+   * 每30秒自动刷新缓存数据
+   */
+  @Cron('*/30 * * * * *')
+  async refreshCacheJob() {
+    await this.refreshCachedData();
+    console.log(`[${new Date().toISOString()}] 系统资源缓存已更新`);
+  }
+
+  /**
    * 获取CPU使用率
    */
-  private async getCpuUsage(): Promise<number> {
+  private async fetchCpuUsage(): Promise<number> {
     try {
       const load = await si.currentLoad();
       return load.currentLoad / 100; // 转换为0-1之间的小数
@@ -105,7 +224,7 @@ export class SystemResourceService {
   /**
    * 获取内存使用率
    */
-  private async getMemoryUsage(): Promise<number> {
+  private async fetchMemoryUsage(): Promise<number> {
     try {
       const mem = await si.mem();
       return mem.used / mem.total; // 转换为0-1之间的小数
@@ -127,7 +246,7 @@ export class SystemResourceService {
   /**
    * 获取磁盘使用率
    */
-  private async getDiskUsage(): Promise<number> {
+  private async fetchDiskUsage(): Promise<number> {
     try {
       const fsSize = await si.fsSize();
       
@@ -150,7 +269,7 @@ export class SystemResourceService {
   /**
    * 获取系统信息
    */
-  private async getSystemInfo() {
+  private async fetchSystemInfo() {
     try {
       const [system, cpu, mem, osInfo, networkInterfacesInfo, disk] = await Promise.all([
         si.system(),

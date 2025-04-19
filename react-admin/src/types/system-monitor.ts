@@ -75,12 +75,12 @@ export interface ApiStatistics {
   errorRate: number;
   avgResponseTime: number;
   topPaths: {
+    key: string;
     path: string;
-    _sum: {
-      requestCount: number;
-    };
+    count: number;
   }[];
   topErrorPaths: {
+    key?: string; // 可选，兼容后端可能返回或不返回key的情况
     path: string;
     method: string;
     errorCount: number;
@@ -99,12 +99,13 @@ export interface ApiPerformanceMetrics {
     errorRate: number;
   }[];
   apiPerformance: {
+    key?: string; // 可选，兼容后端可能返回或不返回key的情况
     path: string;
     method: string;
     responseTime: number;
     requestCount: number;
-    errorCount: number;
-    errorRate: number;
+    errorCount?: number; // 可选，增强兼容性
+    errorRate?: number; // 可选，增强兼容性
   }[];
 }
 

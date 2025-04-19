@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Row, Col, Table, Statistic, Spin, Alert, Button, Tooltip, Badge, DatePicker, Space, Tabs } from 'antd';
-import { ReloadOutlined, ApiOutlined, ClockCircleOutlined, WarningOutlined, ArrowLeftOutlined, LineChartOutlined } from '@ant-design/icons';
+import { ReloadOutlined, ApiOutlined, ClockCircleOutlined, WarningOutlined, ArrowLeftOutlined, LineChartOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { apiMonitorApi } from '@/api/system-monitor';
 import { ApiStatistics, ApiPerformanceMetrics, RealtimeApiData } from '@/types/system-monitor';
@@ -49,24 +49,26 @@ const ApiMonitor: React.FC = () => {
       
       // 处理topPaths数据
       if (data.topPaths && Array.isArray(data.topPaths)) {
-        const pathsData = data.topPaths.map((item, index) => ({
-          key: `path-${index}`,
-          path: item.path,
-          count: item._sum.requestCount,
-        }));
-        setTopPathsData(pathsData);
+        // 直接使用后端返回的topPaths数据，已经包含key、path和count属性
+        setTopPathsData(data.topPaths);
       }
       
       // 处理topErrorPaths数据
       if (data.topErrorPaths && Array.isArray(data.topErrorPaths)) {
-        const errorPathsData = data.topErrorPaths.map((item, index) => ({
-          key: `error-${index}`,
-          path: item.path,
-          method: item.method,
-          count: item.requestCount,
-          error: item.errorCount,
-          errorRate: item.errorRate,
-        }));
+        const errorPathsData = data.topErrorPaths.map((item, index) => {
+          // 如果后端返回数据结构已包含所需属性，直接使用
+          if (item.key) {
+            return item;
+          }
+          return {
+            key: `error-${index}`,
+            path: item.path,
+            method: item.method || '-',
+            count: item.requestCount || 0,
+            error: item.errorCount || 0,
+            errorRate: item.errorRate || 0,
+          };
+        });
         setTopErrorPathsData(errorPathsData);
       }
     } catch (err) {

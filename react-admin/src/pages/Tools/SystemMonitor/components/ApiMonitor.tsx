@@ -42,7 +42,7 @@ const ApiMonitor: React.FC<ApiMonitorProps> = ({
         const pathsData = data.topPaths.map((item, index) => ({
           key: `path-${index}`,
           path: item.path,
-          count: item._sum.requestCount,
+          count: item.count || (item._sum?.requestCount ?? 0), // 兼容两种可能的数据格式
         }));
         setTopPathsData(pathsData);
       }
@@ -53,9 +53,9 @@ const ApiMonitor: React.FC<ApiMonitorProps> = ({
           key: `error-${index}`,
           path: item.path,
           method: item.method,
-          count: item.requestCount,
-          error: item.errorCount,
-          errorRate: item.errorRate,
+          count: item.count || item.requestCount || 0, // 兼容不同的数据格式
+          error: item.error || item.errorCount || 0,
+          errorRate: item.errorRate || 0,
         }));
         setTopErrorPathsData(errorPathsData);
       }
