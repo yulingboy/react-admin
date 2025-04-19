@@ -1,54 +1,45 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Button } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
-import { useUserManage } from './hooks/useUserManage';
-import UserFormModal from './components/UserFormModal';
-import { getUserColumns } from './components/UserColumns';
-import { User, UserListParams } from '@/types/user';
+import { useDataList } from './hooks/use-data-list';
+import { getTableColumns } from './config/table-columns';
+import FormModal from './components/form-modal';
+import type { User, ListParams } from '@/types/user'; // 导入正确的类型
 
-const UserManage: React.FC = () => {
+const ListPage: React.FC = () => {
   const {
-    formModalVisible,
-    setFormModalVisible,
-    currentUser,
-    isEdit,
-    roleOptions,
     tableRef,
-    loadRoleOptions,
-    handleAddUser,
-    handleEditUser,
-    handleDeleteUser,
-    handleFormSuccess,
-    loadUserList
-  } = useUserManage();
-
-  // 加载角色选项
-  useEffect(() => {
-    loadRoleOptions();
-  }, []);
+    formModalProps,
+    loadData,
+    handleAdd,
+    handleEdit,
+    handleDelete,
+    roleOptions,
+  } = useDataList();
 
   // 获取表格列配置
-  const columns = getUserColumns({
-    handleEditUser,
-    handleDeleteUser
+  const columns = getTableColumns({
+    handleEdit,
+    handleDelete,
+    roleOptions,
   });
 
   // 表格工具栏按钮
   const toolBarRender = () => [
-    <Button 
-      key="add" 
-      type="primary" 
+    <Button
+      key="add"
+      type="primary"
       icon={<PlusOutlined />}
-      onClick={handleAddUser}
+      onClick={handleAdd}
     >
-      新增用户
+      新增
     </Button>
   ];
 
   return (
-    <div>
-      <ProTable<User, UserListParams>
+    <div className="page-container">
+      <ProTable<User, ListParams>
         headerTitle="用户列表"
         actionRef={tableRef}
         rowKey="id"
@@ -56,7 +47,7 @@ const UserManage: React.FC = () => {
           labelWidth: 'auto',
         }}
         toolBarRender={toolBarRender}
-        request={loadUserList}
+        request={loadData}
         pagination={{
           showSizeChanger: true,
           defaultPageSize: 10,
@@ -64,23 +55,13 @@ const UserManage: React.FC = () => {
         columns={columns}
         cardBordered
       />
-      
-      <UserFormModal
-        visible={formModalVisible}
-        onCancel={() => setFormModalVisible(false)}
-        onSuccess={handleFormSuccess}
-        initialValues={currentUser ? {
-          id: currentUser.id,
-          username: currentUser.username,
-          email: currentUser.email,
-          status: currentUser.status,
-          roleId: currentUser.roleId
-        } : undefined}
-        isEdit={isEdit}
+
+      <FormModal
+        {...formModalProps}
         roleOptions={roleOptions}
       />
     </div>
   );
 };
 
-export default UserManage;
+export default ListPage;

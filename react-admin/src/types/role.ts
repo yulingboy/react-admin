@@ -29,8 +29,9 @@ export interface RoleFormData {
 }
 
 export interface RoleOption {
-  value: number;
-  label: string;
+  id: number;
+  name: string;
+  description: string;
 }
 
 export interface RoleListResult {

@@ -1,7 +1,7 @@
 import { IsString, IsOptional, IsInt, Min, IsEnum } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
-import { StatusEnum } from 'src/common/enums/common.enum';
+import { IsSystemEnum, StatusEnum } from 'src/common/enums/common.enum';
 
 /**
  * 查询用户DTO
@@ -9,18 +9,18 @@ import { StatusEnum } from 'src/common/enums/common.enum';
  */
 export class QueryUserDto extends PaginationDto {
   /**
-   * 用户名关键字搜索
+   * 关键字搜索
    */
   @IsOptional()
-  @IsString({ message: '用户名必须是字符串' })
-  username?: string;
+  @IsString({ message: '关键字必须是字符串' })
+  keyword?: string;
 
   /**
-   * 电子邮箱关键字搜索
+   * 是否系统内置用户筛选
    */
   @IsOptional()
-  @IsString({ message: '邮箱必须是字符串' })
-  email?: string;
+  @IsEnum(IsSystemEnum, { message: '是否系统内置用户值必须是有效的枚举值' })
+  isSystem?: string;
 
   /**
    * 用户状态筛选

@@ -26,7 +26,7 @@ export interface UserFormData {
 }
 
 // 用户列表查询参数
-export interface UserListParams {
+export interface ListParams {
   username?: string;
   email?: string;
   status?: string;

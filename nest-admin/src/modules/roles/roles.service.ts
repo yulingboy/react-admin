@@ -211,7 +211,10 @@ export class RolesService {
    * @returns 如果角色存在，返回角色对象；否则返回 null
    */
   async validateRole(roleId: number) {
-    return this.prisma.role.findUnique({ where: { id: roleId } });
+    const role =  this.prisma.role.findUnique({ where: { id: roleId } });
+    if (!role) {
+      throw new NotFoundException(`角色不存在`);
+    }
   }
 
   /**

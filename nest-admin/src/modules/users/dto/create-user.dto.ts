@@ -17,6 +17,7 @@ export class CreateUserDto {
   /**
    * 用户密码，长度在6到20之间
    */
+  @IsOptional()
   @IsString({ message: '密码必须是字符串' })
   @Length(6, 20, { message: '密码长度必须在6到20之间' })
   password?: string;
