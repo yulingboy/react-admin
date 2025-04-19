@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prettier": "prettier --write .",
+    "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write .",
+    "prettier:check:fix": "prettier --check ."
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",

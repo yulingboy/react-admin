@@ -22,8 +22,8 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3000', // 后端服务器地址
         changeOrigin: true, // 支持跨域
-        rewrite: (path) => path.replace(/^\/api/, ''), // 去除请求路径中的/api前缀
-      },
-    },
-  },
+        rewrite: path => path.replace(/^\/api/, '') // 去除请求路径中的/api前缀
+      }
+    }
+  }
 });
