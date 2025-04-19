@@ -1,14 +1,11 @@
-import { Controller, Get, Post, Body, Param, Delete, ParseIntPipe, Query, Logger, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, ParseIntPipe, Query, Logger, Put } from '@nestjs/common';
 import { DictionariesService } from './dictionaries.service';
 import { CreateDictionaryDto } from './dto/create-dictionary.dto';
 import { UpdateDictionaryDto } from './dto/update-dictionary.dto';
 import { QueryDictionaryDto } from './dto/query-dictionary.dto';
-import { BatchDeleteDto } from './dto/batch-delete.dto';
 import { CreateDictionaryItemDto } from './dto/create-dictionary-item.dto';
 import { UpdateDictionaryItemDto } from './dto/update-dictionary-item.dto';
-import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import Result from 'src/common/utils/result';
-import { Dictionary, DictionaryItem } from '@prisma/client';
 
 /**
  * 字典管理控制器
@@ -21,7 +18,7 @@ import { Dictionary, DictionaryItem } from '@prisma/client';
 export class DictionariesController {
   private readonly logger = new Logger(DictionariesController.name);
 
-  constructor(private readonly dictionariesService: DictionariesService) {}
+  constructor(private readonly dictionariesService: DictionariesService) { }
 
   /**
    * 添加字典
@@ -30,14 +27,10 @@ export class DictionariesController {
    */
   @Post('add')
   async add(@Body() createDictionaryDto: CreateDictionaryDto) {
-    try {
-      const data = await this.dictionariesService.create(createDictionaryDto);
-      return Result.success(data);
-    } catch (error) {
-      this.logger.error(`添加字典失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+    await this.dictionariesService.create(createDictionaryDto);
+    return Result.success();
   }
+
 
   /**
    * 获取字典列表（分页）
@@ -46,12 +39,9 @@ export class DictionariesController {
    */
   @Get('list')
   async getList(@Query() query: QueryDictionaryDto) {
-    try {
-      return await this.dictionariesService.findAll(query);
-    } catch (error) {
-      this.logger.error(`获取字典列表失败: ${error.message}`, error.stack);
-      throw error;
-    }
+    const data = await this.dictionariesService.findAll(query);
+    return Result.success(data);
+
   }
 
   /**
@@ -61,13 +51,10 @@ export class DictionariesController {
    */
   @Get('detail')
   async getDetail(@Query('id', ParseIntPipe) id: number) {
-    try {
-      const data = await this.dictionariesService.findOne(id);
-      return Result.success(data);
-    } catch (error) {
-      this.logger.error(`获取字典详情失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+
+    const data = await this.dictionariesService.findOne(id);
+    return Result.success(data);
+
   }
 
   /**
@@ -77,13 +64,9 @@ export class DictionariesController {
    */
   @Get('getByCode')
   async getByCode(@Query('code') code: string) {
-    try {
-      const data = await this.dictionariesService.findByCode(code);
-      return Result.success(data);
-    } catch (error) {
-      this.logger.error(`通过编码获取字典失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+    const data = await this.dictionariesService.findByCode(code);
+    return Result.success(data);
+
   }
 
   /**
@@ -93,13 +76,9 @@ export class DictionariesController {
    */
   @Put('update')
   async update(@Body() updateDictionaryDto: UpdateDictionaryDto) {
-    try {
-      const data = await this.dictionariesService.update(updateDictionaryDto.id, updateDictionaryDto);
-      return Result.success(data);
-    } catch (error) {
-      this.logger.error(`更新字典失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+    await this.dictionariesService.update(updateDictionaryDto.id, updateDictionaryDto);
+    return Result.success();
+
   }
 
   /**
@@ -109,30 +88,12 @@ export class DictionariesController {
    */
   @Delete('delete')
   async delete(@Query('id', ParseIntPipe) id: number) {
-    try {
-      await this.dictionariesService.remove(id);
-      return Result.success();
-    } catch (error) {
-      this.logger.error(`删除字典失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+    await this.dictionariesService.remove(id);
+    return Result.success();
+
   }
 
-  /**
-   * 批量删除字典
-   * @param params - 批量删除参数
-   * @returns 操作结果
-   */
-  @Delete('deleteBatch')
-  async deleteBatch(@Query() params: BatchDeleteDto) {
-    try {
-      await this.dictionariesService.batchRemove(params.ids);
-      return Result.success();
-    } catch (error) {
-      this.logger.error(`批量删除字典失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
-  }
+
 
   /**
    * 获取所有可用的字典类型列表
@@ -141,13 +102,9 @@ export class DictionariesController {
    */
   @Get('all')
   async getAllDictionaries() {
-    try {
-      const data = await this.dictionariesService.findAllDictionaries();
-      return Result.success(data);
-    } catch (error) {
-      this.logger.error(`获取所有字典类型失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+    const data = await this.dictionariesService.findAllDictionaries();
+    return Result.success(data);
+
   }
 
   /**
@@ -157,13 +114,9 @@ export class DictionariesController {
    */
   @Get('items')
   async getItems(@Query('dictionaryId', ParseIntPipe) dictionaryId: number) {
-    try {
-      const data = await this.dictionariesService.findItems(dictionaryId);
-      return Result.success(data);
-    } catch (error) {
-      this.logger.error(`获取字典项列表失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+    const data = await this.dictionariesService.findItems(dictionaryId);
+    return Result.success(data);
+
   }
 
   /**
@@ -173,13 +126,10 @@ export class DictionariesController {
    */
   @Get('itemsByCode')
   async getItemsByCode(@Query('code') code: string) {
-    try {
-      const data = await this.dictionariesService.findItemsByCode(code);
-      return Result.success(data);
-    } catch (error) {
-      this.logger.error(`通过编码获取字典项列表失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+
+    const data = await this.dictionariesService.findItemsByCode(code);
+    return Result.success(data);
+
   }
 
   /**
@@ -189,13 +139,8 @@ export class DictionariesController {
    */
   @Post('item/add')
   async addItem(@Body() createDictionaryItemDto: CreateDictionaryItemDto) {
-    try {
-      const data = await this.dictionariesService.createItem(createDictionaryItemDto);
-      return Result.success(data);
-    } catch (error) {
-      this.logger.error(`添加字典项失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+    const data = await this.dictionariesService.createItem(createDictionaryItemDto);
+    return Result.success();
   }
 
   /**
@@ -205,13 +150,10 @@ export class DictionariesController {
    */
   @Put('item/update')
   async updateItem(@Body() updateDictionaryItemDto: UpdateDictionaryItemDto) {
-    try {
-      const data = await this.dictionariesService.updateItem(updateDictionaryItemDto.id, updateDictionaryItemDto);
-      return Result.success(data);
-    } catch (error) {
-      this.logger.error(`更新字典项失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+
+    const data = await this.dictionariesService.updateItem(updateDictionaryItemDto.id, updateDictionaryItemDto);
+    return Result.success(data);
+
   }
 
   /**
@@ -221,28 +163,9 @@ export class DictionariesController {
    */
   @Delete('item/delete')
   async deleteItem(@Query('id', ParseIntPipe) id: number) {
-    try {
-      await this.dictionariesService.removeItem(id);
-      return Result.success();
-    } catch (error) {
-      this.logger.error(`删除字典项失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
-  }
 
-  /**
-   * 批量删除字典项
-   * @param params - 批量删除参数
-   * @returns 操作结果
-   */
-  @Delete('item/deleteBatch')
-  async deleteBatchItems(@Query() params: BatchDeleteDto) {
-    try {
-      await this.dictionariesService.batchRemoveItems(params.ids);
-      return Result.success();
-    } catch (error) {
-      this.logger.error(`批量删除字典项失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+    await this.dictionariesService.removeItem(id);
+    return Result.success();
+
   }
 }

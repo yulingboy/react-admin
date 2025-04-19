@@ -3,10 +3,10 @@ import { Button, Drawer } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
 import { Dictionary, DictionaryQueryParams } from '@/types/dictionary';
-import { useDictionaryManage } from './hooks/useDictionaryManage';
-import DictionaryFormModal from './components/DictionaryFormModal';
-import DictionaryItemsPanel from './components/DictionaryItemsPanel';
-import { getDictionaryColumns } from './components/DictionaryColumns';
+import { useDictionaryManage } from './hooks/use-dictionary-manage';
+import FormModal from './components/form-modal';
+import DictionaryItemsPanel from './components/dictionary-items-panel';
+import { getDictionaryColumns } from './components/table-columns';
 
 const DictionaryManage: React.FC = () => {
   // 当前选中的字典ID
@@ -18,16 +18,12 @@ const DictionaryManage: React.FC = () => {
 
   // 使用自定义Hook处理逻辑
   const {
-    formModalVisible,
-    formModalTitle,
-    currentRecord,
     tableRef,
-    handleAdd,
-    handleEdit,
-    handleDelete,
-    handleFormModalSubmit,
-    handleFormModalCancel,
-    loadDictionaryList
+    formModalProps,
+    loadDictionaryList,
+    handleAddDictionary,
+    handleEditDictionary,
+    handleDeleteDictionary,
   } = useDictionaryManage();
 
   // 处理查看字典项
@@ -39,20 +35,30 @@ const DictionaryManage: React.FC = () => {
 
   // 获取表格列配置
   const columns = getDictionaryColumns({
-    handleEdit,
-    handleDelete,
+    handleEdit: handleEditDictionary,
+    handleDelete: handleDeleteDictionary,
     handleSelect: handleViewDictionaryItems
   });
 
   // 关闭抽屉
   const closeDrawer = () => {
     setDrawerVisible(false);
-    // 可选：清空选中的字典
-    // setSelectedDictionary(null);
   };
 
+  // 表格工具栏按钮
+  const toolBarRender = () => [
+    <Button 
+      key="add" 
+      type="primary" 
+      icon={<PlusOutlined />}
+      onClick={handleAddDictionary}
+    >
+      新增字典
+    </Button>
+  ];
+
   return (
-    <div className="dictionary-manage">
+    <div className="page-container">
       <ProTable<Dictionary, DictionaryQueryParams>
         headerTitle="字典管理"
         actionRef={tableRef}
@@ -61,16 +67,7 @@ const DictionaryManage: React.FC = () => {
           labelWidth: 'auto',
         }}
         cardBordered
-        toolBarRender={() => [
-          <Button 
-            key="add" 
-            type="primary" 
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-          >
-            新增字典
-          </Button>,
-        ]}
+        toolBarRender={toolBarRender}
         request={loadDictionaryList}
         pagination={{
           showSizeChanger: true,
@@ -82,7 +79,7 @@ const DictionaryManage: React.FC = () => {
       {/* 字典项抽屉 */}
       <Drawer
         title={`字典项管理 - ${selectedDictionaryName}`}
-        width={1200}
+        width={1600}
         open={drawerVisible}
         onClose={closeDrawer}
         destroyOnClose
@@ -93,12 +90,8 @@ const DictionaryManage: React.FC = () => {
       </Drawer>
 
       {/* 字典添加/编辑表单弹窗 */}
-      <DictionaryFormModal
-        title={formModalTitle}
-        visible={formModalVisible}
-        onCancel={handleFormModalCancel}
-        onSubmit={handleFormModalSubmit}
-        record={currentRecord}
+      <FormModal
+        {...formModalProps}
       />
     </div>
   );

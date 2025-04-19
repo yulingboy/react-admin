@@ -235,13 +235,7 @@ export class DictionariesService {
    */
   async findItems(dictionaryId: number): Promise<DictionaryItem[]> {
     // 检查字典是否存在
-    const dictionary = await this.prisma.dictionary.findUnique({
-      where: { id: dictionaryId },
-    });
-
-    if (!dictionary) {
-      throw new NotFoundException(`字典ID:${dictionaryId} 不存在`);
-    }
+    await this.checkDictionaryExists(dictionaryId);
 
     // 查询字典项列表
     return this.prisma.dictionaryItem.findMany({
@@ -276,31 +270,69 @@ export class DictionariesService {
   }
 
   /**
+   * 校验字典项编码是否已经存在
+   * @param dictionaryId 字典ID
+   * @param code 字典项编码
+   * @param excludeId 排除的字典项ID（用于更新场景）
+   * @returns 校验结果 true-存在，false-不存在
+   */
+  async checkItemCodeExists(dictionaryId: number, code: string, excludeId?: number): Promise<boolean> {
+    const where: any = {
+      dictionaryId,
+      code,
+    };
+
+    // 更新场景下，排除自身ID
+    if (excludeId) {
+      where.id = { not: excludeId };
+    }
+
+    const count = await this.prisma.dictionaryItem.count({ where });
+    return count > 0;
+  }
+
+  /**
+   * 检查字典是否存在
+   * @param id 字典ID
+   * @returns 字典对象
+   * @throws {NotFoundException} 当字典不存在时抛出异常
+   */
+  async checkDictionaryExists(id: number): Promise<Dictionary> {
+    const dictionary = await this.prisma.dictionary.findUnique({
+      where: { id },
+    });
+
+    if (!dictionary) {
+      throw new NotFoundException(`字典ID:${id} 不存在`);
+    }
+
+    return dictionary;
+  }
+
+  /**
    * 创建字典项
    * @param createDictionaryItemDto 创建字典项的数据传输对象
    * @returns 创建的字典项对象
    * @throws {NotFoundException} 当字典不存在时抛出异常
    * @throws {ConflictException} 当字典项编码在同一字典下已存在时抛出异常
+   * @throws {ForbiddenException} 当尝试在系统字典下创建字典项时抛出异常
    */
   async createItem(createDictionaryItemDto: CreateDictionaryItemDto): Promise<DictionaryItem> {
     // 检查字典是否存在
-    const dictionary = await this.prisma.dictionary.findUnique({
-      where: { id: createDictionaryItemDto.dictionaryId },
-    });
-
-    if (!dictionary) {
-      throw new NotFoundException(`字典ID:${createDictionaryItemDto.dictionaryId} 不存在`);
+    const dictionary = await this.checkDictionaryExists(createDictionaryItemDto.dictionaryId);
+    
+    // 如果是系统字典，不允许新增字典项
+    if (dictionary.isSystem === IsSystemEnum.YES) {
+      throw new ForbiddenException(`系统字典不允许新增字典项`);
     }
 
     // 检查字典项编码在同一字典下是否已存在
-    const existItem = await this.prisma.dictionaryItem.findFirst({
-      where: {
-        dictionaryId: createDictionaryItemDto.dictionaryId,
-        code: createDictionaryItemDto.code,
-      },
-    });
+    const exists = await this.checkItemCodeExists(
+      createDictionaryItemDto.dictionaryId,
+      createDictionaryItemDto.code
+    );
 
-    if (existItem) {
+    if (exists) {
       throw new ConflictException(`字典项编码 ${createDictionaryItemDto.code} 在当前字典下已存在`);
     }
 
@@ -316,27 +348,33 @@ export class DictionariesService {
    * @returns 更新后的字典项对象
    * @throws {NotFoundException} 当字典项不存在时抛出异常
    * @throws {ConflictException} 当新的字典项编码在同一字典下已存在时抛出异常
+   * @throws {ForbiddenException} 当尝试修改系统字典项时抛出异常
    */
   async updateItem(id: number, updateDictionaryItemDto: UpdateDictionaryItemDto): Promise<DictionaryItem> {
     // 检查字典项是否存在
     const item = await this.prisma.dictionaryItem.findUnique({
       where: { id },
+      include: { dictionary: true },
     });
 
     if (!item) {
       throw new NotFoundException(`字典项ID:${id} 不存在`);
     }
 
+    // 如果是系统字典，不允许修改字典项
+    if (item.dictionary.isSystem === IsSystemEnum.YES) {
+      throw new ForbiddenException(`系统字典项不允许修改`);
+    }
+
     // 如果更新code，需要检查code是否已存在
     if (updateDictionaryItemDto.code && updateDictionaryItemDto.code !== item.code) {
-      const existItem = await this.prisma.dictionaryItem.findFirst({
-        where: {
-          dictionaryId: item.dictionaryId,
-          code: updateDictionaryItemDto.code,
-        },
-      });
+      const exists = await this.checkItemCodeExists(
+        item.dictionaryId, 
+        updateDictionaryItemDto.code, 
+        id
+      );
 
-      if (existItem) {
+      if (exists) {
         throw new ConflictException(`字典项编码 ${updateDictionaryItemDto.code} 在当前字典下已存在`);
       }
     }
@@ -352,15 +390,22 @@ export class DictionariesService {
    * @param id 字典项ID
    * @returns 删除结果
    * @throws {NotFoundException} 当字典项不存在时抛出异常
+   * @throws {ForbiddenException} 当尝试删除系统字典项时抛出异常
    */
   async removeItem(id: number) {
     // 检查字典项是否存在
     const item = await this.prisma.dictionaryItem.findUnique({
       where: { id },
+      include: { dictionary: true },
     });
 
     if (!item) {
       throw new NotFoundException(`字典项ID:${id} 不存在`);
+    }
+
+    // 如果是系统字典，不允许删除字典项
+    if (item.dictionary.isSystem === IsSystemEnum.YES) {
+      throw new ForbiddenException(`系统字典项不允许删除`);
     }
 
     return this.prisma.dictionaryItem.delete({
@@ -372,8 +417,21 @@ export class DictionariesService {
    * 批量删除字典项
    * @param ids 字典项ID数组
    * @returns 删除结果
+   * @throws {ForbiddenException} 当尝试删除系统字典项时抛出异常
    */
   async batchRemoveItems(ids: number[]) {
+    // 检查是否包含系统字典下的字典项
+    const systemItems = await this.prisma.dictionaryItem.findMany({
+      where: {
+        id: { in: ids },
+        dictionary: { isSystem: IsSystemEnum.YES },
+      },
+    });
+
+    if (systemItems.length > 0) {
+      throw new ForbiddenException(`系统字典项不允许删除`);
+    }
+
     return this.prisma.dictionaryItem.deleteMany({
       where: {
         id: { in: ids },

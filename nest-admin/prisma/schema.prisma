@@ -76,6 +76,8 @@ model DictionaryItem {
   label        String    // 字典项标签
   color        String?   // 字典项颜色值，如 #FF0000
   extra        String?   // 附加数据，JSON字符串
+  isSystem    String    @default("0")  // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
+  description String? // 字典项描述
   sort         Int       @default(0)  // 排序字段
   status       String    @default("1")  // 1-启用 0-禁用
   createdAt    DateTime  @default(now())

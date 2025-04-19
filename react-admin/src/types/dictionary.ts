@@ -3,6 +3,7 @@ export interface Dictionary {
   id: number;
   name: string;
   code: string;
+  status: string; // 修改为数字类型：1表示正常，0表示停用
   description?: string;
   isSystem: string; // 0: 普通字典, 1: 系统内置
   createdAt?: string;
@@ -16,6 +17,8 @@ export interface DictionaryItem {
   code: string;
   value: string;
   label: string;
+  isSystem: string; // 0: 普通字典项, 1: 系统内置
+  description?: string;
   color?: string; // 新增字段：颜色值
   extra?: any; // 添加extra字段
   sort: number;
@@ -26,7 +29,7 @@ export interface DictionaryItem {
 
 // 字典分页参数
 export interface DictionaryQueryParams {
-  page?: number;
+  current?: number;
   pageSize?: number;
   name?: string;
   code?: string;
@@ -36,7 +39,7 @@ export interface DictionaryQueryParams {
 export interface DictionaryListResponse {
   list: Dictionary[];
   total: number;
-  page: number;
+  current: number;
   pageSize: number;
 }
 
