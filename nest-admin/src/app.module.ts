@@ -16,11 +16,13 @@ import { CodeGeneratorModule } from './modules/code-generator/code-generator.mod
 import { SqlExecutorModule } from './modules/sql-executor/sql-executor.module';
 import { ApiTesterModule } from './modules/api-tester/api-tester.module';
 import { DbManagerModule } from './modules/db-manager/db-manager.module';
-import { SystemMonitorModule } from './modules/system-monitor/system-monitor.module';
-import { ApiMonitorInterceptor } from './modules/system-monitor/interceptors/api-monitor.interceptor';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware';
+import { ApiMonitorInterceptor } from './modules/api-monitor/api-monitor.interceptor';
+import { ApiMonitorModule } from './modules/api-monitor/api-monitor.module';
+import { LogStatsModule } from './modules/log-stats/log-stats.module';
+import { SystemResourceModule } from './modules/system-resource/system-resource.module';
 
 @Module({
   imports: [
@@ -39,7 +41,9 @@ import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware
     SqlExecutorModule,
     ApiTesterModule,
     DbManagerModule,
-    SystemMonitorModule, // 引入系统监控模块
+    ApiMonitorModule,
+    LogStatsModule,
+    SystemResourceModule
   ],
   controllers: [AppController],
   providers: [

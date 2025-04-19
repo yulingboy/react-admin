@@ -1,12 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { SystemResourceService } from '../modules/system-resource/system-resource.service';
-import { SystemResourcesQueryDto } from '../dto/system-monitor.dto';
+import { SystemResourceService } from './system-resource.service';
+import { SystemResourcesQueryDto } from './dto/system-resource.dto';
 
 @Controller('system-monitor/resources')
 export class SystemResourceController {
-  constructor(
-    private readonly systemResourceService: SystemResourceService,
-  ) {}
+  constructor(private readonly systemResourceService: SystemResourceService) {}
 
   /**
    * 获取实时系统资源使用情况
@@ -23,12 +21,12 @@ export class SystemResourceController {
   async getSystemResourcesHistory(@Query() query: SystemResourcesQueryDto) {
     return this.systemResourceService.getSystemResourcesHistory(query);
   }
-  
+
   /**
-   * 获取系统资源概览数据
+   * 获取系统概览数据（只包含资源部分）
    */
   @Get('overview')
-  async getSystemResourcesOverview() {
-    return this.systemResourceService.getSystemResourcesOverview();
+  async getSystemResourceOverview() {
+    return this.systemResourceService.getSystemResourcesRealtime();
   }
 }

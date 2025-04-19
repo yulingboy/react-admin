@@ -1,9 +1,9 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { PrismaService } from '../../../../shared/prisma/prisma.service';
-import { SystemResourcesQueryDto } from '../../dto/system-monitor.dto';
 import * as os from 'os';
 import * as si from 'systeminformation';
 import { Cron } from '@nestjs/schedule';
+import { PrismaService } from '@/shared/prisma/prisma.service';
+import { SystemResourcesQueryDto } from './dto/system-resource.dto';
 
 @Injectable()
 export class SystemResourceService implements OnModuleInit {

@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiMonitorService } from './api-monitor.service';
-import { ApiMonitorQueryDto } from '../../dto/system-monitor.dto';
+import { ApiMonitorQueryDto } from './dto/api-monitor.dto';
 
 @Controller('system-monitor/api')
 export class ApiMonitorController {

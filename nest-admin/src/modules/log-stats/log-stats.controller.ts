@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { LogStatsService } from './log-stats.service';
-import { LogStatsQueryDto } from '../../dto/system-monitor.dto';
+import { LogStatsQueryDto } from './dto/log-stats.dto';
 
 @Controller('system-monitor/logs')
 export class LogStatsController {

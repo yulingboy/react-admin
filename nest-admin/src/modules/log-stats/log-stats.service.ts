@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../../../shared/prisma/prisma.service';
-import { LogStatsQueryDto } from '../../dto/system-monitor.dto';
 import { startOfDay, endOfDay, subDays, format } from 'date-fns';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Cron } from '@nestjs/schedule';
+import { PrismaService } from '@/shared/prisma/prisma.service';
+import { LogStatsQueryDto } from './dto/log-stats.dto';
 
 @Injectable()
 export class LogStatsService {

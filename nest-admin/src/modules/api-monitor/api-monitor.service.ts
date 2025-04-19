@@ -1,7 +1,7 @@
+import { PrismaService } from '@/shared/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../../shared/prisma/prisma.service';
-import { ApiMonitorQueryDto } from '../../dto/system-monitor.dto';
 import { startOfDay, endOfDay, subHours, subDays, format } from 'date-fns';
+import { ApiMonitorQueryDto } from './dto/api-monitor.dto';
 
 @Injectable()
 export class ApiMonitorService {
