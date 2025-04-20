@@ -1,5 +1,5 @@
+import { getDictionaryItemsByCode } from '@/modules/system/api';
 import { useEffect, useState } from 'react';
-import { getDictionaryItemsByCode } from '@/api/dictionary';
 
 // 定义缓存字典项的接口
 interface CacheDictionaryItem {

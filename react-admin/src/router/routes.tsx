@@ -15,26 +15,32 @@ import {
 import { lazyLoadHelper } from '@/utils/lazyLoadHelper';
 import AuthRoute from '@/components/AuthRoute';
 import { AppRouteObject } from './types';
+import Dashboard from '@/pages/Dashboard';
 
 // 使用别名导入组件
 const Layout = lazyLoadHelper(() => import('@/layout'));
-const Home = lazyLoadHelper(() => import('@/pages/Home'));
-const Dashboard = lazyLoadHelper(() => import('@/pages/Dashboard'));
-const UserManage = lazyLoadHelper(() => import('@/pages/System/UserManage'));
-const RoleManage = lazyLoadHelper(() => import('@/pages/System/RoleManage'));
-const DictionaryManage = lazyLoadHelper(() => import('@/pages/System/DictionaryManage'));
-const ConfigManage = lazyLoadHelper(() => import('@/pages/System/ConfigManage')); // 新增配置管理组件
-const NotificationManage = lazyLoadHelper(() => import('@/pages/System/NotificationManage')); // 新增通知管理组件
-const CodeGenerator = lazyLoadHelper(() => import('@/pages/Tools/CodeGenerator'));
-const SqlExecutor = lazyLoadHelper(() => import('@/pages/Tools/SqlExecutor'));
-const ApiTester = lazyLoadHelper(() => import('@/pages/Tools/ApiTester'));
-const DbManager = lazyLoadHelper(() => import('@/pages/Tools/DbManager'));
-const SystemResourceMonitor = lazyLoadHelper(() => import('@/pages/Tools/SystemResourceMonitor'));
-const ApiMonitor = lazyLoadHelper(() => import('@/pages/Tools/ApiMonitor'));
-const LogMonitor = lazyLoadHelper(() => import('@/pages/Tools/LogMonitor'));
-const BasicForm = lazyLoadHelper(() => import('@/pages/Form/BasicForm'));
-const AdvancedForm = lazyLoadHelper(() => import('@/pages/Form/AdvancedForm'));
-const BasicTable = lazyLoadHelper(() => import('@/pages/Table/BasicTable'));
+
+
+// System模块
+const UserManage = lazyLoadHelper(() => import('@/modules/system/pages/user-management'));
+const RoleManage = lazyLoadHelper(() => import('@/modules/system/pages/role-management'));
+const DictionaryManage = lazyLoadHelper(() => import('@/modules/system/pages/dictionary-management'));
+const ConfigManage = lazyLoadHelper(() => import('@/modules/system/pages/config-management'));
+const NotificationManage = lazyLoadHelper(() => import('@/modules/system/pages/notification-management'));
+
+// Tools模块
+const CodeGenerator = lazyLoadHelper(() => import('@/modules/tools/pages/code-generator'));
+const SqlExecutor = lazyLoadHelper(() => import('@/modules/tools/pages/sql-executor'));
+const ApiTester = lazyLoadHelper(() => import('@/modules/tools/pages/api-tester'));
+const DbManager = lazyLoadHelper(() => import('@/modules/tools/pages/db-manager'));
+
+// Monitoring模块
+const SystemResourceMonitor = lazyLoadHelper(() => import('@/modules/monitoring/pages/system-resource-monitor'));
+const ApiMonitor = lazyLoadHelper(() => import('@/modules/monitoring/pages/api-monitor'));
+const LogMonitor = lazyLoadHelper(() => import('@/modules/monitoring/pages/log-monitor'));
+
+
+// 登录和404页面
 const Login = lazyLoadHelper(() => import('@/pages/Login'));
 const NotFound = lazyLoadHelper(() => import('@/pages/NotFound'));
 
@@ -52,18 +58,10 @@ export const routes: AppRouteObject[] = [
       { path: '/', element: <Navigate to="/home" />, meta: { hideInMenu: true } },
       {
         path: 'home',
-        element: <Home />,
+        element: <Dashboard />,
         meta: {
           title: '首页',
           icon: <HomeOutlined />
-        }
-      },
-      {
-        path: 'dashboard',
-        element: <Dashboard />,
-        meta: {
-          title: '仪表盘',
-          icon: <DashboardOutlined />
         }
       },
       {
@@ -144,7 +142,16 @@ export const routes: AppRouteObject[] = [
             meta: {
               title: '数据库管理'
             }
-          },
+          }
+        ]
+      },
+      {
+        path: 'monitoring',
+        meta: {
+          title: '系统监控',
+          icon: <LineChartOutlined />
+        },
+        children: [
           {
             path: 'system-resources',
             element: <SystemResourceMonitor />,
@@ -168,39 +175,6 @@ export const routes: AppRouteObject[] = [
           }
         ]
       },
-      {
-        path: 'form',
-        meta: {
-          title: '表单页面',
-          icon: <FormOutlined />
-        },
-        children: [
-          {
-            path: 'basic',
-            element: <BasicForm />,
-            meta: { title: '基础表单' }
-          },
-          {
-            path: 'advanced',
-            element: <AdvancedForm />,
-            meta: { title: '高级表单' }
-          }
-        ]
-      },
-      {
-        path: 'table',
-        meta: {
-          title: '表格页面',
-          icon: <TableOutlined />
-        },
-        children: [
-          {
-            path: 'basic',
-            element: <BasicTable />,
-            meta: { title: '基础表格' }
-          }
-        ]
-      }
     ]
   },
   {
