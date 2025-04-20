@@ -11,7 +11,11 @@ import {
   LineChartOutlined,
   DashboardFilled,
   FileTextOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  KeyOutlined,
+  ToolOutlined,
+  FileSearchOutlined,
+  ProfileOutlined
 } from '@ant-design/icons';
 import { lazyLoadHelper } from '@/utils/lazyLoadHelper';
 import AuthRoute from '@/components/AuthRoute';
@@ -28,6 +32,8 @@ const DictionaryManage = lazyLoadHelper(() => import('@/modules/system/pages/dic
 const ConfigManage = lazyLoadHelper(() => import('@/modules/system/pages/config-management'));
 const NotificationManage = lazyLoadHelper(() => import('@/modules/system/pages/notification-management'));
 const ScheduleJobManage = lazyLoadHelper(() => import('@/pages/system/schedule-job'));
+const LoginLogManage = lazyLoadHelper(() => import('@/modules/system/pages/login-log'));
+const OperLogManage = lazyLoadHelper(() => import('@/modules/system/pages/oper-log'));
 
 // Tools模块
 const CodeGenerator = lazyLoadHelper(() => import('@/modules/tools/pages/code-generator'));
@@ -112,6 +118,22 @@ export const routes: AppRouteObject[] = [
             meta: {
               title: '定时任务',
               icon: <ClockCircleOutlined />
+            }
+          },
+          {
+            path: 'login-log',
+            element: <LoginLogManage />,
+            meta: {
+              title: '登录日志',
+              icon: <KeyOutlined />
+            }
+          },
+          {
+            path: 'oper-log',
+            element: <OperLogManage />,
+            meta: {
+              title: '操作日志',
+              icon: <ProfileOutlined />
             }
           }
         ]

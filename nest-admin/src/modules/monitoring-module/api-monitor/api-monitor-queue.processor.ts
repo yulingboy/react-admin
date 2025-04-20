@@ -19,6 +19,7 @@ export class ApiMonitorQueueProcessor {
   /**
    * 处理API记录任务
    * 通过队列串行处理，避免并发写入冲突
+   * 使用upsert操作处理并发场景下的记录创建/更新
    */
   @Process('record-api')
   async handleRecordApi(job: Job<ApiRecordDto & { isError: boolean; today: Date }>) {
@@ -26,55 +27,39 @@ export class ApiMonitorQueueProcessor {
             responseSize, userAgent, ip, userId, isError, today } = job.data;
     
     try {
-      // 使用事务确保数据一致性
-      await this.prisma.$transaction(async (tx) => {
-        // 检查记录是否已存在
-        const existingRecord = await tx.apiMonitor.findUnique({
-          where: {
-            path_method_date: {
-              path,
-              method,
-              date: today,
-            }
+      // 使用upsert操作，自动处理记录存在和不存在的情况
+      await this.prisma.apiMonitor.upsert({
+        where: {
+          path_method_date: {
+            path,
+            method,
+            date: today,
           }
-        });
-
-        if (existingRecord) {
-          // 如果记录存在，则更新
-          await tx.apiMonitor.update({
-            where: {
-              id: existingRecord.id
-            },
-            data: {
-              requestCount: { increment: 1 },
-              errorCount: isError ? { increment: 1 } : undefined,
-              responseTime: responseTime,
-              contentLength: contentLength || existingRecord.contentLength,
-              responseSize: responseSize || existingRecord.responseSize,
-              userAgent: userAgent || existingRecord.userAgent,
-              ip: ip || existingRecord.ip,
-              statusCode
-            }
-          });
-        } else {
-          // 如果记录不存在，则创建
-          await tx.apiMonitor.create({
-            data: {
-              path,
-              method,
-              statusCode,
-              responseTime,
-              contentLength: contentLength || 0,
-              responseSize: responseSize || 0,
-              requestCount: 1,
-              errorCount: isError ? 1 : 0,
-              date: today,
-              userAgent: userAgent || null,
-              ip: ip || null,
-              userId: userId || null,
-            }
-          });
-        }
+        },
+        create: {
+          path,
+          method,
+          statusCode,
+          responseTime,
+          contentLength: contentLength || 0,
+          responseSize: responseSize || 0,
+          requestCount: 1,
+          errorCount: isError ? 1 : 0,
+          date: today,
+          userAgent: userAgent || null,
+          ip: ip || null,
+          userId: userId || null,
+        },
+        update: {
+          requestCount: { increment: 1 },
+          errorCount: isError ? { increment: 1 } : undefined,
+          responseTime: responseTime,
+          contentLength: contentLength || null,
+          responseSize: responseSize || null,
+          userAgent: userAgent || null,
+          ip: ip || null,
+          statusCode
+        },
       });
 
       this.logger.log(`Successfully processed API record for ${method} ${path}`);

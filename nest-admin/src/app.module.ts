@@ -13,6 +13,8 @@ import redisConfig from './config/redis.config';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware';
 import { ApiMonitorInterceptor } from './modules/monitoring-module/api-monitor/api-monitor.interceptor';
 import { ScheduleModule } from '@nestjs/schedule';
+import { LogModule } from './modules/log-module/log-module.module';
+import { LogInterceptor } from './common/interceptors/log.interceptor';
 
 import { AuthModuleGroup } from './modules/auth-module/auth-module.module';
 import { MonitoringModuleGroup } from './modules/monitoring-module/monitoring-module.module';
@@ -41,6 +43,7 @@ import { ToolsModuleGroup } from './modules/tools-module/tools-module.module';
     ScheduleModule.forRoot(), // 注册定时任务模块
     PrismaModule,
     LoggerModule,
+    LogModule,  // 注册日志模块
     AuthModuleGroup,
     MonitoringModuleGroup,
     SystemModuleGroup,
@@ -61,6 +64,17 @@ import { ToolsModuleGroup } from './modules/tools-module/tools-module.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: ApiMonitorInterceptor,
+    },
+    // 注册操作日志拦截器作为全局拦截器
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LogInterceptor,
+    },
+    // 提供操作日志服务，供拦截器使用
+    {
+      provide: 'OperLogService',
+      useFactory: (operLogService) => operLogService,
+      inject: ['OPER_LOG_SERVICE'],
     },
   ],
 })

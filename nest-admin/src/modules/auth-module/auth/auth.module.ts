@@ -6,6 +6,8 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { LoginLogModule } from '../../log-module/login-log/login-log.module';
+import { LoginLogRecordService } from '../services/login-log-record.service';
 
 @Module({
   imports: [
@@ -21,8 +23,13 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       inject: [ConfigService],
     }),
     UsersModule,
+    LoginLogModule, // 导入登录日志模块
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [
+    AuthService, 
+    JwtStrategy,
+    LoginLogRecordService, // 注册登录日志记录服务
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}

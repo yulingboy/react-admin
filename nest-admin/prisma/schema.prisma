@@ -24,6 +24,9 @@ model User {
   // 接口测试关联
   apiTestHistories ApiTestHistory[]
   apiTestTemplates ApiTestTemplate[]
+  // 日志关联
+  loginLogs       LoginLog[]
+  operLogs        OperLog[]
 
   @@index([roleId])
   @@map("users")
@@ -303,4 +306,48 @@ model ScheduleJobLog {
 
   @@index([jobId])
   @@map("schedule_job_logs")
+}
+
+// 登录日志
+model LoginLog {
+  id          Int       @id @default(autoincrement())
+  userId      Int?      // 用户ID，可以为空（登录失败的情况）
+  username    String    // 用户名
+  ipAddress   String    // 登录IP地址
+  loginLocation String?  // 登录地点
+  browser     String?   // 浏览器类型
+  os          String?   // 操作系统
+  status      String    @default("0") // 登录状态（0失败 1成功）
+  msg         String?   // 提示消息
+  loginTime   DateTime  @default(now()) // 登录时间
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([loginTime])
+  @@map("login_logs")
+}
+
+// 操作日志
+model OperLog {
+  id            Int       @id @default(autoincrement())
+  title         String    // 操作模块
+  businessType  String    @default("0") // 业务类型（0其它 1新增 2修改 3删除）
+  method        String?   // 请求方法
+  requestMethod String?   // HTTP请求方法
+  operatorType  String    @default("0") // 操作类别（0其它 1后台用户 2手机端用户）
+  operName      String?   // 操作人员
+  operUrl       String?   // 请求URL
+  operIp        String?   // 主机地址
+  operLocation  String?   // 操作地点
+  operParam     String?   @db.Text // 请求参数
+  jsonResult    String?   @db.Text // 返回参数
+  status        String    @default("0") // 操作状态（0正常 1异常）
+  errorMsg      String?   @db.Text // 错误消息
+  operTime      DateTime  @default(now()) // 操作时间
+  userId        Int?      // 用户ID
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([operTime])
+  @@index([userId])
+  @@map("oper_logs")
 }
