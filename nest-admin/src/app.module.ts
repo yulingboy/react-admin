@@ -2,29 +2,21 @@ import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './shared/prisma/prisma.module';
-import { UsersModule } from './modules/users/users.module';
-import { RolesModule } from './modules/roles/roles.module';
-import { AuthModule } from './modules/auth/auth.module';
-import { ConfigsModule } from './modules/configs/configs.module';
 import { LoggerModule } from './shared/logger/logger.module';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { NotFoundExceptionFilter } from './common/filters/not-found.filter';
 import { ConfigModule } from '@nestjs/config';
-import { DictionariesModule } from './modules/dictionaries/dictionaries.module';
-import { CodeGeneratorModule } from './modules/code-generator/code-generator.module';
-import { SqlExecutorModule } from './modules/sql-executor/sql-executor.module';
-import { ApiTesterModule } from './modules/api-tester/api-tester.module';
-import { DbManagerModule } from './modules/db-manager/db-manager.module';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware';
-import { ApiMonitorInterceptor } from './modules/api-monitor/api-monitor.interceptor';
-import { ApiMonitorModule } from './modules/api-monitor/api-monitor.module';
-import { LogStatsModule } from './modules/log-stats/log-stats.module';
-import { SystemResourceModule } from './modules/system-resource/system-resource.module';
-import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ApiMonitorInterceptor } from './modules/monitoring-module/api-monitor/api-monitor.interceptor';
 import { ScheduleModule } from '@nestjs/schedule';
+
+import { AuthModuleGroup } from './modules/auth-module/auth-module.module';
+import { MonitoringModuleGroup } from './modules/monitoring-module/monitoring-module.module';
+import { SystemModuleGroup } from './modules/system-module/system-module.module';
+import { ToolsModuleGroup } from './modules/tools-module/tools-module.module';
 
 @Module({
   imports: [
@@ -35,19 +27,10 @@ import { ScheduleModule } from '@nestjs/schedule';
     ScheduleModule.forRoot(), // 注册定时任务模块
     PrismaModule,
     LoggerModule,
-    UsersModule,
-    RolesModule,
-    AuthModule,
-    ConfigsModule,
-    DictionariesModule,
-    CodeGeneratorModule,
-    SqlExecutorModule,
-    ApiTesterModule,
-    DbManagerModule,
-    ApiMonitorModule,
-    LogStatsModule,
-    SystemResourceModule,
-    NotificationsModule
+    AuthModuleGroup,
+    MonitoringModuleGroup,
+    SystemModuleGroup,
+    ToolsModuleGroup
   ],
   controllers: [AppController],
   providers: [

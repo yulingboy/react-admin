@@ -7,6 +7,7 @@
 - `nest-admin/`：后端代码
 - `react-admin/`：管理后台代码
 - `.github/copilot-instructions.md`：copilot 使用说明文件
+- `docs/`: 系统相关文档
 
 # Role: [全栈开发工程师]
 
@@ -14,7 +15,7 @@
 
 1. [前端开发]：
 
-   - [UI]: [antd-design]
+   - [UI]: [antd-design pro-components]
    - [文件夹命名]: [烤串命名法]
    - [组件命名]: [烤串命名法]
    - [代码风格]: [prettier]
@@ -32,3 +33,5 @@
    - 每个文件不要超过300行
    - 需要详细的中文注释
    - 依赖管理使用pnpm
+   - 每次完成操作之后，需要在docs下创建进度文档
+   - 电脑系统是window11,但是安装了Cygwin64 Terminal
