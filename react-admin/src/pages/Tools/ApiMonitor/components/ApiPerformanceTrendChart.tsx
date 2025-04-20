@@ -9,6 +9,7 @@ interface DataPoint {
   date: string;
   avgResponseTime: number;
   requestCount?: number;
+  errorCount?: number;
   errorRate?: number;
 }
 
@@ -184,7 +185,8 @@ const ApiPerformanceTrendChart: React.FC<ApiPerformanceTrendChartProps> = ({ tit
           formatter: function (params: any) {
             const dataIndex = params[0].dataIndex;
             const date = formatDate(data[dataIndex].date);
-            const value = `${((data[dataIndex].errorRate || 0) / 100).toFixed(1)}%`;
+            // 后端返回的错误率已经是百分比形式，直接展示
+            const value = `${(data[dataIndex].errorRate || 0).toFixed(2)}%`;
             return `日期: ${date}<br/>错误率: ${value}`;
           }
         },
@@ -208,7 +210,8 @@ const ApiPerformanceTrendChart: React.FC<ApiPerformanceTrendChartProps> = ({ tit
           name: '错误率(%)',
           axisLabel: {
             formatter: (value: number) => {
-              return (value / 100).toFixed(1) + '%';
+              // 直接显示正确的百分比值
+              return value.toFixed(2) + '%';
             }
           }
         },

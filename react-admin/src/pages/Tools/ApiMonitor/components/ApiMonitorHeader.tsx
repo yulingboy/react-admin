@@ -10,8 +10,7 @@ import {
   BulbOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { exportApiMonitorData, generateTestData, cleanupOldData } from '@/api/system-monitor';
-import type { ApiExportQueryParams } from '@/api/system-monitor';
+import { ApiExportQueryParams, exportApiMonitorData } from '@/api/api-monitor.api';
 
 interface ApiMonitorHeaderProps {
   refreshInterval: number;

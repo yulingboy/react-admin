@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs, Spin, Alert, message } from 'antd';
 import { ApiOutlined, LineChartOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import { apiMonitorApi } from '@/api/system-monitor';
 import { ApiStatistics, ApiPerformanceMetrics, RealtimeApiData } from '@/types/system-monitor';
 
 // 导入拆分后的子组件
@@ -10,6 +9,7 @@ import ApiOverviewPanel from './components/ApiOverviewPanel';
 import ApiPerformancePanel from './components/ApiPerformancePanel';
 import ApiRealtimePanel from './components/ApiRealtimePanel';
 import ApiAlertsConfig from './components/ApiAlertsConfig';
+import { apiMonitorApi } from '@/api/api-monitor.api';
 
 // 为表格定义的类型
 interface ApiPathItem {

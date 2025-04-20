@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, Switch, Tooltip, Space, Popconfirm, message } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { getApiAlertConfigs, saveApiAlertConfig, deleteApiAlertConfig } from '@/api/system-monitor';
-import type { ApiAlertConfig } from '@/api/system-monitor';
+import { ApiAlertConfig, getApiAlertConfigs } from '@/api/api-monitor.api';
 
 const ApiAlertsConfig: React.FC<{ visible: boolean; onClose: () => void }> = ({ visible, onClose }) => {
   const [loading, setLoading] = useState(false);

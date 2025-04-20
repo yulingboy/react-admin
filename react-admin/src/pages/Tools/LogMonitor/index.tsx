@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Spin, Alert, Tabs } from 'antd';
 import { BarChartOutlined, InfoCircleOutlined, WarningOutlined } from '@ant-design/icons';
-import { logStatsApi } from '@/api/system-monitor';
 import { LogStat, LogAnalysis, LogTrend, LogDistribution, ErrorLog } from '@/types/system-monitor';
 import dayjs from 'dayjs';
 
@@ -13,6 +12,7 @@ import LogDistributionChart from './components/LogDistributionChart';
 import LogStatsTable from './components/LogStatsTable';
 import ErrorLogsTable from './components/ErrorLogsTable';
 import LogAnalysisChart from './components/LogAnalysisChart';
+import { logStatsApi } from '@/api/log-stats.api';
 
 const LogMonitor: React.FC = () => {
   const [logStats, setLogStats] = useState<LogStat[]>([]);
