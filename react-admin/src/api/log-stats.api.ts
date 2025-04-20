@@ -4,7 +4,8 @@ import {
   LogAnalysis,
   LogTrend,
   LogDistribution,
-  LogStatsQueryParams
+  LogStatsQueryParams,
+  LogStatsOverview
 } from '@/types/system-monitor';
 
 /**
@@ -53,6 +54,15 @@ export const logStatsApi = {
    */
   getErrorLogs: (limit: number = 10) => {
     return request.get<any[]>('/api/system-monitor/logs/errors', { params: { limit } });
+  },
+  
+  /**
+   * 获取日志统计概览数据
+   * 整合分析结果、趋势和分布数据，用于实时更新
+   * @returns 日志统计概览数据
+   */
+  getOverview: () => {
+    return request.get<LogStatsOverview>('/api/system-monitor/logs/overview');
   }
 };
 
@@ -62,3 +72,4 @@ export const analyzeRecentLogs = logStatsApi.analyzeRecent;
 export const getLogTrends = logStatsApi.getTrends;
 export const getLogDistribution = logStatsApi.getDistribution;
 export const getErrorLogs = logStatsApi.getErrorLogs;
+export const getLogStatsOverview = logStatsApi.getOverview;

@@ -125,6 +125,7 @@ export interface LogAnalysis {
   errorCount: number;
   warnCount: number;
   infoCount: number;
+  timestamp?: string;
 }
 
 // 日志趋势数据
@@ -144,8 +145,29 @@ export interface LogDistribution {
 // 错误日志详情
 export interface ErrorLog {
   timestamp: string;
+  context?: string;
   message: string;
   level: string;
+}
+
+// 日志统计当日概览数据
+export interface LogStatDaily {
+  date: string;
+  totalLogs: number;
+  errorCount: number;
+  warnCount: number;
+  infoCount: number;
+  errorRate: number;
+}
+
+// 日志统计概览数据
+export interface LogStatsOverview {
+  analysis: LogAnalysis;
+  todayStats: LogStatDaily;
+  trends: LogTrend[];
+  distribution: LogDistribution[];
+  updatedAt: string;
+  error?: string;
 }
 
 // 系统监控概览

@@ -45,4 +45,13 @@ export class LogStatsController {
   async getErrorLogs(@Query('limit') limit: number = 10) {
     return this.logStatsService.getErrorLogs(limit);
   }
+
+  /**
+   * 获取日志统计概览数据
+   * 整合分析结果、趋势和分布数据，前端轮询此接口获取实时更新
+   */
+  @Get('overview')
+  async getLogStatsOverview() {
+    return this.logStatsService.getLogStatsOverview();
+  }
 }
