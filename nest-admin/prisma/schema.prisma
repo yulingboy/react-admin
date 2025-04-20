@@ -254,3 +254,15 @@ model LogStat {
   @@unique([level, date])
   @@map("log_stats")
 }
+
+// 系统通知
+model Notification {
+  id          Int       @id @default(autoincrement())
+  title       String    // 通知标题
+  content     String    @db.Text // 通知内容
+  type        String    // 通知类型（来源于字典）
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+
+  @@map("notifications")
+}

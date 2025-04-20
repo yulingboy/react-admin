@@ -23,6 +23,7 @@ import { ApiMonitorInterceptor } from './modules/api-monitor/api-monitor.interce
 import { ApiMonitorModule } from './modules/api-monitor/api-monitor.module';
 import { LogStatsModule } from './modules/log-stats/log-stats.module';
 import { SystemResourceModule } from './modules/system-resource/system-resource.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
@@ -45,7 +46,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     DbManagerModule,
     ApiMonitorModule,
     LogStatsModule,
-    SystemResourceModule
+    SystemResourceModule,
+    NotificationsModule
   ],
   controllers: [AppController],
   providers: [

@@ -24,6 +24,7 @@ const UserManage = lazyLoadHelper(() => import('@/pages/System/UserManage'));
 const RoleManage = lazyLoadHelper(() => import('@/pages/System/RoleManage'));
 const DictionaryManage = lazyLoadHelper(() => import('@/pages/System/DictionaryManage'));
 const ConfigManage = lazyLoadHelper(() => import('@/pages/System/ConfigManage')); // 新增配置管理组件
+const NotificationManage = lazyLoadHelper(() => import('@/pages/System/NotificationManage')); // 新增通知管理组件
 const CodeGenerator = lazyLoadHelper(() => import('@/pages/Tools/CodeGenerator'));
 const SqlExecutor = lazyLoadHelper(() => import('@/pages/Tools/SqlExecutor'));
 const ApiTester = lazyLoadHelper(() => import('@/pages/Tools/ApiTester'));
@@ -98,6 +99,13 @@ export const routes: AppRouteObject[] = [
             element: <ConfigManage />,
             meta: {
               title: '配置管理'
+            }
+          },
+          {
+            path: 'notification',
+            element: <NotificationManage />,
+            meta: {
+              title: '通知管理'
             }
           }
         ]
