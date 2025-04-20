@@ -23,6 +23,7 @@ const Dashboard = lazyLoadHelper(() => import('@/pages/Dashboard'));
 const UserManage = lazyLoadHelper(() => import('@/pages/System/UserManage'));
 const RoleManage = lazyLoadHelper(() => import('@/pages/System/RoleManage'));
 const DictionaryManage = lazyLoadHelper(() => import('@/pages/System/DictionaryManage'));
+const ConfigManage = lazyLoadHelper(() => import('@/pages/System/ConfigManage')); // 新增配置管理组件
 const CodeGenerator = lazyLoadHelper(() => import('@/pages/Tools/CodeGenerator'));
 const SqlExecutor = lazyLoadHelper(() => import('@/pages/Tools/SqlExecutor'));
 const ApiTester = lazyLoadHelper(() => import('@/pages/Tools/ApiTester'));
@@ -90,6 +91,13 @@ export const routes: AppRouteObject[] = [
             element: <DictionaryManage />,
             meta: {
               title: '字典管理'
+            }
+          },
+          {
+            path: 'config',
+            element: <ConfigManage />,
+            meta: {
+              title: '配置管理'
             }
           }
         ]

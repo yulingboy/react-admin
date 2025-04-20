@@ -1,37 +1,65 @@
-import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsInt, Min, Max, MinLength, MaxLength, IsEnum } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { StatusEnum, IsSystemEnum } from 'src/common/enums/common.enum';
 
+/**
+ * 更新配置DTO
+ * 定义更新配置需要的参数，所有字段都是可选的
+ */
 export class UpdateConfigDto {
-  @IsInt()
-  @IsNotEmpty({ message: '配置ID不能为空' })
+  /**
+   * 配置ID
+   */
+  @IsInt({ message: '配置ID必须是整数' })
+  @Min(1, { message: '配置ID必须大于0' })
+  @Max(999999, { message: '配置ID不能大于999999' })
   id: number;
 
-  @IsString()
+  /**
+   * 配置键名
+   */
   @IsOptional()
-  @MaxLength(100, { message: '配置键长度不能超过100' })
+  @IsString({ message: '配置键名必须是字符串' })
+  @MinLength(2, { message: '配置键名长度不能小于2' })
+  @MaxLength(50, { message: '配置键名长度不能大于50' })
   key?: string;
 
-  @IsString()
+  /**
+   * 配置值
+   */
   @IsOptional()
+  @IsString({ message: '配置值必须是字符串' })
   value?: string;
 
-  @IsString()
+  /**
+   * 配置描述
+   */
   @IsOptional()
-  @MaxLength(200, { message: '配置描述长度不能超过200' })
+  @IsString({ message: '配置描述必须是字符串' })
+  @MaxLength(200, { message: '配置描述长度不能大于200' })
   description?: string;
 
-  @IsString()
+  /**
+   * 配置类型
+   */
   @IsOptional()
-  @MaxLength(50, { message: '配置类型长度不能超过50' })
+  @IsString({ message: '配置类型必须是字符串' })
   type?: string;
 
-  @IsString()
+  /**
+   * 配置分组
+   */
   @IsOptional()
-  @MaxLength(50, { message: '配置分组长度不能超过50' })
+  @IsString({ message: '配置分组必须是字符串' })
   group?: string;
 
-  @IsInt()
+  /**
+   * 排序值
+   */
   @IsOptional()
+  @IsInt({ message: '排序值必须是整数' })
+  @Min(0, { message: '排序值不能小于0' })
+  @Max(9999, { message: '排序值不能大于9999' })
   sort?: number;
 
   /**
@@ -42,9 +70,9 @@ export class UpdateConfigDto {
   status?: string;
 
   /**
-   * 是否为系统配置
+   * 是否系统内置配置
    */
   @IsOptional()
-  @IsEnum(IsSystemEnum, { message: '系统标识必须是有效的枚举值' })
+  @IsEnum(IsSystemEnum, { message: '系统内置配置值必须是有效的枚举值' })
   isSystem?: string;
 }
