@@ -23,6 +23,7 @@ import { ApiMonitorInterceptor } from './modules/api-monitor/api-monitor.interce
 import { ApiMonitorModule } from './modules/api-monitor/api-monitor.module';
 import { LogStatsModule } from './modules/log-stats/log-stats.module';
 import { SystemResourceModule } from './modules/system-resource/system-resource.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { SystemResourceModule } from './modules/system-resource/system-resource.
       isGlobal: true,
       load: [databaseConfig, redisConfig],
     }),
+    ScheduleModule.forRoot(), // 注册定时任务模块
     PrismaModule,
     LoggerModule,
     UsersModule,

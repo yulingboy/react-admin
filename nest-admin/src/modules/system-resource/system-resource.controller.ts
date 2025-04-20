@@ -1,32 +1,24 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
 import { SystemResourceService } from './system-resource.service';
-import { SystemResourcesQueryDto } from './dto/system-resource.dto';
 
-@Controller('system-monitor/resources')
+@Controller('system-resource')
 export class SystemResourceController {
   constructor(private readonly systemResourceService: SystemResourceService) {}
 
-  /**
-   * 获取实时系统资源使用情况
-   */
-  @Get('realtime')
-  async getSystemResourcesRealtime() {
-    return this.systemResourceService.getSystemResourcesRealtime();
+  @Get('latest')
+  async getLatestResourceData() {
+    return this.systemResourceService.getLatestResourceData();
   }
 
-  /**
-   * 获取历史系统资源使用记录
-   */
-  @Get('history')
-  async getSystemResourcesHistory(@Query() query: SystemResourcesQueryDto) {
-    return this.systemResourceService.getSystemResourcesHistory(query);
+  @Get('historical')
+  async getHistoricalData(
+    @Query('hours', new DefaultValuePipe(24), ParseIntPipe) hours: number,
+  ) {
+    return this.systemResourceService.getHistoricalData(hours);
   }
 
-  /**
-   * 获取系统概览数据（只包含资源部分）
-   */
-  @Get('overview')
-  async getSystemResourceOverview() {
-    return this.systemResourceService.getSystemResourcesRealtime();
+  @Get('system-info')
+  async getSystemInfoSummary() {
+    return this.systemResourceService.getSystemInfoSummary();
   }
 }

@@ -203,46 +203,106 @@ export class ApiMonitorService {
       // 是否为错误请求
       const isError = statusCode >= 400;
 
-      // 使用upsert操作替代findFirst+create/update模式，避免并发冲突
-      await this.prisma.apiMonitor.upsert({
-        where: {
-          // 使用联合唯一约束字段作为查询条件
-          path_method_date: {
-            path,
-            method,
-            date: today,
-          },
-        },
-        update: {
-          // 更新已存在的记录
-          requestCount: { increment: 1 },
-          // 更新响应时间为加权平均值
-          responseTime: responseTime,
-          // 只有当状态码>=400时才增加错误计数
-          errorCount: isError ? { increment: 1 } : undefined,
-          // 更新内容长度和响应大小
-          contentLength: contentLength,
-          responseSize: responseSize,
-          // 更新用户代理和IP
-          userAgent: userAgent || undefined,
-          ip: ip || undefined,
-        },
-        create: {
-          // 创建新记录
-          path,
-          method,
-          statusCode,
-          responseTime,
-          contentLength,
-          responseSize,
-          requestCount: 1,
-          errorCount: isError ? 1 : 0,
-          date: today,
-          userAgent,
-          ip,
-          userId,
-        },
-      });
+      try {
+        // 使用事务处理更新，避免并发冲突
+        await this.prisma.$transaction(async (tx) => {
+          // 先查询是否存在记录
+          const existingRecord = await tx.apiMonitor.findUnique({
+            where: {
+              path_method_date: {
+                path,
+                method,
+                date: today,
+              },
+            }
+          });
+
+          if (existingRecord) {
+            // 如果记录存在，计算加权平均响应时间
+            const totalRequests = existingRecord.requestCount + 1;
+            const weightedAvgResponseTime = Math.round(
+              (existingRecord.responseTime * existingRecord.requestCount + responseTime) / totalRequests
+            );
+
+            // 更新记录
+            await tx.apiMonitor.update({
+              where: {
+                id: existingRecord.id
+              },
+              data: {
+                requestCount: { increment: 1 },
+                // 使用加权平均值作为新的响应时间
+                responseTime: weightedAvgResponseTime,
+                // 只有当状态码>=400时才增加错误计数
+                errorCount: isError ? { increment: 1 } : undefined,
+                // 更新内容长度和响应大小 (可选)
+                contentLength: contentLength || existingRecord.contentLength,
+                responseSize: responseSize || existingRecord.responseSize,
+                // 更新用户代理和IP (可选)
+                userAgent: userAgent || existingRecord.userAgent,
+                ip: ip || existingRecord.ip,
+                // 更新状态码，保留最近一次的状态码
+                statusCode: statusCode,
+              }
+            });
+          } else {
+            // 创建新记录
+            await tx.apiMonitor.create({
+              data: {
+                path,
+                method,
+                statusCode,
+                responseTime,
+                contentLength: contentLength || 0,
+                responseSize: responseSize || 0,
+                requestCount: 1,
+                errorCount: isError ? 1 : 0,
+                date: today,
+                userAgent: userAgent || null,
+                ip: ip || null,
+                userId: userId || null,
+              }
+            });
+          }
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          // 处理已知的Prisma错误，例如唯一约束冲突
+          this.logger.warn(`Prisma error in recordApiRequest: ${error.code} - ${error.message}`);
+          
+          // 对于并发冲突，尝试重试一次
+          if (error.code === 'P2002') {
+            this.logger.warn('Unique constraint error detected, retrying with a delay...');
+            // 添加随机延迟以避免冲突
+            await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 100));
+            
+            // 获取当前记录
+            const existingRecord = await this.prisma.apiMonitor.findUnique({
+              where: {
+                path_method_date: {
+                  path,
+                  method,
+                  date: today,
+                }
+              }
+            });
+            
+            if (existingRecord) {
+              // 直接更新请求计数和错误计数
+              await this.prisma.apiMonitor.update({
+                where: { id: existingRecord.id },
+                data: {
+                  requestCount: { increment: 1 },
+                  errorCount: isError ? { increment: 1 } : undefined,
+                }
+              });
+            }
+          }
+        } else {
+          // 重新抛出其他类型的错误
+          throw error;
+        }
+      }
       
       // 检查是否需要触发警报
       await this.alertsService.checkAlerts(path, method, responseTime, isError);
