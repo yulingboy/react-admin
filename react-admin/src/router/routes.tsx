@@ -10,7 +10,8 @@ import {
   ApiOutlined,
   LineChartOutlined,
   DashboardFilled,
-  FileTextOutlined
+  FileTextOutlined,
+  ClockCircleOutlined
 } from '@ant-design/icons';
 import { lazyLoadHelper } from '@/utils/lazyLoadHelper';
 import AuthRoute from '@/components/AuthRoute';
@@ -20,13 +21,13 @@ import Dashboard from '@/pages/Dashboard';
 // 使用别名导入组件
 const Layout = lazyLoadHelper(() => import('@/layout'));
 
-
 // System模块
 const UserManage = lazyLoadHelper(() => import('@/modules/system/pages/user-management'));
 const RoleManage = lazyLoadHelper(() => import('@/modules/system/pages/role-management'));
 const DictionaryManage = lazyLoadHelper(() => import('@/modules/system/pages/dictionary-management'));
 const ConfigManage = lazyLoadHelper(() => import('@/modules/system/pages/config-management'));
 const NotificationManage = lazyLoadHelper(() => import('@/modules/system/pages/notification-management'));
+const ScheduleJobManage = lazyLoadHelper(() => import('@/pages/system/schedule-job'));
 
 // Tools模块
 const CodeGenerator = lazyLoadHelper(() => import('@/modules/tools/pages/code-generator'));
@@ -38,7 +39,6 @@ const DbManager = lazyLoadHelper(() => import('@/modules/tools/pages/db-manager'
 const SystemResourceMonitor = lazyLoadHelper(() => import('@/modules/monitoring/pages/system-resource-monitor'));
 const ApiMonitor = lazyLoadHelper(() => import('@/modules/monitoring/pages/api-monitor'));
 const LogMonitor = lazyLoadHelper(() => import('@/modules/monitoring/pages/log-monitor'));
-
 
 // 登录和404页面
 const Login = lazyLoadHelper(() => import('@/pages/Login'));
@@ -104,6 +104,14 @@ export const routes: AppRouteObject[] = [
             element: <NotificationManage />,
             meta: {
               title: '通知管理'
+            }
+          },
+          {
+            path: 'schedule-job',
+            element: <ScheduleJobManage />,
+            meta: {
+              title: '定时任务',
+              icon: <ClockCircleOutlined />
             }
           }
         ]

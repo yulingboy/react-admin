@@ -1,0 +1,125 @@
+import { Process, Processor } from '@nestjs/bull';
+import { Logger } from '@nestjs/common';
+import { Job } from 'bull';
+import { PrismaService } from '@/shared/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
+import { startOfDay } from 'date-fns';
+import { ApiRecordDto } from './dto/api-monitor.dto';
+
+/**
+ * API监控队列处理器
+ * 处理所有API监控记录的写入操作，避免并发写入导致的冲突
+ */
+@Processor('api-monitor-queue')
+export class ApiMonitorQueueProcessor {
+  private readonly logger = new Logger(ApiMonitorQueueProcessor.name);
+
+  constructor(private prisma: PrismaService) {}
+
+  /**
+   * 处理API记录任务
+   * 通过队列串行处理，避免并发写入冲突
+   */
+  @Process('record-api')
+  async handleRecordApi(job: Job<ApiRecordDto & { isError: boolean; today: Date }>) {
+    const { path, method, statusCode, responseTime, contentLength, 
+            responseSize, userAgent, ip, userId, isError, today } = job.data;
+    
+    try {
+      // 使用事务确保数据一致性
+      await this.prisma.$transaction(async (tx) => {
+        // 检查记录是否已存在
+        const existingRecord = await tx.apiMonitor.findUnique({
+          where: {
+            path_method_date: {
+              path,
+              method,
+              date: today,
+            }
+          }
+        });
+
+        if (existingRecord) {
+          // 如果记录存在，则更新
+          await tx.apiMonitor.update({
+            where: {
+              id: existingRecord.id
+            },
+            data: {
+              requestCount: { increment: 1 },
+              errorCount: isError ? { increment: 1 } : undefined,
+              responseTime: responseTime,
+              contentLength: contentLength || existingRecord.contentLength,
+              responseSize: responseSize || existingRecord.responseSize,
+              userAgent: userAgent || existingRecord.userAgent,
+              ip: ip || existingRecord.ip,
+              statusCode
+            }
+          });
+        } else {
+          // 如果记录不存在，则创建
+          await tx.apiMonitor.create({
+            data: {
+              path,
+              method,
+              statusCode,
+              responseTime,
+              contentLength: contentLength || 0,
+              responseSize: responseSize || 0,
+              requestCount: 1,
+              errorCount: isError ? 1 : 0,
+              date: today,
+              userAgent: userAgent || null,
+              ip: ip || null,
+              userId: userId || null,
+            }
+          });
+        }
+      });
+
+      this.logger.log(`Successfully processed API record for ${method} ${path}`);
+    } catch (error) {
+      this.logger.error(`Failed to process API record: ${error.message}`, error.stack);
+      throw error; // 重新抛出错误，让Bull处理重试
+    }
+  }
+
+  /**
+   * 处理API记录详情任务
+   */
+  @Process('record-api-detail')
+  async handleRecordApiDetail(job: Job<ApiRecordDto>) {
+    const { 
+      path, method, statusCode, responseTime,
+      contentLength, responseSize, userId,
+      userAgent, ip, errorMessage
+    } = job.data;
+    
+    try {
+      // 创建详细记录，确保错误信息不会太长
+      const limitedErrorMessage = errorMessage 
+        ? (errorMessage.length > 2000 ? errorMessage.substring(0, 2000) + '...' : errorMessage)
+        : null;
+        
+      await this.prisma.apiMonitorDetail.create({
+        data: {
+          path,
+          method,
+          statusCode,
+          responseTime,
+          contentLength,
+          responseSize,
+          userId,
+          userAgent,
+          ip,
+          errorMessage: limitedErrorMessage,
+        },
+      });
+
+      this.logger.debug(`Successfully recorded API detail for ${method} ${path}`);
+    } catch (error) {
+      this.logger.error(`Failed to record API detail: ${error.message}`, error.stack);
+      throw error; // 重新抛出错误，让Bull处理重试
+    }
+  }
+}

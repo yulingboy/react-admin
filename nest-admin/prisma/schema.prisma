@@ -223,7 +223,7 @@ model ApiMonitorDetail {
   userAgent     String?   // 用户代理
   ip            String?   // 客户端IP
   userId        Int?      // 用户ID(如果已登录)
-  errorMessage  String?   // 错误信息(如果有)
+  errorMessage  String?   @db.Text // 错误信息(如果有)，修改为Text类型以支持长文本
   requestBody   String?   @db.Text // 请求体(截取部分)
   responseBody  String?   @db.Text // 响应体(截取部分)
   createdAt     DateTime  @default(now()) // 创建时间
@@ -265,4 +265,42 @@ model Notification {
   updatedAt   DateTime? @updatedAt
 
   @@map("notifications")
+}
+
+// 定时任务
+model ScheduleJob {
+  id             Int       @id @default(autoincrement())
+  jobName        String    // 任务名称
+  jobGroup       String    @default("DEFAULT") // 任务分组
+  invokeTarget   String    // 调用目标字符串
+  cronExpression String    // cron表达式
+  misfirePolicy  String    @default("1") // 计划执行错误策略（1立即执行 2执行一次 3放弃执行）
+  concurrent     String    @default("1") // 是否并发执行（0允许 1禁止）
+  status         String    @default("0") // 状态（0暂停 1正常）
+  isSystem       String    @default("0") // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
+  remark         String?   // 备注信息
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime? @updatedAt
+  logs           ScheduleJobLog[] // 关联的任务日志
+
+  @@map("schedule_jobs")
+}
+
+// 定时任务日志
+model ScheduleJobLog {
+  id            Int       @id @default(autoincrement())
+  jobId         Int       // 任务ID
+  jobName       String    // 任务名称
+  jobGroup      String    // 任务组名
+  invokeTarget  String    // 调用目标
+  jobMessage    String?   // 日志信息
+  status        String    @default("0") // 执行状态（0失败 1成功）
+  exceptionInfo String?   @db.Text // 异常信息
+  startTime     DateTime? // 开始时间
+  endTime       DateTime? // 结束时间
+  createdAt     DateTime  @default(now())
+  job           ScheduleJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@map("schedule_job_logs")
 }

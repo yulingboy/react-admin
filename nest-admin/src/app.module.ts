@@ -7,6 +7,7 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { NotFoundExceptionFilter } from './common/filters/not-found.filter';
 import { ConfigModule } from '@nestjs/config';
+import { BullModule } from '@nestjs/bull';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware';
@@ -23,6 +24,19 @@ import { ToolsModuleGroup } from './modules/tools-module/tools-module.module';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig, redisConfig],
+    }),
+    // 注册Bull队列模块，使用Redis配置
+    BullModule.forRoot({
+      redis: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379'),
+        password: process.env.REDIS_PASSWORD,
+        db: parseInt(process.env.REDIS_DB || '0'),
+      },
+      defaultJobOptions: {
+        removeOnComplete: true, // 默认成功后删除
+        removeOnFail: 10,       // 保留最近10个失败任务
+      },
     }),
     ScheduleModule.forRoot(), // 注册定时任务模块
     PrismaModule,

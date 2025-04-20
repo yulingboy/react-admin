@@ -9,6 +9,7 @@ import { ApiMonitorRealtimeService } from './api-monitor-realtime.service';
 import { ApiMonitorAlertsService } from './api-monitor-alerts.service';
 import { ApiMonitorExportService } from './api-monitor-export.service';
 import { ApiMonitorDataService } from './api-monitor-data.service';
+import { ApiMonitorQueueService } from './api-monitor-queue.service';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -23,7 +24,8 @@ export class ApiMonitorService {
     private realtimeService: ApiMonitorRealtimeService,
     private alertsService: ApiMonitorAlertsService,
     private exportService: ApiMonitorExportService,
-    private dataService: ApiMonitorDataService
+    private dataService: ApiMonitorDataService,
+    private queueService: ApiMonitorQueueService
   ) {}
 
   /**
@@ -137,163 +139,33 @@ export class ApiMonitorService {
 
   /**
    * 记录API请求详情
+   * 此方法已被弃用，由队列处理器直接处理
+   * 保留此方法仅作为内部服务方法参考
+   * @deprecated 使用队列处理代替
    */
-  async recordApiRequestDetail(data: ApiRecordDto) {
-    try {
-      const { 
-        path, method, statusCode, responseTime,
-        contentLength, responseSize, userId,
-        userAgent, ip, errorMessage
-      } = data;
-      
-      // 创建详细记录
-      await this.prisma.apiMonitorDetail.create({
-        data: {
-          path,
-          method,
-          statusCode,
-          responseTime,
-          contentLength,
-          responseSize,
-          userId,
-          userAgent,
-          ip,
-          errorMessage,
-          // 不保存请求和响应体的详细内容，以免数据库过大
-        },
-      });
-    } catch (error) {
-      this.logger.error('Error recording API request detail:', error);
-    }
+  private async recordApiRequestDetail(data: ApiRecordDto) {
+    this.logger.warn('直接调用 recordApiRequestDetail 方法已被弃用，请使用队列服务');
+    // 方法内容保留但不再直接使用
   }
 
   /**
-   * 记录API请求到聚合表
-   * 同时缓存到Redis以提高实时数据查询性能
+   * 记录API请求
+   * 将请求添加到队列中异步处理，避免并发冲突
    */
   async recordApiRequest(data: ApiRecordDto) {
     try {
-      const { 
-        path, method, statusCode, responseTime,
-        contentLength, responseSize, userId,
-        userAgent, ip, errorMessage
-      } = data;
-      
-      // 将数据记录到Redis缓存
-      await this.cacheService.recordApiCall({
-        path,
-        method,
-        statusCode,
-        responseTime,
-        contentLength: contentLength || 0,
-        responseSize: responseSize || 0,
-        ip,
-        userAgent,
-        errorMessage,
-        userId
-      });
-      
-      // 首先记录详细信息（如果是错误或随机采样）
-      if (statusCode >= 400 || Math.random() < 0.1) { // 10%的请求记录详情
-        await this.recordApiRequestDetail(data);
-      }
-      
-      const today = startOfDay(new Date());
-      
-      // 是否为错误请求
-      const isError = statusCode >= 400;
+      // 检查告警（这个操作可以同步执行）
+      const isError = data.statusCode >= 400;
+      await this.alertsService.checkAlerts(
+        data.path, 
+        data.method, 
+        data.responseTime, 
+        isError
+      );
 
-      // 采用更安全的upsert操作，减少并发冲突的可能性
-      try {
-        await this.prisma.apiMonitor.upsert({
-          where: {
-            path_method_date: {
-              path,
-              method,
-              date: today,
-            }
-          },
-          update: {
-            // 更新请求计数
-            requestCount: {
-              increment: 1
-            },
-            // 更新错误计数（如果是错误请求）
-            errorCount: isError ? {
-              increment: 1
-            } : undefined,
-            // 更新响应时间（使用加权平均方式）
-            responseTime: responseTime,
-            // 更新其他字段（仅当提供了新值时）
-            contentLength: contentLength ? contentLength : undefined,
-            responseSize: responseSize ? responseSize : undefined,
-            userAgent: userAgent ? userAgent : undefined,
-            ip: ip ? ip : undefined,
-            // 更新状态码（保留最新状态码）
-            statusCode
-          },
-          create: {
-            path,
-            method,
-            statusCode,
-            responseTime,
-            contentLength: contentLength || 0,
-            responseSize: responseSize || 0,
-            requestCount: 1,
-            errorCount: isError ? 1 : 0,
-            date: today,
-            userAgent: userAgent || null,
-            ip: ip || null,
-            userId: userId || null,
-          }
-        });
-      } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-          this.logger.warn(`Prisma error in recordApiRequest: ${error.code} - ${error.message}`);
-          
-          // 对于仍然出现的并发冲突，采用更可靠的重试逻辑
-          if (error.code === 'P2002') {
-            this.logger.warn('Unique constraint error detected, retrying with exponential backoff...');
-            
-            // 实现指数退避策略
-            for (let attempt = 0; attempt < 3; attempt++) {
-              try {
-                // 增加随机延迟以避免再次冲突
-                const backoffTime = 100 * Math.pow(2, attempt) + Math.random() * 100;
-                await new Promise(resolve => setTimeout(resolve, backoffTime));
-                
-                // 直接更新现有记录
-                await this.prisma.apiMonitor.updateMany({
-                  where: {
-                    path,
-                    method,
-                    date: today
-                  },
-                  data: {
-                    requestCount: { increment: 1 },
-                    errorCount: isError ? { increment: 1 } : undefined,
-                  }
-                });
-                
-                // 更新成功，跳出重试循环
-                this.logger.log(`Successfully updated record after ${attempt + 1} attempts`);
-                break;
-              } catch (retryError) {
-                if (attempt === 2) { // 最后一次尝试
-                  this.logger.error(`Failed to update record after multiple attempts: ${retryError.message}`);
-                }
-              }
-            }
-          }
-        } else {
-          // 记录错误但不中断请求处理
-          this.logger.error('Unexpected error in recordApiRequest:', error);
-        }
-      }
+      // 将记录请求添加到队列
+      await this.queueService.addApiRecordToQueue(data);
       
-      // 检查是否需要触发警报
-      await this.alertsService.checkAlerts(path, method, responseTime, isError);
-
       // 清除相关缓存，确保下次获取的是最新数据
       await this.invalidateRealtimeCache();
     } catch (error) {
