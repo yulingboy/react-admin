@@ -20,6 +20,7 @@ import { AuthModuleGroup } from './modules/auth-module/auth-module.module';
 import { MonitoringModuleGroup } from './modules/monitoring-module/monitoring-module.module';
 import { SystemModuleGroup } from './modules/system-module/system-module.module';
 import { ToolsModuleGroup } from './modules/tools-module/tools-module.module';
+import { FinanceModule } from './modules/finance-module/finance.module';
 
 @Module({
   imports: [
@@ -47,7 +48,8 @@ import { ToolsModuleGroup } from './modules/tools-module/tools-module.module';
     AuthModuleGroup,
     MonitoringModuleGroup,
     SystemModuleGroup,
-    ToolsModuleGroup
+    ToolsModuleGroup,
+    FinanceModule, // 注册记账理财模块
   ],
   controllers: [AppController],
   providers: [

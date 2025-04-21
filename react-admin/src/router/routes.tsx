@@ -15,7 +15,14 @@ import {
   KeyOutlined,
   ToolOutlined,
   FileSearchOutlined,
-  ProfileOutlined
+  ProfileOutlined,
+  WalletOutlined,
+  AccountBookOutlined,
+  CreditCardOutlined,
+  TransactionOutlined,
+  BankOutlined,
+  TagOutlined,
+  BarChartOutlined
 } from '@ant-design/icons';
 import { lazyLoadHelper } from '@/utils/lazyLoadHelper';
 import AuthRoute from '@/components/AuthRoute';
@@ -45,6 +52,16 @@ const DbManager = lazyLoadHelper(() => import('@/modules/tools/pages/db-manager'
 const SystemResourceMonitor = lazyLoadHelper(() => import('@/modules/monitoring/pages/system-resource-monitor'));
 const ApiMonitor = lazyLoadHelper(() => import('@/modules/monitoring/pages/api-monitor'));
 const LogMonitor = lazyLoadHelper(() => import('@/modules/monitoring/pages/log-monitor'));
+
+// Finance模块
+const AccountTypes = lazyLoadHelper(() => import('@/modules/finance/pages/account-types'));
+const Accounts = lazyLoadHelper(() => import('@/modules/finance/pages/accounts'));
+const BillCategories = lazyLoadHelper(() => import('@/modules/finance/pages/bill-categories'));
+const Bills = lazyLoadHelper(() => import('@/modules/finance/pages/bills'));
+const Budgets = lazyLoadHelper(() => import('@/modules/finance/pages/budgets'));
+const BillStatistics = lazyLoadHelper(() => import('@/modules/finance/pages/statistics'));
+const BillTags = lazyLoadHelper(() => import('@/modules/finance/pages/bill-tags'));
+const BillImports = lazyLoadHelper(() => import('@/modules/finance/pages/bill-imports'));
 
 // 登录和404页面
 const Login = lazyLoadHelper(() => import('@/pages/Login'));
@@ -201,6 +218,79 @@ export const routes: AppRouteObject[] = [
             element: <LogMonitor />,
             meta: {
               title: '日志统计'
+            }
+          }
+        ]
+      },
+      {
+        path: 'finance',
+        meta: {
+          title: '记账理财',
+          icon: <WalletOutlined />
+        },
+        children: [
+          {
+            path: 'accounts',
+            element: <Accounts />,
+            meta: {
+              title: '账户管理',
+              icon: <BankOutlined />
+            }
+          },
+          {
+            path: 'account-types',
+            element: <AccountTypes />,
+            meta: {
+              title: '账户类型',
+              icon: <CreditCardOutlined />
+            }
+          },
+          {
+            path: 'bill-categories',
+            element: <BillCategories />,
+            meta: {
+              title: '账单分类',
+              icon: <ProfileOutlined />
+            }
+          },
+          {
+            path: 'bills',
+            element: <Bills />,
+            meta: {
+              title: '账单管理',
+              icon: <AccountBookOutlined />
+            }
+          },
+          {
+            path: 'budgets',
+            element: <Budgets />,
+            meta: {
+              title: '预算管理',
+              icon: <TransactionOutlined />
+            }
+          },
+          {
+            path: 'statistics',
+            element: <BillStatistics />,
+            meta: {
+              title: '统计分析',
+              icon: <BarChartOutlined />
+            }
+          },
+          {
+            path: 'bill-tags',
+            element: <BillTags />,
+            meta: {
+              title: '账单标签',
+              icon: <TagOutlined />
+            }
+          },
+          {
+            path: 'bill-imports',
+            element: <BillImports />,
+            meta: {
+              title: '账单导入',
+              icon: <FileTextOutlined />
             }
           }
         ]
