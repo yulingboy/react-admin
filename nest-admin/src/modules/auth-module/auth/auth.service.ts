@@ -2,9 +2,10 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
-import * as bcrypt from 'bcryptjs';
 import { LoginLogRecordService } from '../services/login-log-record.service';
 import { Request } from 'express';
+import { StatusEnum } from '@/common/enums/common.enum';
+import { comparePassword } from '@/common/utils/bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -21,15 +22,22 @@ export class AuthService {
       if (!user) {
         // 记录登录失败日志 - 用户不存在
         await this.loginLogService.recordLoginFailure(username, request, '用户名不存在');
-        throw new UnauthorizedException('用户名不存在');
+        throw new UnauthorizedException('用户名或密码错误');
       }
 
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+      const isPasswordValid = await comparePassword(password, user.password);
 
       if (!isPasswordValid) {
         // 记录登录失败日志 - 密码错误
         await this.loginLogService.recordLoginFailure(username, request, '密码错误');
-        throw new UnauthorizedException('密码错误');
+        throw new UnauthorizedException('用户名或密码错误');
+      }
+
+      // 用户禁用
+      if (user.status === StatusEnum.DISABLED) {
+        // 记录登录失败日志 - 用户禁用
+        await this.loginLogService.recordLoginFailure(username, request, '用户已禁用');
+        throw new UnauthorizedException('用户已禁用');
       }
 
       const { password: _, ...result } = user;

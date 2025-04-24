@@ -4,10 +4,11 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { QueryRoleDto } from './dto/query-role.dto';
 import { StatusEnum, IsSystemEnum } from 'src/common/enums/common.enum';
 import { PrismaService } from '@/shared/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class RolesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   /**
    * 创建角色
@@ -20,13 +21,13 @@ export class RolesService {
     if (existingKeyRole) {
       throw new ConflictException(`角色标识 ${createRoleDto.key} 已存在`);
     }
-    
+
     // 检查角色名称是否已存在
     const existingNameRole = await this.findByName(createRoleDto.name);
     if (existingNameRole) {
       throw new ConflictException(`角色名称 ${createRoleDto.name} 已存在`);
     }
-    
+
     const role = await this.prisma.role.create({
       data: createRoleDto,
     });
@@ -43,22 +44,17 @@ export class RolesService {
     const { skip, take } = queryRoleDto;
 
     // 构建查询条件
-    const where: any = {};
-
-    if (keyword) {
-      where.OR = [
-        { key: { contains: keyword } },
-        { name: { contains: keyword } },
-      ];
-    }
-
-    if (isSystem !== undefined) {
-      where.isSystem = isSystem;
-    }
-
-    if (status !== undefined) {
-      where.status = status;
-    }
+    const where: Prisma.RoleWhereInput = {
+      ...(keyword && {
+        OR: [
+          { key: { contains: keyword } },
+          { name: { contains: keyword } },
+          { description: { contains: keyword } },
+        ],
+      }),
+      ...(isSystem !== undefined && { isSystem }),
+      ...(status !== undefined && { status }),
+    };
 
     // 查询总数
     const total = await this.prisma.role.count({ where });
@@ -68,7 +64,7 @@ export class RolesService {
       where,
       skip,
       take,
-      orderBy: { id: 'asc' },
+      orderBy: { createdAt: 'desc' },
       include: {
         _count: {
           select: { User: true },
@@ -143,13 +139,28 @@ export class RolesService {
    * @param updateRoleDto 更新参数
    * @returns 更新后的角色
    */
-  async update(id: number, updateRoleDto: UpdateRoleDto) {
+  async update(updateRoleDto: UpdateRoleDto) {
+    // 检查角色是否存在
+    const role = await this.findOne(updateRoleDto.id);
+    if (!role) {
+      throw new NotFoundException(`角色不存在`);
+    }
+    // 系统角色不允许修改
+    if (role.isSystem === IsSystemEnum.YES) {
+      throw new ForbiddenException(`系统角色不允许修改`);
+    }
+    // 检查角色名称是否已存在
+    if (updateRoleDto.name) {
+      const existingNameRole = await this.findByName(updateRoleDto.name);
+      if (existingNameRole && existingNameRole.id !== updateRoleDto.id) {
+        throw new ConflictException(`角色名称 ${updateRoleDto.name} 已存在`);
+      }
+    }
     // 更新角色
-    const role = await this.prisma.role.update({
-      where: { id },
+    return await this.prisma.role.update({
+      where: { id: updateRoleDto.id },
       data: updateRoleDto,
     });
-    return role;
   }
 
   /**
@@ -170,11 +181,9 @@ export class RolesService {
     }
 
     // 检查角色是否被使用
-    const users = await this.prisma.user.findMany({
-      where: { roleId: id },
-    });
+    const isUsed = await this.isRolesUsed(id);
 
-    if (users.length > 0) {
+    if (isUsed) {
       throw new ForbiddenException(`该角色已被使用，无法删除`);
     }
 
@@ -185,48 +194,12 @@ export class RolesService {
   }
 
   /**
-   * 批量物理删除角色，包含业务校验逻辑
-   * @param ids 角色ID数组
-   * @returns 操作结果
-   */
-  async batchRemove(ids: number[]) {
-    // 检查角色是否存在
-    const roles = await this.prisma.role.findMany({
-      where: { id: { in: ids } },
-    });
-
-    if (roles.length !== ids.length) {
-      throw new NotFoundException(`部分角色不存在`);
-    }
-
-    // 检查是否包含系统角色
-    const systemRoles = roles.filter((role) => role.isSystem === IsSystemEnum.YES);
-    if (systemRoles.length > 0) {
-      throw new ForbiddenException(`系统角色不允许删除`);
-    }
-
-    // 检查角色是否有关联用户
-    const userCount = await this.prisma.user.count({
-      where: { roleId: { in: ids } },
-    });
-
-    if (userCount > 0) {
-      throw new ForbiddenException(`选中的角色中有${userCount}个用户关联，不允许删除`);
-    }
-
-    // 批量物理删除
-    return this.prisma.role.deleteMany({
-      where: { id: { in: ids } },
-    });
-  }
-
-  /**
    * 校验角色是否存在
    * @param roleId 角色ID
    * @returns 如果角色存在，返回角色对象；否则返回 null
    */
   async validateRole(roleId: number) {
-    const role =  this.prisma.role.findUnique({ where: { id: roleId } });
+    const role = this.prisma.role.findUnique({ where: { id: roleId } });
     if (!role) {
       throw new NotFoundException(`角色不存在`);
     }

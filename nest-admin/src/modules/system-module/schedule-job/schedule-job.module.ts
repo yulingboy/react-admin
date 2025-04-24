@@ -1,6 +1,8 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { ScheduleJobController } from './schedule-job.controller';
 import { ScheduleJobService } from './schedule-job.service';
+import { ScheduleJobExecutorService } from './schedule-job-executor.service';
+import { ScheduleJobLogService } from './schedule-job-log.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from '../../../shared/prisma/prisma.module';
 
@@ -10,7 +12,11 @@ import { PrismaModule } from '../../../shared/prisma/prisma.module';
     PrismaModule,
   ],
   controllers: [ScheduleJobController],
-  providers: [ScheduleJobService],
+  providers: [
+    ScheduleJobService,
+    ScheduleJobExecutorService,
+    ScheduleJobLogService,
+  ],
   exports: [ScheduleJobService],
 })
 export class ScheduleJobModule implements OnModuleInit {

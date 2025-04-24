@@ -1,0 +1,49 @@
+// 认证模块相关模型
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  email     String   @unique
+  name      String?
+  avatar    String?
+  status    String   @default("1")
+  isSystem  String   @default("0")  // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
+  roleId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
+  Role      Role     @relation(fields: [roleId], references: [id])
+
+  // 接口测试关联
+  apiTestHistories ApiTestHistory[]
+  apiTestTemplates ApiTestTemplate[]
+  // 日志关联
+  loginLogs       LoginLog[]
+  operLogs        OperLog[]
+
+  // 记账理财关联
+  accounts        Account[]
+  billCategories  BillCategory[]
+  bills           Bill[]
+  transfers       TransferRecord[]
+  budgets         Budget[]
+  billImports     BillImport[]
+  billTemplates   BillTemplate[]
+  billTags        BillTag[]
+  billStatRules   BillStatRule[]
+  balanceAdjustLogs BalanceAdjustLog[] // 余额调整日志关联
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique   // 角色唯一标识
+  name        String   @unique
+  description String?
+  status      String   @default("1")
+  isSystem    String   @default("0")  // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime? @updatedAt
+  User        User[]
+}

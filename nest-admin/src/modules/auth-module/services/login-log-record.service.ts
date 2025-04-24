@@ -32,7 +32,7 @@ export class LoginLogRecordService {
         status: '1', // 登录成功
         msg: message || '登录成功'
       };
-
+      this.logger.log(`记录登录成功日志: ${JSON.stringify(loginLog)}`);
       await this.loginLogService.create(loginLog);
     } catch (error) {
       this.logger.error(`记录登录成功日志失败: ${error.message}`, error.stack);

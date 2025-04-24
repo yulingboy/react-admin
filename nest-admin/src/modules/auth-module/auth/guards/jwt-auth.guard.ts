@@ -13,15 +13,24 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()]);
+    // 检查当前路由是否被标记为公共路由
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    // 如果是公共路由，则跳过JWT验证
     if (isPublic) {
       this.logger.log('跳过鉴权: 公共路由');
       return true;
     }
+
+    // 否则执行JWT验证
     return super.canActivate(context);
   }
 
   handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
+    // 如果发生错误或用户不存在
     if (err || !user) {
       if (info?.name === 'TokenExpiredError') {
         this.logger.warn('鉴权失败: 登录已过期');
@@ -34,6 +43,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         throw new UnauthorizedException('身份验证失败');
       }
     }
+    
     this.logger.log(`鉴权成功: 用户 ${user.username}`);
     return user;
   }

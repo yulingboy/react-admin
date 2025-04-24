@@ -18,9 +18,11 @@ export class LoginLogService {
    */
   async create(createLoginLogDto: CreateLoginLogDto) {
     try {
-      return await this.prisma.loginLog.create({
+
+        const res =  await this.prisma.loginLog.create({
         data: createLoginLogDto,
       });
+      this.logger.log(`创建登录日志成功: ${JSON.stringify(res)}`);
     } catch (error) {
       this.logger.error(`创建登录日志失败: ${error.message}`, error.stack);
       throw error;

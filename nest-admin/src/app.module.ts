@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './shared/prisma/prisma.module';
 import { LoggerModule } from './shared/logger/logger.module';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { NotFoundExceptionFilter } from './common/filters/not-found.filter';
 import { ConfigModule } from '@nestjs/config';
@@ -21,6 +21,7 @@ import { MonitoringModuleGroup } from './modules/monitoring-module/monitoring-mo
 import { SystemModuleGroup } from './modules/system-module/system-module.module';
 import { ToolsModuleGroup } from './modules/tools-module/tools-module.module';
 import { FinanceModule } from './modules/finance-module/finance.module';
+import { JwtAuthGuard } from './modules/auth-module/auth/guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -77,6 +78,11 @@ import { FinanceModule } from './modules/finance-module/finance.module';
       provide: 'OperLogService',
       useFactory: (operLogService) => operLogService,
       inject: ['OPER_LOG_SERVICE'],
+    },
+    // 注册JWT认证守卫为全局守卫，统一拦截校验token
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
     },
   ],
 })

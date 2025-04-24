@@ -101,11 +101,17 @@
     "testEnvironment": "node"
   },
   "prisma": {
+    "schema": "prisma/schema",
     "seed": "ts-node prisma\\seed.ts"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
       "@nestjs/core",
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "msgpackr-extract",
+      "prisma",
       "sqlite3"
     ]
   }

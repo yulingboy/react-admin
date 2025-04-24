@@ -33,8 +33,6 @@ export class QueryUserDto extends PaginationDto {
    * 角色ID筛选
    */
   @IsOptional()
-  @IsInt({ message: '角色ID必须是整数' })
-  @Min(1, { message: '角色ID必须大于0' })
   @Transform(({ value }) => (value ? Number(value) : undefined))
   roleId?: number;
 }

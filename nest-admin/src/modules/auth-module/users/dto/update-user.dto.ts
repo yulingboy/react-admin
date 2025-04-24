@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsOptional, IsInt, Min, Max, MinLength, MaxLength, IsEnum } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsInt, Min, Max, MinLength, MaxLength, IsEnum, Length } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { StatusEnum } from 'src/common/enums/common.enum';
 
@@ -11,8 +11,6 @@ export class UpdateUserDto {
    * 用户ID
    */
   @IsInt({ message: '用户ID必须是整数' })
-  @Min(1, { message: '用户ID必须大于0' })
-  @Max(999999, { message: '用户ID不能大于999999' })
   @Transform(({ value }) => Number(value))
   id: number;
 
@@ -21,8 +19,7 @@ export class UpdateUserDto {
    */
   @IsOptional()
   @IsString({ message: '用户名必须是字符串' })
-  @MinLength(3, { message: '用户名长度不能小于3' })
-  @MaxLength(20, { message: '用户名长度不能大于20' })
+  @Length(3, 20, { message: '用户名长度必须在3到20之间' })
   username?: string;
 
   /**
@@ -30,8 +27,7 @@ export class UpdateUserDto {
    */
   @IsOptional()
   @IsString({ message: '密码必须是字符串' })
-  @MinLength(6, { message: '密码长度不能小于6' })
-  @MaxLength(30, { message: '密码长度不能大于30' })
+  @Length(6, 20, { message: '密码长度必须在6到20之间' })
   password?: string;
 
   /**
@@ -68,7 +64,6 @@ export class UpdateUserDto {
    */
   @IsOptional()
   @IsInt({ message: '角色ID必须是整数' })
-  @Min(1, { message: '角色ID必须大于0' })
   @Transform(({ value }) => Number(value))
   roleId?: number;
 }

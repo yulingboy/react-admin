@@ -1,13 +1,37 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, ForbiddenException, OnModuleInit, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../shared/prisma/prisma.service';
+import { RedisService } from '../../../shared/redis/redis.service';
 import { CreateConfigDto } from './dto/create-config.dto';
 import { UpdateConfigDto } from './dto/update-config.dto';
 import { QueryConfigDto } from './dto/query-config.dto';
 import { StatusEnum, IsSystemEnum } from 'src/common/enums/common.enum';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
-export class ConfigsService {
-  constructor(private prisma: PrismaService) {}
+export class ConfigsService implements OnModuleInit {
+  private readonly logger = new Logger(ConfigsService.name);
+  // Redis缓存前缀
+  private readonly REDIS_CONFIG_KEY_PREFIX = 'system:config:';
+  // Redis缓存过期时间（24小时）
+  private readonly REDIS_CONFIG_TTL = 86400;
+
+  constructor(
+    private prisma: PrismaService,
+    private redisService: RedisService
+  ) { }
+
+  /**
+   * 模块初始化时执行，预加载配置到Redis缓存
+   */
+  async onModuleInit() {
+    try {
+      this.logger.log('开始初始化配置缓存...');
+      await this.refreshConfigCache();
+      this.logger.log('配置缓存初始化完成');
+    } catch (error) {
+      this.logger.error('配置缓存初始化失败', error);
+    }
+  }
 
   /**
    * 创建配置
@@ -20,10 +44,16 @@ export class ConfigsService {
     if (existingConfig) {
       throw new ConflictException(`配置键 ${createConfigDto.key} 已存在`);
     }
-    
+
     const config = await this.prisma.config.create({
       data: createConfigDto,
     });
+
+    // 如果是启用状态，则缓存到Redis
+    if (config.status === StatusEnum.ENABLED) {
+      await this.cacheConfigValue(config.key, config.value, config.type);
+    }
+
     return config;
   }
 
@@ -33,31 +63,19 @@ export class ConfigsService {
    * @returns 分页配置列表
    */
   async findAll(queryConfigDto: QueryConfigDto) {
-    const { keyword, group, isSystem, status } = queryConfigDto;
+    const { keyword, isSystem, status } = queryConfigDto;
     const { skip, take } = queryConfigDto;
 
-    // 构建查询条件
-    const where: any = {};
-
-    if (keyword) {
-      where.OR = [
-        { key: { contains: keyword } },
-        { description: { contains: keyword } },
-        { value: { contains: keyword } },
-      ];
-    }
-
-    if (group !== undefined) {
-      where.group = group;
-    }
-
-    if (isSystem !== undefined) {
-      where.isSystem = isSystem;
-    }
-
-    if (status !== undefined) {
-      where.status = status;
-    }
+    const where: Prisma.ConfigWhereInput = {
+      ...(keyword && {
+        OR: [
+          { key: { contains: keyword } },
+          { description: { contains: keyword } }
+        ]
+      }),
+      ...(isSystem !== undefined && { isSystem }),
+      ...(status !== undefined && { status })
+    };
 
     // 查询总数
     const total = await this.prisma.config.count({ where });
@@ -80,23 +98,6 @@ export class ConfigsService {
         totalPages: Math.ceil(total / take),
       },
     };
-  }
-
-  /**
-   * 获取所有配置组选项
-   * @returns 配置组选项列表
-   */
-  async findAllGroups() {
-    const groups = await this.prisma.config.groupBy({
-      by: ['group'],
-      where: {
-        group: {
-          not: null,
-        },
-      },
-    });
-
-    return groups.map(item => item.group);
   }
 
   /**
@@ -123,6 +124,11 @@ export class ConfigsService {
    * @returns 更新后的配置
    */
   async update(id: number, updateConfigDto: UpdateConfigDto) {
+    // 系统配置不允许修改
+    const config = await this.findOne(id);
+    if (config.isSystem === IsSystemEnum.YES) {
+      throw new ForbiddenException(`系统配置无法修改`);
+    }
     // 如果更新了key，需要确保key唯一
     if (updateConfigDto.key) {
       const existingConfig = await this.prisma.config.findFirst({
@@ -131,18 +137,35 @@ export class ConfigsService {
           id: { not: id }
         }
       });
-      
+
       if (existingConfig) {
         throw new ConflictException(`配置键 ${updateConfigDto.key} 已存在`);
       }
     }
-    
+
+    // 更新前缓存的键名
+    const oldKey = config.key;
+
     // 更新配置
-    const config = await this.prisma.config.update({
+    const updatedConfig = await this.prisma.config.update({
       where: { id },
       data: updateConfigDto,
     });
-    return config;
+
+    // 如果键名发生变化，需要删除旧缓存
+    if (updateConfigDto.key && oldKey !== updatedConfig.key) {
+      await this.clearConfigCache(oldKey);
+    }
+
+    // 更新或清除缓存
+    if (updatedConfig.status === StatusEnum.ENABLED) {
+      await this.cacheConfigValue(updatedConfig.key, updatedConfig.value, updatedConfig.type);
+    } else {
+      // 如果状态为禁用，则清除缓存
+      await this.clearConfigCache(updatedConfig.key);
+    }
+
+    return updatedConfig;
   }
 
   /**
@@ -162,36 +185,12 @@ export class ConfigsService {
       throw new ForbiddenException(`系统配置无法删除`);
     }
 
+    // 清除缓存
+    await this.clearConfigCache(config.key);
+
     // 物理删除配置
     return await this.prisma.config.delete({
       where: { id },
-    });
-  }
-
-  /**
-   * 批量物理删除配置，包含业务校验逻辑
-   * @param ids 配置ID数组
-   * @returns 操作结果
-   */
-  async batchRemove(ids: number[]) {
-    // 检查配置是否存在
-    const configs = await this.prisma.config.findMany({
-      where: { id: { in: ids } },
-    });
-
-    if (configs.length !== ids.length) {
-      throw new NotFoundException(`部分配置不存在`);
-    }
-
-    // 检查是否包含系统配置
-    const systemConfigs = configs.filter((config) => config.isSystem === IsSystemEnum.YES);
-    if (systemConfigs.length > 0) {
-      throw new ForbiddenException(`系统配置不允许删除`);
-    }
-
-    // 批量物理删除
-    return this.prisma.config.deleteMany({
-      where: { id: { in: ids } },
     });
   }
 
@@ -210,9 +209,16 @@ export class ConfigsService {
    * @returns 配置值
    */
   async getConfigValue(key: string) {
+    // 先从Redis缓存中查询
+    const cachedValue = await this.getConfigFromCache(key);
+    if (cachedValue !== null) {
+      return cachedValue;
+    }
+
+    // 缓存不存在，从数据库查询
     const config = await this.prisma.config.findFirst({
-      where: { 
-        key, 
+      where: {
+        key,
         status: StatusEnum.ENABLED
       }
     });
@@ -221,20 +227,89 @@ export class ConfigsService {
       return null;
     }
 
-    // 根据type转换值的类型
-    switch (config.type) {
+    // 转换值类型
+    const value = this.convertConfigValue(config.value, config.type);
+    
+    // 将查询结果缓存到Redis
+    await this.cacheConfigValue(key, config.value, config.type);
+    
+    return value;
+  }
+
+  /**
+   * 根据类型转换配置值
+   * @param value 原始值
+   * @param type 类型
+   * @returns 转换后的值
+   */
+  private convertConfigValue(value: string, type: string) {
+    switch (type) {
       case 'number':
-        return Number(config.value);
+        return Number(value);
       case 'boolean':
-        return config.value === 'true';
+        return value === 'true';
       case 'json':
         try {
-          return JSON.parse(config.value);
+          return JSON.parse(value);
         } catch (e) {
-          return config.value;
+          return value;
         }
       default:
-        return config.value;
+        return value;
+    }
+  }
+
+  /**
+   * 从Redis缓存中获取配置值
+   * @param key 配置键名
+   * @returns 配置值或null
+   */
+  private async getConfigFromCache(key: string): Promise<any> {
+    const cacheKey = this.REDIS_CONFIG_KEY_PREFIX + key;
+    return this.redisService.get(cacheKey);
+  }
+
+  /**
+   * 将配置值缓存到Redis
+   * @param key 配置键名
+   * @param value 配置值
+   * @param type 配置类型
+   */
+  private async cacheConfigValue(key: string, value: string, type: string): Promise<void> {
+    const cacheKey = this.REDIS_CONFIG_KEY_PREFIX + key;
+    const convertedValue = this.convertConfigValue(value, type);
+    await this.redisService.set(cacheKey, convertedValue, this.REDIS_CONFIG_TTL);
+  }
+
+  /**
+   * 清除配置缓存
+   * @param key 配置键名
+   */
+  private async clearConfigCache(key: string): Promise<void> {
+    const cacheKey = this.REDIS_CONFIG_KEY_PREFIX + key;
+    await this.redisService.del(cacheKey);
+  }
+
+  /**
+   * 刷新所有配置缓存
+   * 可用于系统初始化时或手动刷新缓存
+   */
+  async refreshConfigCache(): Promise<void> {
+    // 清除所有配置缓存
+    const cachePattern = this.REDIS_CONFIG_KEY_PREFIX + '*';
+    const keys = await this.redisService.keys(cachePattern);
+    
+    for (const key of keys) {
+      await this.redisService.del(key);
+    }
+
+    // 重新缓存所有启用状态的配置
+    const configs = await this.prisma.config.findMany({
+      where: { status: StatusEnum.ENABLED },
+    });
+
+    for (const config of configs) {
+      await this.cacheConfigValue(config.key, config.value, config.type);
     }
   }
 }

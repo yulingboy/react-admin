@@ -56,10 +56,5 @@ export class UpdateDictionaryDto {
   @IsEnum(StatusEnum, { message: '状态值必须是有效的枚举值' })
   status?: string;
 
-  /**
-   * 是否为系统字典
-   */
-  @IsOptional()
-  @IsEnum(IsSystemEnum, { message: '系统标识必须是有效的枚举值' })
-  isSystem?: string;
+
 }

@@ -1,159 +1,29 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../shared/prisma/prisma.service';
 import { CreateScheduleJobDto, UpdateScheduleJobDto, QueryScheduleJobDto } from './dto/schedule-job.dto';
-import { Cron, SchedulerRegistry } from '@nestjs/schedule';
-import { CronJob } from 'cron';
+import { ScheduleJobExecutorService } from './schedule-job-executor.service';
+import { ScheduleJobLogService } from './schedule-job-log.service';
 
+/**
+ * 定时任务服务
+ * 负责定时任务的CRUD操作和业务逻辑
+ */
 @Injectable()
 export class ScheduleJobService {
   private readonly logger = new Logger(ScheduleJobService.name);
 
   constructor(
     private prisma: PrismaService,
-    private schedulerRegistry: SchedulerRegistry,
+    private executorService: ScheduleJobExecutorService,
+    private logService: ScheduleJobLogService,
   ) {}
 
   /**
    * 初始化定时任务
-   * 系统启动时，从数据库加载所有状态为"运行中"的定时任务
+   * 系统启动时调用
    */
   async initJobs() {
-    this.logger.log('正在初始化定时任务...');
-    try {
-      // 获取所有状态为"运行中"的定时任务
-      const jobs = await this.prisma.scheduleJob.findMany({
-        where: { status: '1' },
-      });
-
-      // 遍历并启动定时任务
-      for (const job of jobs) {
-        await this.startJob(job);
-      }
-
-      this.logger.log(`成功初始化 ${jobs.length} 个定时任务`);
-    } catch (error) {
-      this.logger.error('初始化定时任务失败', error);
-    }
-  }
-
-  /**
-   * 启动指定的定时任务
-   */
-  async startJob(job: any) {
-    const { id, jobName, jobGroup, cronExpression, invokeTarget } = job;
-    const cronJobName = `${jobGroup}:${jobName}:${id}`;
-
-    try {
-      // 创建定时任务
-      const cronJob = new CronJob(cronExpression, async () => {
-        await this.executeJob(job);
-      });
-
-      // 检查是否已存在同名任务，如果存在则先移除
-      if (this.schedulerRegistry.getCronJobs().has(cronJobName)) {
-        this.schedulerRegistry.deleteCronJob(cronJobName);
-      }
-
-      // 添加到定时任务注册表 - 适配不同版本的 cron 库
-      this.schedulerRegistry.addCronJob(cronJobName, cronJob as any);
-      
-      // 启动定时任务
-      cronJob.start();
-      
-      this.logger.log(`定时任务 [${cronJobName}] 启动成功`);
-      return true;
-    } catch (error) {
-      this.logger.error(`定时任务 [${cronJobName}] 启动失败`, error);
-      return false;
-    }
-  }
-
-  /**
-   * 停止指定的定时任务
-   */
-  async stopJob(id: number) {
-    try {
-      // 获取任务信息
-      const job = await this.findById(id);
-      if (!job) {
-        throw new NotFoundException(`任务ID ${id} 不存在`);
-      }
-
-      const cronJobName = `${job.jobGroup}:${job.jobName}:${job.id}`;
-
-      // 检查任务是否存在于注册表中
-      if (this.schedulerRegistry.getCronJobs().has(cronJobName)) {
-        this.schedulerRegistry.deleteCronJob(cronJobName);
-        this.logger.log(`定时任务 [${cronJobName}] 已停止`);
-      }
-
-      return true;
-    } catch (error) {
-      this.logger.error(`停止定时任务失败`, error);
-      return false;
-    }
-  }
-
-  /**
-   * 执行任务逻辑
-   */
-  async executeJob(job: any) {
-    const startTime = new Date();
-    let status = '1'; // 默认成功
-    let jobMessage = '执行成功';
-    let exceptionInfo = null;
-    
-    try {
-      this.logger.log(`开始执行定时任务 [${job.jobGroup}:${job.jobName}:${job.id}]`);
-      
-      // TODO: 实现真正的任务执行逻辑，可以通过反射调用指定的方法
-      // 这里仅作示例，记录日志表示任务已执行
-      await new Promise(resolve => setTimeout(resolve, 1000)); // 模拟任务执行
-
-      this.logger.log(`定时任务 [${job.jobGroup}:${job.jobName}:${job.id}] 执行完成`);
-    } catch (error) {
-      status = '0'; // 执行失败
-      jobMessage = '执行失败';
-      exceptionInfo = error.message || JSON.stringify(error);
-      this.logger.error(`定时任务 [${job.jobGroup}:${job.jobName}:${job.id}] 执行失败`, error);
-    } finally {
-      const endTime = new Date();
-      
-      // 记录任务执行日志
-      await this.prisma.scheduleJobLog.create({
-        data: {
-          jobId: job.id,
-          jobName: job.jobName,
-          jobGroup: job.jobGroup,
-          invokeTarget: job.invokeTarget,
-          status,
-          jobMessage,
-          exceptionInfo,
-          startTime,
-          endTime,
-        },
-      });
-    }
-  }
-
-  /**
-   * 手动执行一次任务
-   */
-  async runJobOnce(id: number) {
-    try {
-      // 获取任务信息
-      const job = await this.findById(id);
-      if (!job) {
-        throw new NotFoundException(`任务ID ${id} 不存在`);
-      }
-
-      // 执行任务
-      await this.executeJob(job);
-      return true;
-    } catch (error) {
-      this.logger.error(`手动执行任务失败`, error);
-      throw new BadRequestException('手动执行任务失败: ' + error.message);
-    }
+    return this.executorService.initJobs();
   }
 
   /**
@@ -177,7 +47,7 @@ export class ScheduleJobService {
 
       // 如果状态为运行中，则立即启动任务
       if (job.status === '1') {
-        await this.startJob(job);
+        await this.executorService.startJob(job);
       }
 
       return job;
@@ -200,7 +70,7 @@ export class ScheduleJobService {
 
       // 如果旧任务为运行状态，先停止
       if (oldJob.status === '1') {
-        await this.stopJob(dto.id);
+        await this.executorService.stopJob(oldJob);
       }
 
       // 更新任务记录
@@ -221,7 +91,7 @@ export class ScheduleJobService {
 
       // 如果更新后的状态为运行中，则重新启动任务
       if (updatedJob.status === '1') {
-        await this.startJob(updatedJob);
+        await this.executorService.startJob(updatedJob);
       }
 
       return updatedJob;
@@ -249,7 +119,7 @@ export class ScheduleJobService {
 
       // 如果任务处于运行状态，先停止
       if (job.status === '1') {
-        await this.stopJob(id);
+        await this.executorService.stopJob(job);
       }
 
       // 删除任务记录
@@ -282,7 +152,7 @@ export class ScheduleJobService {
 
       // 如果当前为运行状态，需要先停止
       if (job.status === '1') {
-        await this.stopJob(id);
+        await this.executorService.stopJob(job);
       }
 
       // 更新状态
@@ -293,13 +163,37 @@ export class ScheduleJobService {
 
       // 如果更新后为运行状态，启动任务
       if (updatedJob.status === '1') {
-        await this.startJob(updatedJob);
+        await this.executorService.startJob(updatedJob);
       }
 
       return updatedJob;
     } catch (error) {
       this.logger.error('更新任务状态失败', error);
       throw new BadRequestException('更新任务状态失败: ' + error.message);
+    }
+  }
+
+  /**
+   * 手动执行一次任务
+   */
+  async runJobOnce(id: number) {
+    try {
+      // 获取任务信息
+      const job = await this.findById(id);
+      if (!job) {
+        throw new NotFoundException(`任务ID ${id} 不存在`);
+      }
+
+      // 执行任务
+      const result = await this.executorService.runJobOnce(job);
+      if (!result) {
+        throw new BadRequestException('手动执行任务失败');
+      }
+      
+      return true;
+    } catch (error) {
+      this.logger.error(`手动执行任务失败`, error);
+      throw new BadRequestException('手动执行任务失败: ' + error.message);
     }
   }
 
@@ -357,46 +251,13 @@ export class ScheduleJobService {
    * 获取任务日志分页列表
    */
   async getJobLogs(jobId: number, page = 1, pageSize = 10) {
-    // 确保页码和每页条数为数字
-    const pageNum = Number(page);
-    const pageSizeNum = Number(pageSize);
-    
-    // 构建查询条件
-    const where: any = {};
-    if (jobId) {
-      where.jobId = jobId;
-    }
-
-    // 查询总数
-    const total = await this.prisma.scheduleJobLog.count({ where });
-
-    // 分页查询
-    const data = await this.prisma.scheduleJobLog.findMany({
-      where,
-      skip: (pageNum - 1) * pageSizeNum,
-      take: pageSizeNum,
-      orderBy: { createdAt: 'desc' },
-    });
-
-    return {
-      list: data,
-      total,
-      page: pageNum,
-      pageSize: pageSizeNum,
-    };
+    return this.logService.getJobLogs(jobId, page, pageSize);
   }
 
   /**
    * 清空任务日志
    */
   async clearJobLogs(jobId?: number) {
-    try {
-      const where = jobId ? { jobId } : {};
-      await this.prisma.scheduleJobLog.deleteMany({ where });
-      return true;
-    } catch (error) {
-      this.logger.error('清空任务日志失败', error);
-      throw new BadRequestException('清空任务日志失败: ' + error.message);
-    }
+    return this.logService.clearJobLogs(jobId);
   }
 }

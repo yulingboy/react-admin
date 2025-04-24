@@ -1,0 +1,265 @@
+// 财务模块相关模型
+// 资金账户类型
+model AccountType {
+  id          Int       @id @default(autoincrement())
+  name        String    // 账户类型名称：如"支付宝"、"微信"、"银行卡"等
+  icon        String?   // 图标
+  description String?   // 描述
+  status      String    @default("1") // 状态：1-启用 0-禁用
+  isSystem    String    @default("0") // 是否系统内置
+  sort        Int       @default(0)   // 排序
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  accounts    Account[] // 关联的账户
+
+  @@map("finance_account_types")
+}
+
+// 资金账户
+model Account {
+  id          Int       @id @default(autoincrement())
+  name        String    // 账户名称：如"我的支付宝"、"工商银行卡"等
+  typeId      Int       // 账户类型ID
+  balance     Decimal   @db.Decimal(10, 2) // 账户余额
+  icon        String?   // 自定义图标
+  color       String?   // 自定义颜色
+  userId      Int       // 所属用户ID
+  status      String    @default("1") // 状态：1-启用 0-禁用
+  isDefault   String    @default("0") // 是否默认账户
+  sort        Int       @default(0)   // 排序
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  
+  type        AccountType @relation(fields: [typeId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+  bills       Bill[]      // 关联的账单
+  transfers   TransferRecord[] @relation("FromAccount") // 作为转出账户
+  transfersIn TransferRecord[] @relation("ToAccount")   // 作为转入账户
+  templates   BillTemplate[] // 账单模板
+  balanceAdjustLogs BalanceAdjustLog[] // 余额调整日志
+
+  @@index([typeId])
+  @@index([userId])
+  @@map("finance_accounts")
+  Bill Bill[] @relation("TargetAccount")
+}
+
+// 账户余额调整日志
+model BalanceAdjustLog {
+  id              Int       @id @default(autoincrement())
+  accountId       Int       // 关联的账户ID
+  previousBalance Decimal   @db.Decimal(10, 2) // 调整前余额
+  newBalance      Decimal   @db.Decimal(10, 2) // 调整后余额
+  reason          String?   // 调整原因
+  userId          Int       // 操作用户ID
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @updatedAt
+  
+  account         Account   @relation(fields: [accountId], references: [id])
+  user            User      @relation(fields: [userId], references: [id])
+
+  @@index([accountId])
+  @@index([userId])
+  @@map("finance_balance_adjust_logs")
+}
+
+// 账单分类
+model BillCategory {
+  id          Int       @id @default(autoincrement())
+  name        String    // 分类名称：如"餐饮"、"交通"、"购物"等
+  type        String    // 类型：income-收入 expense-支出 transfer-转账
+  icon        String?   // 图标
+  color       String?   // 颜色
+  parentId    Int?      // 父分类ID，用于实现分类层级
+  userId      Int?      // 所属用户ID，NULL表示系统默认分类
+  status      String    @default("1") // 状态：1-启用 0-禁用
+  isSystem    String    @default("0") // 是否系统内置
+  sort        Int       @default(0)   // 排序
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  bills       Bill[]    // 关联的账单
+  parent      BillCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    BillCategory[] @relation("CategoryHierarchy")
+  user        User?         @relation(fields: [userId], references: [id])
+  templates   BillTemplate[] // 账单模板
+
+  @@index([parentId])
+  @@index([userId])
+  @@map("finance_bill_categories")
+}
+
+// 账单记录
+model Bill {
+  id          Int       @id @default(autoincrement())
+  type        String    // 类型：income-收入 expense-支出 transfer-转账
+  amount      Decimal   @db.Decimal(10, 2) // 金额
+  categoryId  Int?      // 分类ID
+  accountId   Int       // 账户ID
+  targetAccountId Int?   // 目标账户ID（只用于转账类型）
+  billDate    DateTime  // 账单日期
+  description String?   // 描述/备注
+  imageUrls   String?   // 图片URL，多个用逗号分隔
+  location    String?   // 位置信息
+  status      String    @default("1") // 状态：1-启用 0-禁用
+  userId      Int       // 所属用户ID
+  transferId  Int?      // 关联的转账记录ID（如果是转账类型）
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  
+  category    BillCategory? @relation(fields: [categoryId], references: [id])
+  account     Account      @relation(fields: [accountId], references: [id])
+  targetAccount Account?   @relation("TargetAccount", fields: [targetAccountId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+  transfer    TransferRecord? @relation(fields: [transferId], references: [id])
+  billTags    BillTagLink[] // 账单标签关联
+
+  @@index([categoryId])
+  @@index([accountId])
+  @@index([targetAccountId])
+  @@index([userId])
+  @@index([transferId])
+  @@index([billDate])
+  @@map("finance_bills")
+}
+
+// 转账记录
+model TransferRecord {
+  id          Int       @id @default(autoincrement())
+  billId      Int?      // 关联的账单ID
+  fromAccountId Int     // 转出账户ID
+  toAccountId   Int     // 转入账户ID
+  amount      Decimal   @db.Decimal(10, 2) // 转账金额
+  fee         Decimal?  @db.Decimal(10, 2) // 手续费
+  transferDate DateTime  // 转账日期
+  billDate    DateTime?  // 账单日期（与bill同步）
+  description String?   // 描述/备注
+  userId      Int       // 所属用户ID
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  
+  fromAccount Account @relation("FromAccount", fields: [fromAccountId], references: [id])
+  toAccount   Account @relation("ToAccount", fields: [toAccountId], references: [id])
+  user        User    @relation(fields: [userId], references: [id])
+  bills       Bill[]  // 关联的账单记录
+
+  @@index([billId])
+  @@index([fromAccountId])
+  @@index([toAccountId])
+  @@index([userId])
+  @@index([transferDate])
+  @@map("finance_transfer_records")
+}
+
+// 预算管理
+model Budget {
+  id          Int       @id @default(autoincrement())
+  name        String    // 预算名称：如"2023年4月生活费"
+  type        String    // 预算类型：monthly-月度 yearly-年度 custom-自定义
+  startDate   DateTime  // 预算开始日期
+  endDate     DateTime  // 预算结束日期
+  amount      Decimal   @db.Decimal(10, 2) // 预算金额
+  categoryIds String?   // 关联的分类ID，多个用逗号分隔，如"1,2,3"
+  userId      Int       // 所属用户ID
+  status      String    @default("1") // 状态：1-启用 0-禁用
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([startDate, endDate])
+  @@map("finance_budgets")
+}
+
+// 导入账单记录
+model BillImport {
+  id          Int       @id @default(autoincrement())
+  fileName    String    // 导入文件名
+  fileType    String    // 文件类型：alipay-支付宝 wechat-微信 bank-银行 custom-自定义
+  totalCount  Int       // 总记录数
+  successCount Int      // 成功导入数
+  failCount   Int       // 失败数
+  importDate  DateTime  @default(now()) // 导入日期
+  status      String    // 状态：processing-处理中 success-成功 failed-失败
+  errorLog    String?   @db.Text // 错误日志
+  userId      Int       // 所属用户ID
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("finance_bill_imports")
+}
+
+// 账单模板
+model BillTemplate {
+  id          Int       @id @default(autoincrement())
+  name        String    // 模板名称
+  type        String    // 类型：income-收入 expense-支出 transfer-转账
+  amount      Decimal?  @db.Decimal(10, 2) // 金额，可为空
+  categoryId  Int?      // 分类ID
+  accountId   Int?      // 账户ID
+  description String?   // 描述/备注
+  tags        String?   // 标签，多个用逗号分隔
+  userId      Int       // 所属用户ID
+  sort        Int       @default(0) // 排序
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  
+  category    BillCategory? @relation(fields: [categoryId], references: [id])
+  account     Account?      @relation(fields: [accountId], references: [id])
+  user        User          @relation(fields: [userId], references: [id])
+
+  @@index([categoryId])
+  @@index([accountId])
+  @@index([userId])
+  @@map("finance_bill_templates")
+}
+
+// 账单标签
+model BillTag {
+  id          Int       @id @default(autoincrement())
+  name        String    // 标签名称
+  color       String?   // 标签颜色
+  userId      Int       // 所属用户ID
+  useCount    Int       @default(0) // 使用次数
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("finance_bill_tags")
+  BillTagLink BillTagLink[]
+}
+
+// 账单-标签关联表
+model BillTagLink {
+  id        Int       @id @default(autoincrement())
+  billId    Int       // 账单ID
+  tagId     Int       // 标签ID
+  createdAt DateTime  @default(now())
+  
+  bill      Bill      @relation(fields: [billId], references: [id], onDelete: Cascade)
+  tag       BillTag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([billId, tagId]) // 一个账单不能重复关联同一个标签
+  @@index([billId])
+  @@index([tagId])
+  @@map("finance_bill_tag_links")
+}
+
+// 账单统计规则
+model BillStatRule {
+  id          Int       @id @default(autoincrement())
+  name        String    // 规则名称
+  type        String    // 规则类型：category-分类统计 time-时间统计 account-账户统计 tag-标签统计
+  config      String    @db.Text // 规则配置，JSON格式
+  userId      Int       // 所属用户ID
+  isDefault   String    @default("0") // 是否默认使用
+  sort        Int       @default(0) // 排序
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("finance_bill_stat_rules")
+}

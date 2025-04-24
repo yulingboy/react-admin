@@ -15,13 +15,6 @@ export class QueryConfigDto extends PaginationDto {
   keyword?: string;
 
   /**
-   * 配置分组筛选
-   */
-  @IsOptional()
-  @IsString({ message: '配置分组必须是字符串' })
-  group?: string;
-
-  /**
    * 是否系统内置配置筛选
    */
   @IsOptional()

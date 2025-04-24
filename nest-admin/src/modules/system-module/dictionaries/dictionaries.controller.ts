@@ -6,6 +6,7 @@ import { QueryDictionaryDto } from './dto/query-dictionary.dto';
 import { CreateDictionaryItemDto } from './dto/create-dictionary-item.dto';
 import { UpdateDictionaryItemDto } from './dto/update-dictionary-item.dto';
 import Result from 'src/common/utils/result';
+import { Public } from 'src/common/decorators/public.decorator';
 
 /**
  * 字典管理控制器
@@ -124,6 +125,7 @@ export class DictionariesController {
    * @param code - 字典编码
    * @returns 字典项列表
    */
+  @Public()
   @Get('itemsByCode')
   async getItemsByCode(@Query('code') code: string) {
 

@@ -1,0 +1,129 @@
+// 工具模块相关模型
+// 接口测试历史记录
+model ApiTestHistory {
+  id        Int      @id @default(autoincrement())
+  name      String?  @db.VarChar(100)
+  url       String   @db.VarChar(500)
+  method    String   @db.VarChar(10)
+  request   Json     // 请求详情，包含头、参数、请求体等
+  response  Json?    // 响应详情
+  createdAt DateTime @default(now()) @map("created_at")
+  userId    Int?     @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("api_test_history")
+}
+
+// 接口测试模板
+model ApiTestTemplate {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  url         String   @db.VarChar(500)
+  method      String   @db.VarChar(10)
+  headers     Json     // 请求头
+  params      Json?    // URL参数
+  body        Json?    // 请求体
+  contentType String   @map("content_type") @db.VarChar(100)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  userId      Int?     @map("user_id")
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("api_test_template")
+}
+
+// 数据库连接配置
+model DatabaseConnection {
+  id        Int       @id @default(autoincrement())
+  name      String    // 连接名称
+  type      String    // 数据库类型: mysql, postgres, mssql, mariadb, sqlite
+  host      String?   // 主机地址
+  port      Int?      // 端口
+  username  String?   // 用户名
+  password  String?   // 密码
+  database  String    // 数据库名
+  filename  String?   // SQLite文件路径
+  ssl       Boolean   @default(false) // 是否启用SSL
+  status    String    @default("1")   // 1-启用 0-禁用
+  isSystem  String    @default("0")   // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@map("database_connections")
+}
+
+model CodeGenerator {
+  id          Int       @id @default(autoincrement())
+  name        String    // 代码生成名称
+  description String?   // 描述
+  tableName   String    // 表名称
+  moduleName  String    // 模块名称
+  businessName String   // 业务名称
+  options     String?   // 选项，如是否生成API、是否生成表单等，JSON格式
+  remark      String?   // 备注
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  columns     CodeGeneratorColumn[] // 列信息
+}
+
+model CodeGeneratorColumn {
+  id              Int      @id @default(autoincrement())
+  generatorId     Int      // 关联的代码生成器ID
+  columnName      String   // 列名
+  columnComment   String?  // 列注释
+  columnType      String   // 列类型
+  tsType          String   // TypeScript类型
+  isPk            Boolean  @default(false) // 是否是主键
+  isIncrement     Boolean  @default(false) // 是否自增
+  isRequired      Boolean  @default(true)  // 是否必填
+  isInsert        Boolean  @default(true)  // 是否为插入字段
+  isEdit          Boolean  @default(true)  // 是否为编辑字段
+  isList          Boolean  @default(true)  // 是否为列表字段
+  isQuery         Boolean  @default(false) // 是否为查询字段
+  queryType       String?  // 查询方式（eq等于、like模糊）
+  htmlType        String?  // 显示类型（文本框、文本域、下拉框、复选框、单选框、日期控件）
+  dictType        String?  // 字典类型
+  sort            Int      @default(0)     // 排序
+  generator       CodeGenerator @relation(fields: [generatorId], references: [id], onDelete: Cascade)
+
+  @@index([generatorId])
+}
+
+// 定时任务
+model ScheduleJob {
+  id             Int       @id @default(autoincrement())
+  jobName        String    // 任务名称
+  jobGroup       String    @default("DEFAULT") // 任务分组
+  invokeTarget   String    // 调用目标字符串
+  cronExpression String    // cron表达式
+  misfirePolicy  String    @default("1") // 计划执行错误策略（1立即执行 2执行一次 3放弃执行）
+  concurrent     String    @default("1") // 是否并发执行（0允许 1禁止）
+  status         String    @default("0") // 状态（0暂停 1正常）
+  isSystem       String    @default("0") // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
+  remark         String?   // 备注信息
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime? @updatedAt
+  logs           ScheduleJobLog[] // 关联的任务日志
+
+  @@map("schedule_jobs")
+}
+
+// 定时任务日志
+model ScheduleJobLog {
+  id            Int       @id @default(autoincrement())
+  jobId         Int       // 任务ID
+  jobName       String    // 任务名称
+  jobGroup      String    // 任务组名
+  invokeTarget  String    // 调用目标
+  jobMessage    String?   // 日志信息
+  status        String    @default("0") // 执行状态（0失败 1成功）
+  exceptionInfo String?   @db.Text // 异常信息
+  startTime     DateTime? // 开始时间
+  endTime       DateTime? // 结束时间
+  createdAt     DateTime  @default(now())
+  job           ScheduleJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@map("schedule_job_logs")
+}

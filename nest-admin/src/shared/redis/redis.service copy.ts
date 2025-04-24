@@ -22,14 +22,14 @@ export class RedisService {
   /**
    * 根据键名获取值
    * @param key 键名
-   * @returns 值，如果不存在则返回null
+   * @returns  值
    */
   async get(key: string): Promise<any> {
     const value = await this.redis.get(key);
     if (value) {
       try {
         return JSON.parse(value);
-      } catch (_) {
+      } catch (e) {
         return value;
       }
     }
@@ -70,7 +70,7 @@ export class RedisService {
   /**
    * 自增计数器
    * @param key 键名
-   * @returns 自增后的值
+   * @returns 
    */
   async incr(key: string): Promise<number> {
     return this.redis.incr(key);
@@ -79,7 +79,7 @@ export class RedisService {
   /**
    * 自减计数器
    * @param key 键名
-   * @returns 自减后的值
+   * @returns 
    */
   async decr(key: string): Promise<number> {
     return this.redis.decr(key);
@@ -113,6 +113,7 @@ export class RedisService {
     return this.redis.keys(pattern);
   }
 
+  
   /**
    * 哈希表操作，适用于存储对象或结构化数据
    * @param key 键名
@@ -129,14 +130,14 @@ export class RedisService {
    * 获取哈希表中的字段值
    * @param key 键名
    * @param field 字段名
-   * @returns 值，如果不存在则返回null
+   * @returns 值
    */
   async hget(key: string, field: string): Promise<any> {
     const value = await this.redis.hget(key, field);
     if (value) {
       try {
         return JSON.parse(value);
-      } catch (_) {
+      } catch (e) {
         return value;
       }
     }
@@ -155,7 +156,7 @@ export class RedisService {
     for (const field in result) {
       try {
         parsedResult[field] = JSON.parse(result[field]);
-      } catch (_) {
+      } catch (e) {
         parsedResult[field] = result[field];
       }
     }
@@ -163,36 +164,16 @@ export class RedisService {
     return parsedResult;
   }
 
-  /**
-   * 哈希表字段值自增
-   * @param key 键名
-   * @param field 字段名
-   * @param increment 增量值
-   * @returns 自增后的值
-   */
+  
   async hincrby(key: string, field: string, increment: number): Promise<number> {
     return this.redis.hincrby(key, field, increment);
   }
 
-  /**
-   * 有序集合操作，添加成员
-   * @param key 键名
-   * @param score 分数
-   * @param member 成员
-   * @returns 添加的成员数量
-   */
+  // 新增：有序集合操作，适用于排名和排序场景
   async zadd(key: string, score: number, member: string): Promise<number> {
     return this.redis.zadd(key, score, member);
   }
 
-  /**
-   * 获取有序集合中指定范围的成员
-   * @param key 键名
-   * @param start 起始位置
-   * @param stop 结束位置
-   * @param withScores 是否返回分数
-   * @returns 成员列表
-   */
   async zrange(key: string, start: number, stop: number, withScores: boolean = false): Promise<string[]> {
     if (withScores) {
       return this.redis.zrange(key, start, stop, 'WITHSCORES');
@@ -200,14 +181,6 @@ export class RedisService {
     return this.redis.zrange(key, start, stop);
   }
 
-  /**
-   * 获取有序集合中指定范围的成员（倒序）
-   * @param key 键名
-   * @param start 起始位置
-   * @param stop 结束位置
-   * @param withScores 是否返回分数
-   * @returns 成员列表
-   */
   async zrevrange(key: string, start: number, stop: number, withScores: boolean = false): Promise<string[]> {
     if (withScores) {
       return this.redis.zrevrange(key, start, stop, 'WITHSCORES');
@@ -215,80 +188,43 @@ export class RedisService {
     return this.redis.zrevrange(key, start, stop);
   }
 
-  /**
-   * 获取有序集合的元素数量
-   * @param key 键名
-   * @returns 元素数量
-   */
+  // 新增：获取有序集合的元素数量
   async zcard(key: string): Promise<number> {
     return this.redis.zcard(key);
   }
 
-  /**
-   * 根据排名范围删除有序集合中的元素
-   * @param key 键名
-   * @param start 起始位置
-   * @param stop 结束位置
-   * @returns 删除的元素数量
-   */
+  // 新增：根据排名范围删除有序集合中的元素
   async zremrangebyrank(key: string, start: number, stop: number): Promise<number> {
     return this.redis.zremrangebyrank(key, start, stop);
   }
 
-  /**
-   * 列表操作，从左侧添加元素
-   * @param key 键名
-   * @param value 值
-   * @returns 列表长度
-   */
+  // 新增：列表操作，适用于最近记录的场景
   async lpush(key: string, value: any): Promise<number> {
     const stringValue = typeof value === 'object' ? JSON.stringify(value) : value.toString();
     return this.redis.lpush(key, stringValue);
   }
 
-  /**
-   * 列表操作，从右侧添加元素
-   * @param key 键名
-   * @param value 值
-   * @returns 列表长度
-   */
   async rpush(key: string, value: any): Promise<number> {
     const stringValue = typeof value === 'object' ? JSON.stringify(value) : value.toString();
     return this.redis.rpush(key, stringValue);
   }
 
-  /**
-   * 获取列表指定范围的元素
-   * @param key 键名
-   * @param start 起始位置
-   * @param stop 结束位置
-   * @returns 元素列表
-   */
   async lrange(key: string, start: number, stop: number): Promise<any[]> {
     const results = await this.redis.lrange(key, start, stop);
-    return results.map((item) => {
+    return results.map(item => {
       try {
         return JSON.parse(item);
-      } catch (_) {
+      } catch (e) {
         return item;
       }
     });
   }
 
-  /**
-   * 裁剪列表，只保留指定范围内的元素
-   * @param key 键名
-   * @param start 起始位置
-   * @param stop 结束位置
-   */
   async ltrim(key: string, start: number, stop: number): Promise<void> {
     await this.redis.ltrim(key, start, stop);
   }
 
-  /**
-   * 获取Redis客户端实例，用于执行自定义操作
-   * @returns Redis客户端实例
-   */
+  // 新增：事务操作
   getRedisClient(): Redis {
     return this.redis;
   }

@@ -1,0 +1,91 @@
+// 系统模块相关模型
+model Config {
+  id          Int       @id @default(autoincrement())
+  key         String    @unique
+  value       String
+  description String?
+  type        String    @default("string")  // 可以是string, number, boolean, json等
+  group       String?   // 可以用于分组配置项
+  sort        Int       @default(0)         // 排序字段
+  status      String    @default("1")       // 1-启用 0-禁用
+  isSystem    String    @default("0")       // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+}
+
+model Dictionary {
+  id          Int              @id @default(autoincrement())
+  code        String           @unique      // 字典编码，唯一标识
+  name        String           // 字典名称
+  description String?          // 字典描述
+  sort        Int              @default(0)  // 排序字段
+  status      String           @default("1")  // 1-启用 0-禁用
+  isSystem    String           @default("0")  // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime?        @updatedAt
+  items       DictionaryItem[] // 字典项
+}
+
+model DictionaryItem {
+  id           Int       @id @default(autoincrement())
+  dictionaryId Int       // 所属字典ID
+  code         String    // 字典项编码
+  value        String    // 字典项值
+  label        String    // 字典项标签
+  color        String?   // 字典项颜色值，如 #FF0000
+  extra        String?   // 附加数据，JSON字符串
+  isSystem     String    @default("0")  // 是否为系统默认数据，0-否 1-是，系统默认数据无法删除
+  description  String?   // 字典项描述
+  sort         Int       @default(0)  // 排序字段
+  status       String    @default("1")  // 1-启用 0-禁用
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+  dictionary   Dictionary @relation(fields: [dictionaryId], references: [id], onDelete: Cascade)
+
+  @@index([dictionaryId])
+  @@unique([dictionaryId, code])
+}
+
+// 登录日志
+model LoginLog {
+  id            Int       @id @default(autoincrement())
+  userId        Int?      // 用户ID，可以为空（登录失败的情况）
+  username      String    // 用户名
+  ipAddress     String    // 登录IP地址
+  loginLocation String?   // 登录地点
+  browser       String?   // 浏览器类型
+  os            String?   // 操作系统
+  status        String    @default("0") // 登录状态（0失败 1成功）
+  msg           String?   // 提示消息
+  loginTime     DateTime  @default(now()) // 登录时间
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([loginTime])
+  @@map("login_logs")
+}
+
+// 操作日志
+model OperLog {
+  id            Int       @id @default(autoincrement())
+  title         String    // 操作模块
+  businessType  String    @default("0") // 业务类型（0其它 1新增 2修改 3删除）
+  method        String?   // 请求方法
+  requestMethod String?   // HTTP请求方法
+  operatorType  String    @default("0") // 操作类别（0其它 1后台用户 2手机端用户）
+  operName      String?   // 操作人员
+  operUrl       String?   // 请求URL
+  operIp        String?   // 主机地址
+  operLocation  String?   // 操作地点
+  operParam     String?   @db.Text // 请求参数
+  jsonResult    String?   @db.Text // 返回参数
+  status        String    @default("0") // 操作状态（0正常 1异常）
+  errorMsg      String?   @db.Text // 错误消息
+  operTime      DateTime  @default(now()) // 操作时间
+  userId        Int?      // 用户ID
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([operTime])
+  @@index([userId])
+  @@map("oper_logs")
+}

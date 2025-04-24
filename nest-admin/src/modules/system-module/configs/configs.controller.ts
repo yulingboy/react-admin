@@ -3,7 +3,6 @@ import { ConfigsService } from './configs.service';
 import { CreateConfigDto } from './dto/create-config.dto';
 import { UpdateConfigDto } from './dto/update-config.dto';
 import { QueryConfigDto } from './dto/query-config.dto';
-import { BatchDeleteConfigDto } from './dto/batch-delete.dto';
 import Result from 'src/common/utils/result';
 
 /**
@@ -13,7 +12,7 @@ import Result from 'src/common/utils/result';
 export class ConfigsController {
   private readonly logger = new Logger(ConfigsController.name);
 
-  constructor(private readonly configsService: ConfigsService) {}
+  constructor(private readonly configsService: ConfigsService) { }
 
   /**
    * 添加配置
@@ -22,13 +21,10 @@ export class ConfigsController {
    */
   @Post('add')
   async add(@Body() createConfigDto: CreateConfigDto) {
-    try {
-      const data = await this.configsService.create(createConfigDto);
-      return Result.success(data);
-    } catch (error) {
-      this.logger.error(`添加配置失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+
+    const data = await this.configsService.create(createConfigDto);
+    return Result.success(data);
+
   }
 
   /**
@@ -49,13 +45,9 @@ export class ConfigsController {
    */
   @Get('detail')
   async getDetail(@Query('id', ParseIntPipe) id: number) {
-    try {
-      const data = await this.configsService.findOne(id);
-      return Result.success(data);
-    } catch (error) {
-      this.logger.error(`获取配置详情失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+
+    const data = await this.configsService.findOne(id);
+    return Result.success(data);
   }
 
   /**
@@ -65,13 +57,10 @@ export class ConfigsController {
    */
   @Put('update')
   async update(@Body() updateConfigDto: UpdateConfigDto) {
-    try {
-      await this.configsService.update(updateConfigDto.id, updateConfigDto);
-      return Result.success();
-    } catch (error) {
-      this.logger.error(`更新配置失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+
+    await this.configsService.update(updateConfigDto.id, updateConfigDto);
+    return Result.success();
+
   }
 
   /**
@@ -81,39 +70,10 @@ export class ConfigsController {
    */
   @Delete('delete')
   async delete(@Query('id', ParseIntPipe) id: number) {
-    try {
-      await this.configsService.remove(id);
-      return Result.success();
-    } catch (error) {
-      this.logger.error(`删除配置失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
-  }
 
-  /**
-   * 批量删除配置
-   * @param params - 批量删除参数
-   * @returns 操作结果
-   */
-  @Delete('deleteBatch')
-  async deleteBatch(@Body() params: BatchDeleteConfigDto) {
-    try {
-      await this.configsService.batchRemove(params.ids);
-      return Result.success();
-    } catch (error) {
-      this.logger.error(`批量删除配置失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
-  }
-  
-  /**
-   * 获取所有配置组选项
-   * @returns 配置组选项列表
-   */
-  @Get('groups')
-  async getGroups() {
-    const data = await this.configsService.findAllGroups();
-    return Result.success(data);
+    await this.configsService.remove(id);
+    return Result.success();
+
   }
 
   /**
@@ -123,12 +83,19 @@ export class ConfigsController {
    */
   @Get('value')
   async getValue(@Query('key') key: string) {
-    try {
-      const value = await this.configsService.getConfigValue(key);
-      return Result.success(value);
-    } catch (error) {
-      this.logger.error(`获取配置值失败: ${error.message}`, error.stack);
-      return Result.error(error.message);
-    }
+    const value = await this.configsService.getConfigValue(key);
+    return Result.success(value);
+
+  }
+
+  /**
+   * 刷新配置缓存
+   * 用于手动刷新Redis中的所有配置缓存
+   * @returns 操作结果
+   */
+  @Post('refresh-cache')
+  async refreshCache() {
+    await this.configsService.refreshConfigCache();
+    return Result.success(null, '配置缓存刷新成功');
   }
 }

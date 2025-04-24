@@ -60,7 +60,6 @@ export class CreateUserDto {
    * 用户角色ID，必须是大于0的整数
    */
   @IsInt({ message: '角色ID必须是整数' })
-  @Min(1, { message: '角色ID必须大于0' })
   @Transform(({ value }) => Number(value))
   @IsNotEmpty({ message: '角色ID不能为空' })
   roleId: number;

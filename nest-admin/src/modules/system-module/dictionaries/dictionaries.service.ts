@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, ForbiddenException, OnModuleInit, Logger } from '@nestjs/common';
 import { CreateDictionaryDto } from './dto/create-dictionary.dto';
 import { UpdateDictionaryDto } from './dto/update-dictionary.dto';
 import { QueryDictionaryDto } from './dto/query-dictionary.dto';
@@ -7,6 +7,7 @@ import { UpdateDictionaryItemDto } from './dto/update-dictionary-item.dto';
 import { Dictionary, DictionaryItem } from '@prisma/client';
 import { StatusEnum, IsSystemEnum } from 'src/common/enums/common.enum';
 import { PrismaService } from '@/shared/prisma/prisma.service';
+import { RedisService } from '@/shared/redis/redis.service';
 
 /**
  * 字典管理服务类
@@ -14,10 +15,33 @@ import { PrismaService } from '@/shared/prisma/prisma.service';
  * @class DictionariesService
  * @constructor
  * @param {PrismaService} prisma - Prisma服务
+ * @param {RedisService} redisService - Redis服务
  */
 @Injectable()
-export class DictionariesService {
-  constructor(private readonly prisma: PrismaService) {}
+export class DictionariesService implements OnModuleInit {
+  private readonly logger = new Logger(DictionariesService.name);
+  // Redis缓存前缀
+  private readonly REDIS_DICT_KEY_PREFIX = 'system:dictionary:';
+  // Redis缓存过期时间（24小时）
+  private readonly REDIS_DICT_TTL = 86400;
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redisService: RedisService
+  ) {}
+
+  /**
+   * 模块初始化时执行，预加载字典到Redis缓存
+   */
+  async onModuleInit() {
+    try {
+      this.logger.log('开始初始化字典缓存...');
+      await this.refreshDictionaryCache();
+      this.logger.log('字典缓存初始化完成');
+    } catch (error) {
+      this.logger.error('字典缓存初始化失败', error);
+    }
+  }
 
   /**
    * 创建字典
@@ -35,9 +59,16 @@ export class DictionariesService {
       throw new ConflictException(`字典编码 ${createDictionaryDto.code} 已存在`);
     }
 
-    return this.prisma.dictionary.create({
+    const dictionary = await this.prisma.dictionary.create({
       data: createDictionaryDto,
     });
+
+    // 缓存新创建的字典项
+    if (dictionary.status === StatusEnum.ENABLED) {
+      await this.cacheDictionaryItems(dictionary.code);
+    }
+
+    return dictionary;
   }
 
   /**
@@ -167,10 +198,30 @@ export class DictionariesService {
       }
     }
 
-    return this.prisma.dictionary.update({
+    // 保存更新前的编码和状态，用于缓存管理
+    const oldCode = dictionary.code;
+    const oldStatus = dictionary.status;
+
+    // 更新字典
+    const updatedDictionary = await this.prisma.dictionary.update({
       where: { id },
       data: updateDictionaryDto,
     });
+
+    // 如果编码发生变化，需要删除旧缓存
+    if (updateDictionaryDto.code && oldCode !== updatedDictionary.code) {
+      await this.clearDictionaryCache(oldCode);
+    }
+
+    // 更新或清除缓存
+    if (updatedDictionary.status === StatusEnum.ENABLED) {
+      await this.cacheDictionaryItems(updatedDictionary.code);
+    } else if (oldStatus === StatusEnum.ENABLED && updatedDictionary.status !== StatusEnum.ENABLED) {
+      // 如果状态从启用变为禁用，则清除缓存
+      await this.clearDictionaryCache(updatedDictionary.code);
+    }
+
+    return updatedDictionary;
   }
 
   /**
@@ -195,6 +246,9 @@ export class DictionariesService {
       throw new ForbiddenException(`系统字典不允许删除`);
     }
 
+    // 删除字典前清除缓存
+    await this.clearDictionaryCache(dictionary.code);
+
     // 删除字典（级联删除字典项）
     return this.prisma.dictionary.delete({
       where: { id },
@@ -218,6 +272,17 @@ export class DictionariesService {
 
     if (systemDicts.length > 0) {
       throw new ForbiddenException(`系统字典不允许删除`);
+    }
+
+    // 查询要删除的字典，用于删除缓存
+    const dictionaries = await this.prisma.dictionary.findMany({
+      where: { id: { in: ids } },
+      select: { code: true },
+    });
+
+    // 批量删除字典前清除缓存
+    for (const dict of dictionaries) {
+      await this.clearDictionaryCache(dict.code);
     }
 
     // 批量删除字典
@@ -250,6 +315,15 @@ export class DictionariesService {
    * @returns 字典项列表
    */
   async findItemsByCode(code: string): Promise<DictionaryItem[]> {
+    // 尝试从缓存获取字典项
+    const cachedItems = await this.getDictionaryItemsFromCache(code);
+    if (cachedItems !== null) {
+      this.logger.debug(`从缓存获取字典[${code}]项`);
+      return cachedItems;
+    }
+
+    this.logger.debug(`从数据库获取字典[${code}]项`);
+    
     // 检查字典是否存在
     const dictionary = await this.prisma.dictionary.findUnique({
       where: { code },
@@ -260,13 +334,20 @@ export class DictionariesService {
     }
 
     // 查询字典项列表
-    return this.prisma.dictionaryItem.findMany({
+    const items = await this.prisma.dictionaryItem.findMany({
       where: {
         dictionaryId: dictionary.id,
         status: StatusEnum.ENABLED, // 只返回启用状态的字典项
       },
       orderBy: [{ sort: 'asc' }, { createdAt: 'asc' }],
     });
+
+    // 如果字典状态为启用，则缓存字典项
+    if (dictionary.status === StatusEnum.ENABLED) {
+      await this.cacheDictionaryItems(code, items);
+    }
+
+    return items;
   }
 
   /**
@@ -336,9 +417,17 @@ export class DictionariesService {
       throw new ConflictException(`字典项编码 ${createDictionaryItemDto.code} 在当前字典下已存在`);
     }
 
-    return this.prisma.dictionaryItem.create({
+    // 创建字典项
+    const dictionaryItem = await this.prisma.dictionaryItem.create({
       data: createDictionaryItemDto,
     });
+
+    // 如果字典为启用状态，刷新缓存
+    if (dictionary.status === StatusEnum.ENABLED) {
+      await this.cacheDictionaryItems(dictionary.code);
+    }
+
+    return dictionaryItem;
   }
 
   /**
@@ -379,10 +468,18 @@ export class DictionariesService {
       }
     }
 
-    return this.prisma.dictionaryItem.update({
+    // 更新字典项
+    const updatedItem = await this.prisma.dictionaryItem.update({
       where: { id },
       data: updateDictionaryItemDto,
     });
+
+    // 如果字典状态为启用，刷新缓存
+    if (item.dictionary.status === StatusEnum.ENABLED) {
+      await this.cacheDictionaryItems(item.dictionary.code);
+    }
+
+    return updatedItem;
   }
 
   /**
@@ -408,9 +505,17 @@ export class DictionariesService {
       throw new ForbiddenException(`系统字典项不允许删除`);
     }
 
-    return this.prisma.dictionaryItem.delete({
+    // 删除字典项
+    const result = await this.prisma.dictionaryItem.delete({
       where: { id },
     });
+
+    // 如果字典状态为启用，刷新缓存
+    if (item.dictionary.status === StatusEnum.ENABLED) {
+      await this.cacheDictionaryItems(item.dictionary.code);
+    }
+
+    return result;
   }
 
   /**
@@ -432,11 +537,35 @@ export class DictionariesService {
       throw new ForbiddenException(`系统字典项不允许删除`);
     }
 
-    return this.prisma.dictionaryItem.deleteMany({
+    // 获取要删除的字典项所属的字典编码，用于后续刷新缓存
+    const dictionaryCodesResult = await this.prisma.dictionaryItem.findMany({
+      where: { id: { in: ids } },
+      select: {
+        dictionary: {
+          select: {
+            code: true,
+            status: true
+          }
+        }
+      },
+      distinct: ['dictionaryId']
+    });
+
+    // 批量删除字典项
+    const result = await this.prisma.dictionaryItem.deleteMany({
       where: {
         id: { in: ids },
       },
     });
+
+    // 对所有启用状态的字典刷新缓存
+    for (const item of dictionaryCodesResult) {
+      if (item.dictionary.status === StatusEnum.ENABLED) {
+        await this.cacheDictionaryItems(item.dictionary.code);
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -456,5 +585,81 @@ export class DictionariesService {
         status: true,
       },
     });
+  }
+
+  /**
+   * 从Redis缓存中获取字典项
+   * @param code 字典编码
+   * @returns 字典项列表或null
+   */
+  private async getDictionaryItemsFromCache(code: string): Promise<DictionaryItem[] | null> {
+    const cacheKey = this.REDIS_DICT_KEY_PREFIX + code;
+    return this.redisService.get(cacheKey);
+  }
+
+  /**
+   * 将字典项缓存到Redis
+   * @param code 字典编码
+   * @param items 字典项列表(可选，不提供则从数据库查询)
+   */
+  private async cacheDictionaryItems(code: string, items?: DictionaryItem[]): Promise<void> {
+    const cacheKey = this.REDIS_DICT_KEY_PREFIX + code;
+    
+    // 如果不提供items，则从数据库查询
+    if (!items) {
+      const dictionary = await this.prisma.dictionary.findUnique({
+        where: { code },
+      });
+
+      if (!dictionary) {
+        return;
+      }
+
+      items = await this.prisma.dictionaryItem.findMany({
+        where: {
+          dictionaryId: dictionary.id,
+          status: StatusEnum.ENABLED, // 只缓存启用状态的字典项
+        },
+        orderBy: [{ sort: 'asc' }, { createdAt: 'asc' }],
+      });
+    }
+
+    // 缓存字典项
+    await this.redisService.set(cacheKey, items, this.REDIS_DICT_TTL);
+  }
+
+  /**
+   * 清除字典缓存
+   * @param code 字典编码
+   */
+  private async clearDictionaryCache(code: string): Promise<void> {
+    const cacheKey = this.REDIS_DICT_KEY_PREFIX + code;
+    await this.redisService.del(cacheKey);
+  }
+
+  /**
+   * 刷新所有字典缓存
+   * 可用于系统初始化时或手动刷新缓存
+   */
+  async refreshDictionaryCache(): Promise<void> {
+    // 清除所有字典缓存
+    const cachePattern = this.REDIS_DICT_KEY_PREFIX + '*';
+    const keys = await this.redisService.keys(cachePattern);
+    
+    for (const key of keys) {
+      await this.redisService.del(key);
+    }
+
+    // 查询所有启用状态的字典
+    const dictionaries = await this.prisma.dictionary.findMany({
+      where: { status: StatusEnum.ENABLED },
+    });
+
+    // 为每个字典重新缓存字典项
+    for (const dictionary of dictionaries) {
+      await this.cacheDictionaryItems(dictionary.code);
+    }
+
+    this.logger.log(`已刷新${dictionaries.length}个字典的缓存`);
   }
 }

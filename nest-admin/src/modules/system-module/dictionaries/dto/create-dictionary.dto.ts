@@ -46,11 +46,4 @@ export class CreateDictionaryDto {
   @IsOptional()
   @IsEnum(StatusEnum, { message: '状态值必须是有效的枚举值' })
   status?: string = StatusEnum.ENABLED;
-
-  /**
-   * 是否为系统字典，默认为否
-   */
-  @IsOptional()
-  @IsEnum(IsSystemEnum, { message: '系统标识必须是有效的枚举值' })
-  isSystem?: string = IsSystemEnum.NO;
 }

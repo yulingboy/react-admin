@@ -11,18 +11,7 @@ export class UpdateRoleDto {
    * 角色ID
    */
   @IsInt({ message: '角色ID必须是整数' })
-  @Min(1, { message: '角色ID必须大于0' })
-  @Max(999999, { message: '角色ID不能大于999999' })
   id: number;
-
-  /**
-   * 角色唯一标识
-   */
-  @IsOptional()
-  @IsString({ message: '角色标识必须是字符串' })
-  @MinLength(2, { message: '角色标识长度不能小于2' })
-  @MaxLength(50, { message: '角色标识长度不能大于50' })
-  key?: string;
 
   /**
    * 角色名称
@@ -47,11 +36,5 @@ export class UpdateRoleDto {
   @IsOptional()
   @IsEnum(StatusEnum, { message: '状态值必须是有效的枚举值' })
   status?: string;
-
-  /**
-   * 是否系统内置角色
-   */
-  @IsOptional()
-  @IsEnum(IsSystemEnum, { message: '系统内置角色值必须是有效的枚举值' })
-  isSystem?: string;
+  
 }
