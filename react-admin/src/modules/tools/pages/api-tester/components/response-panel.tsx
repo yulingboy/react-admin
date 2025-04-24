@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Tabs, Table, Typography, Tag, Descriptions, Divider, Badge, Alert } from 'antd';
 import { ApiTestResponse } from '@/modules/tools/types/api-tester';
-import JsonEditor from './JsonEditor';
+import JsonEditor from './json-editor';
 
 const { TabPane } = Tabs;
 const { Text } = Typography;

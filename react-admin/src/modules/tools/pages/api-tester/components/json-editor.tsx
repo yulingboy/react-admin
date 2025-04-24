@@ -1,5 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import * as monaco from 'monaco-editor';
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
+
+// 配置Monaco Editor的Web Worker
+self.MonacoEnvironment = {
+  getWorker(_, label) {
+    if (label === 'json') {
+      return new jsonWorker();
+    }
+    return new editorWorker();
+  }
+};
 
 interface JsonEditorProps {
   value: any;

@@ -25,5 +25,21 @@ export default defineConfig({
         rewrite: path => path.replace(/^\/api/, '') // 去除请求路径中的/api前缀
       }
     }
+  },
+  worker: {
+    format: 'es', // 使用ES模块格式的worker
+  },
+  optimizeDeps: {
+    exclude: ['monaco-editor'] // 排除monaco-editor的预构建
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // 将monaco-editor相关代码单独打包，避免主包过大
+          'monaco-editor': ['monaco-editor']
+        }
+      }
+    }
   }
 });

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, Select, Tabs, Button, Space, Table, Switch, Card, Typography } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ApiTestRequest, HttpMethod, ContentType, HeaderItem, ParamItem } from '@/modules/tools/types/api-tester';
-import JsonEditor from './JsonEditor';
+import JsonEditor from './json-editor';
 
 const { TabPane } = Tabs;
 const { Text } = Typography;

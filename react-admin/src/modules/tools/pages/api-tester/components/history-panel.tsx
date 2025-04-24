@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Table, Button, Space, Input, Popconfirm, message, Select, DatePicker, Tag, Tooltip, Modal } from 'antd';
 import { SearchOutlined, DeleteOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons';
 import { ApiTestHistory, HttpMethod } from '@/modules/tools/types/api-tester';
-import JsonEditor from './JsonEditor';
+import JsonEditor from './json-editor';
 import dayjs from 'dayjs';
 import { batchDeleteApiTestHistory, deleteApiTestHistory, getApiTestHistoryList } from '@/modules/tools/api/api-tester-api';
 
