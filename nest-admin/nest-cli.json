@@ -6,7 +6,7 @@
     "watchAssets": true,
     "assets": [
       {
-        "include": "modules/code-generator/templates/**/*",
+        "include": "modules/tools-module/code-generator/templates/**/*",
         "outDir": "dist/src"
       }
     ]

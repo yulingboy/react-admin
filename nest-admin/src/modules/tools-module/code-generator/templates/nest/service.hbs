@@ -24,11 +24,11 @@ export class {{className}}Service {
     {{#if unique}}
     // 检查{{name}}是否存在
     const exist{{toPascalCase name}} = await this.prisma.{{toLowerFirstCase ../className}}.findUnique({
-      where: { {{name}}: create{{className}}Dto.{{name}} },
+      where: { {{name}}: create{{../className}}Dto.{{name}} },
     });
 
     if (exist{{toPascalCase name}}) {
-      throw new ConflictException(`{{comment}} ${create{{className}}Dto.{{name}}} 已存在`);
+      throw new ConflictException('{{comment}} ' + create{{../className}}Dto.{{name}} + ' 已存在');
     }
 
     {{/if}}
@@ -102,7 +102,7 @@ export class {{className}}Service {
     });
 
     if (!data) {
-      throw new NotFoundException(`ID为${id}的{{generator.businessName}}不存在`);
+      throw new NotFoundException('{{generator.businessName}}不存在');
     }
 
     return data;
@@ -112,126 +112,64 @@ export class {{className}}Service {
    * 更新{{generator.businessName}}
    * @param id {{generator.businessName}}ID
    * @param update{{className}}Dto 更新参数
-   * @returns 更新后的{{generator.businessName}}
+   * @returns 更新后的{{generator.businessName}}对象
    * @throws {NotFoundException} 当{{generator.businessName}}不存在时抛出异常
+   * @throws {ForbiddenException} 当尝试修改系统内置数据时抛出异常
    */
   async update(id: number, update{{className}}Dto: Update{{className}}Dto) {
     // 检查记录是否存在
-    const existingItem = await this.prisma.{{toLowerFirstCase className}}.findUnique({
-      where: { id },
-    });
+    const existData = await this.findOne(id);
 
-    if (!existingItem) {
-      throw new NotFoundException(`ID为${id}的{{generator.businessName}}不存在`);
-    }
-
-    // 如果是系统内置数据，禁止修改某些关键字段
-    if (existingItem.isSystem === IsSystemEnum.YES) {
-      {{#each columns}}
-      {{#if isSystem}}
-      delete update{{../className}}Dto.{{name}};
-      {{/if}}
-      {{/each}}
+    // 检查是否为系统内置数据
+    if (existData.isSystem === IsSystemEnum.YES) {
+      throw new ForbiddenException('系统内置数据不允许修改');
     }
 
     {{#each columns}}
     {{#if unique}}
-    // 检查是否存在重复的{{name}}（排除自身）
-    if (update{{../className}}Dto.{{name}} && update{{../className}}Dto.{{name}} !== existingItem.{{name}}) {
-      const duplicate = await this.prisma.{{toLowerFirstCase ../className}}.findFirst({
-        where: {
-          {{name}}: update{{../className}}Dto.{{name}},
-          id: { not: id },
-        },
+    // 检查{{name}}是否存在
+    if (update{{../className}}Dto.{{name}}) {
+      const exist{{toPascalCase name}} = await this.prisma.{{toLowerFirstCase ../className}}.findUnique({
+        where: { {{name}}: update{{../className}}Dto.{{name}} },
       });
 
-      if (duplicate) {
-        throw new ConflictException(`{{comment}} ${update{{../className}}Dto.{{name}}} 已存在`);
+      if (exist{{toPascalCase name}} && exist{{toPascalCase name}}.id !== id) {
+        throw new ConflictException('{{comment}} ' + update{{../className}}Dto.{{name}} + ' 已存在');
       }
     }
 
     {{/if}}
     {{/each}}
-    // 更新数据
-    return this.prisma.{{toLowerFirstCase className}}.update({
+    // 更新记录
+    const data = await this.prisma.{{toLowerFirstCase className}}.update({
       where: { id },
       data: update{{className}}Dto,
     });
+
+    return data;
   }
 
   /**
    * 删除{{generator.businessName}}
    * @param id {{generator.businessName}}ID
-   * @returns 删除结果
+   * @returns 删除的{{generator.businessName}}对象
    * @throws {NotFoundException} 当{{generator.businessName}}不存在时抛出异常
    * @throws {ForbiddenException} 当尝试删除系统内置数据时抛出异常
    */
   async remove(id: number) {
     // 检查记录是否存在
-    const item = await this.prisma.{{toLowerFirstCase className}}.findUnique({
+    const existData = await this.findOne(id);
+
+    // 检查是否为系统内置数据
+    if (existData.isSystem === IsSystemEnum.YES) {
+      throw new ForbiddenException('系统内置数据不允许删除');
+    }
+
+    // 删除记录
+    const data = await this.prisma.{{toLowerFirstCase className}}.delete({
       where: { id },
     });
 
-    if (!item) {
-      throw new NotFoundException(`ID为${id}的{{generator.businessName}}不存在`);
-    }
-
-    // 检查是否是系统内置数据
-    if (item.isSystem === IsSystemEnum.YES) {
-      throw new ForbiddenException(`系统内置数据不允许删除`);
-    }
-
-    // 物理删除
-    return this.prisma.{{toLowerFirstCase className}}.delete({
-      where: { id },
-    });
+    return data;
   }
-
-  /**
-   * 批量删除{{generator.businessName}}
-   * @param ids {{generator.businessName}}ID数组
-   * @returns 删除结果
-   * @throws {NotFoundException} 当存在记录不存在时抛出异常
-   * @throws {ForbiddenException} 当尝试删除系统内置数据时抛出异常
-   */
-  async batchRemove(ids: number[]) {
-    // 检查记录是否都存在
-    const items = await this.prisma.{{toLowerFirstCase className}}.findMany({
-      where: { id: { in: ids } },
-    });
-
-    if (items.length !== ids.length) {
-      throw new NotFoundException(`部分记录不存在`);
-    }
-
-    // 检查是否包含系统内置数据
-    const systemItems = items.filter((item) => item.isSystem === IsSystemEnum.YES);
-    if (systemItems.length > 0) {
-      throw new ForbiddenException(`系统内置数据不允许删除`);
-    }
-
-    // 批量删除
-    return this.prisma.{{toLowerFirstCase className}}.deleteMany({
-      where: { id: { in: ids } },
-    });
-  }
-
-  /**
-   * 获取所有{{generator.businessName}}（不分页，用于下拉选择）
-   * @returns 所有{{generator.businessName}}列表
-   */
-  async findAllOptions() {
-    return await this.prisma.{{toLowerFirstCase className}}.findMany({
-      where: { status: StatusEnum.ENABLED },
-      select: {
-        id: true,
-        {{#each columns}}
-        {{#if isLabel}}
-        {{name}}: true,
-        {{/if}}
-        {{/each}}
-      },
-      orderBy: { id: 'asc' },
-    });
-  }
-}
+} 

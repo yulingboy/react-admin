@@ -89,6 +89,6 @@ import { JwtAuthGuard } from './modules/auth-module/auth/guards/jwt-auth.guard';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // 将 HTTP 日志中间件应用到所有路由
-    consumer.apply(HttpLoggerMiddleware).forRoutes('*');
+    consumer.apply().forRoutes('*');
   }
 }
